@@ -3,6 +3,9 @@
 
 #include "inputclass.h"
 #include "openglclass.h"
+#include "colorshadersclass.h"
+#include "modelclass.h"
+#include "cameraclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -23,6 +26,10 @@ private:
   bool Render();
 
   OpenGLClass *m_OpenGL;
+
+  ColorShaderClass * m_ColorShader;
+  ModelClass* m_Model;
+  CameraClass * m_Camera;
 };
 
 #endif
