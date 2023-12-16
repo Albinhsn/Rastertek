@@ -1,0 +1,3 @@
+clangd-format
+*.o
+client
