@@ -1,13 +1,16 @@
 #include "modelclass.h"
 #include <GL/glext.h>
 
-ModelClass::ModelClass() { m_OpenGLPtr = 0; }
+ModelClass::ModelClass() {
+  m_OpenGLPtr = 0; 
+  m_Texture = 0;
+}
 
 ModelClass::ModelClass(const ModelClass &other) {}
 
 ModelClass::~ModelClass() {}
 
-bool ModelClass::Initialize(OpenGLClass *OpenGL) {
+bool ModelClass::Initialize(OpenGLClass *OpenGL, char * textureFilename, bool wrap) {
   bool result;
 
   m_OpenGLPtr = OpenGL;
@@ -18,10 +21,17 @@ bool ModelClass::Initialize(OpenGLClass *OpenGL) {
     return false;
   }
 
+  result = LoadTexture(textureFilename, wrap);
+  if(!result){
+    printf("ERROR: Failed to load texture\n");
+    return false;
+  }
+
   return true;
 }
 
 void ModelClass::Shutdown() {
+  ReleaseTexture();
   ShutdownBuffers();
 
   m_OpenGLPtr = 0;
@@ -30,6 +40,8 @@ void ModelClass::Shutdown() {
 }
 
 void ModelClass::Render() {
+
+  m_Texture->SetTexture(m_OpenGLPtr);
   RenderBuffers();
 
   return;
@@ -51,28 +63,24 @@ bool ModelClass::InitializeBuffers() {
   vertices[0].x = -1.0f; // Position.
   vertices[0].y = -1.0f;
   vertices[0].z = 0.0f;
-
-  vertices[0].r = 1.0f; // Color.
-  vertices[0].g = 0.0f;
-  vertices[0].b = 0.0f;
+  vertices[0].tu = 0.0f; // Texture
+  vertices[0].tv = 0.0f; 
 
   // Top middle.
   vertices[1].x = 0.0f; // Position.
   vertices[1].y = 1.0f;
   vertices[1].z = 0.0f;
+  vertices[1].tu = 0.5f; // Texture
+  vertices[1].tv = 1.0f; 
 
-  vertices[1].r = 0.0f; // Color.
-  vertices[1].g = 0.0f;
-  vertices[1].b = 1.0f;
 
   // Bottom right.
   vertices[2].x = 1.0f; // Position.
   vertices[2].y = -1.0f;
   vertices[2].z = 0.0f;
+  vertices[2].tu = 1.0f; // Texture
+  vertices[2].tv = 0.0f; 
 
-  vertices[2].r = 0.0f; // Color.
-  vertices[2].g = 1.0f;
-  vertices[2].b = 0.0f;
 
   // Load the index array with data.
   indices[0] = 0; // Bottom left.
@@ -94,7 +102,7 @@ bool ModelClass::InitializeBuffers() {
   m_OpenGLPtr->glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType),
                                      0);
 
-  m_OpenGLPtr->glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(VertexType),
+  m_OpenGLPtr->glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType),
                                      (unsigned char *)NULL +
                                          (3 * sizeof(float)));
 
@@ -134,6 +142,30 @@ void ModelClass::RenderBuffers(){
   m_OpenGLPtr->glBindVertexArray(m_vertexArrayId);
 
   glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
+
+  return;
+}
+
+bool ModelClass::LoadTexture(char * textureFilename, bool wrap){
+  bool result;
+
+  m_Texture = new TextureClass;
+
+  result = m_Texture->Initialize(m_OpenGLPtr, textureFilename, 0, wrap);
+  if(!result){
+    printf("ERROR: Failed to initialize texture\n");
+    return false;
+  }
+
+  return true;
+}
+
+void ModelClass::ReleaseTexture(){
+  if(m_Texture){
+    m_Texture->Shutdown();
+    delete m_Texture;
+    m_Texture = 0;
+  }
 
   return;
 }

@@ -33,6 +33,7 @@ bool SystemClass::Initialize() {
                                      screenHeight);
 
   if (!result) {
+    printf("ERROR: Failed to initialize application\n");
     return false;
   }
   return true;

@@ -1,11 +1,11 @@
 #ifndef APPLICATIONCLASS_H
 #define APPLICATIONCLASS_H
 
-#include "inputclass.h"
-#include "openglclass.h"
-#include "colorshadersclass.h"
-#include "modelclass.h"
 #include "cameraclass.h"
+#include "inputclass.h"
+#include "modelclass.h"
+#include "openglclass.h"
+#include "textureshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -27,9 +27,9 @@ private:
 
   OpenGLClass *m_OpenGL;
 
-  ColorShaderClass * m_ColorShader;
-  ModelClass* m_Model;
-  CameraClass * m_Camera;
+  TextureShaderClass *m_TextureShader;
+  ModelClass *m_Model;
+  CameraClass *m_Camera;
 };
 
 #endif

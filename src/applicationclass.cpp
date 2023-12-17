@@ -2,7 +2,7 @@
 
 ApplicationClass::ApplicationClass() {
   m_OpenGL = 0;
-  m_ColorShader = 0;
+  m_TextureShader = 0;
   m_Model = 0;
   m_Camera = 0;
 }
@@ -13,6 +13,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
+  char textureFilename[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -20,13 +21,7 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   result = m_OpenGL->Initialize(display, win, screenWidth, screenHeight,
                                 SCREEN_NEAR, SCREEN_DEPTH, VSYNC_ENABLED);
   if (!result) {
-    return false;
-  }
-
-  m_ColorShader = new ColorShaderClass;
-
-  result = m_ColorShader->Initialize(m_OpenGL);
-  if (!result) {
+    printf("ERROR: Failed to initialize openGL\n");
     return false;
   }
 
@@ -35,10 +30,21 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
+  strcpy(textureFilename, "./earth.tga");
+
   m_Model = new ModelClass;
 
-  result = m_Model->Initialize(m_OpenGL);
+  result = m_Model->Initialize(m_OpenGL, textureFilename, false);
   if (!result) {
+    printf("ERROR: Failed to initialize model\n");
+    return false;
+  }
+
+  m_TextureShader = new TextureShaderClass;
+
+  result = m_TextureShader->Initialize(m_OpenGL);
+  if (!result) {
+    printf("ERROR: Failed to initialize texture shader\n");
     return false;
   }
 
@@ -46,6 +52,13 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 }
 
 void ApplicationClass::Shutdown() {
+  //
+  // Release the color shader object.
+  if (m_TextureShader) {
+    m_TextureShader->Shutdown();
+    delete m_TextureShader;
+    m_TextureShader = 0;
+  }
 
   // Release the model object.
   if (m_Model) {
@@ -58,13 +71,6 @@ void ApplicationClass::Shutdown() {
   if (m_Camera) {
     delete m_Camera;
     m_Camera = 0;
-  }
-
-  // Release the color shader object.
-  if (m_ColorShader) {
-    m_ColorShader->Shutdown();
-    delete m_ColorShader;
-    m_ColorShader = 0;
   }
 
   if (m_OpenGL) {
@@ -105,8 +111,8 @@ bool ApplicationClass::Render() {
 
   // Set the color shader as the current shader program and set the matrices
   // that it will use for rendering.
-  result = m_ColorShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                              projectionMatrix);
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                projectionMatrix);
   if (!result) {
     return false;
   }

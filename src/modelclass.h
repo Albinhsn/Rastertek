@@ -5,13 +5,13 @@
 
 using namespace std;
 
-#include "openglclass.h"
+#include "textureclass.h"
 
 class ModelClass {
 private:
   struct VertexType {
     float x, y, z;
-    float r, g, b;
+    float tu, tv;
   };
 
 public:
@@ -19,7 +19,7 @@ public:
   ModelClass(const ModelClass &);
   ~ModelClass();
 
-  bool Initialize(OpenGLClass *);
+  bool Initialize(OpenGLClass *, char *, bool);
   void Shutdown();
   void Render();
 
@@ -28,10 +28,15 @@ private:
   void ShutdownBuffers();
   void RenderBuffers();
 
+  bool LoadTexture(char *, bool);
+  void ReleaseTexture();
+
 private:
-  OpenGLClass * m_OpenGLPtr;
+  OpenGLClass *m_OpenGLPtr;
   int m_vertexCount, m_indexCount;
   unsigned int m_vertexArrayId, m_vertexBufferId, m_indexBufferId;
+
+  TextureClass *m_Texture;
 };
 
 #endif
