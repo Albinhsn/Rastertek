@@ -30,7 +30,7 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  strcpy(textureFilename, "./earth.tga");
+  strcpy(textureFilename, "./stone01.tga");
 
   m_Model = new ModelClass;
 
