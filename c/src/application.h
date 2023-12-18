@@ -2,23 +2,26 @@
 #define APPLICATION_H
 
 #include "camera.h"
-#include "opengl.h"
-#include "texture.h"
-#include "model.h"
 #include "input.h"
+#include "model.h"
+#include "opengl.h"
+#include "textureshader.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_NEAR = 0.3f;
 const float SCREEN_DEPTH = 1000.0f;
 
-bool RenderApplication();
-
 struct Application {
-        OpenGL *openGL;
-        Camera *camera;
-        Texture *texture;
-        Model *model;
+    OpenGL *openGL;
+    Camera *camera;
+    TextureShader *textureShader;
+    Model *model;
 };
+bool RenderApplication(Application *application);
+bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth,
+                           int screenHeight);
+void ShutdownApplication(Application *application);
+bool Frame(Application *application, Input *);
 
 #endif

@@ -1,29 +1,30 @@
 #include "camera.h"
 #include "utils.h"
 
-void initializeCamera(Camera camera) {
+void initializeCamera(Camera *camera) {
 
-    camera.position.x = 0.0f;
-    camera.position.y = 0.0f;
-    camera.position.z = 0.0f;
+    camera->position.x = 0.0f;
+    camera->position.y = 0.0f;
+    camera->position.z = 0.0f;
 
-    camera.rotation.x = 0.0f;
-    camera.rotation.y = 0.0f;
-    camera.rotation.z = 0.0f;
+    camera->rotation.x = 0.0f;
+    camera->rotation.y = 0.0f;
+    camera->rotation.z = 0.0f;
 }
 
-inline void SetPosition(Camera camera, float x, float y, float z) {
-    camera.position.x = x;
-    camera.position.y = y;
-    camera.position.z = z;
+void SetPosition(Camera *camera, float x, float y, float z) {
+
+    camera->position.x = x;
+    camera->position.y = y;
+    camera->position.z = z;
 }
-void SetRotation(Camera camera, float x, float y, float z) {
-    camera.rotation.x = x;
-    camera.rotation.y = y;
-    camera.rotation.z = z;
+void SetRotation(Camera *camera, float x, float y, float z) {
+    camera->rotation.x = x;
+    camera->rotation.y = y;
+    camera->rotation.z = z;
 }
 
-void Render(Camera camera) {
+void Render(Camera *camera) {
     Vector3 up, position, lookAt;
     float yaw, pitch, roll;
     float rotationMatrix[9];
@@ -36,9 +37,9 @@ void Render(Camera camera) {
     lookAt.y = 0.0f;
     lookAt.z = 1.0f;
 
-    pitch = camera.rotation.x * 0.0174532925f;
-    yaw = camera.rotation.y * 0.0174532925f;
-    roll = camera.rotation.z * 0.0174532925f;
+    pitch = camera->rotation.x * 0.0174532925f;
+    yaw = camera->rotation.y * 0.0174532925f;
+    roll = camera->rotation.z * 0.0174532925f;
 
     MatrixRotationYawPitchRoll(rotationMatrix, yaw, pitch, roll);
 
@@ -49,7 +50,7 @@ void Render(Camera camera) {
     lookAt.y += position.y;
     lookAt.z += position.z;
 
-    BuildViewMatrix(camera.viewMatrix, position, lookAt, up);
+    BuildViewMatrix(camera->viewMatrix, position, lookAt, up);
 }
 void MatrixRotationYawPitchRoll(float *matrix, float yaw, float pitch, float roll) {
     float cYaw, cPitch, cRoll, sYaw, sPitch, sRoll;
@@ -146,4 +147,28 @@ void BuildViewMatrix(float *viewMatrix, Vector3 position, Vector3 lookAt, Vector
     viewMatrix[13] = result2;
     viewMatrix[14] = result3;
     viewMatrix[15] = 1.0f;
+}
+
+void GetViewMatrix(float *matrix, float *viewMatrix) {
+    matrix[0] = viewMatrix[0];
+    matrix[1] = viewMatrix[1];
+    matrix[2] = viewMatrix[2];
+    matrix[3] = viewMatrix[3];
+
+    matrix[4] = viewMatrix[4];
+    matrix[5] = viewMatrix[5];
+    matrix[6] = viewMatrix[6];
+    matrix[7] = viewMatrix[7];
+
+    matrix[8] = viewMatrix[8];
+    matrix[9] = viewMatrix[9];
+    matrix[10] = viewMatrix[10];
+    matrix[11] = viewMatrix[11];
+
+    matrix[12] = viewMatrix[12];
+    matrix[13] = viewMatrix[13];
+    matrix[14] = viewMatrix[14];
+    matrix[15] = viewMatrix[15];
+
+    return;
 }

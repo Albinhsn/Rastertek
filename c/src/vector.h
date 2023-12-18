@@ -19,7 +19,7 @@ void BuildPerspectiveFovMatrix(float *, float, float, float, float);
 void BuildOrthoMatrix(float *, float, float, float, float);
 
 void GetWorldMatrix(float *);
-void GetProjectionMatrix(float *);
+void GetProjectionMatrix(float *, float *);
 void GetOrthoMatrix(float *);
 
 #endif

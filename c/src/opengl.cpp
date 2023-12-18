@@ -1,7 +1,7 @@
 #include "opengl.h"
 
-#include "vector.h"
 #include "utils.h"
+#include "vector.h"
 
 bool LoadExtensionList(OpenGL *openGL) {
 
@@ -303,10 +303,8 @@ bool LoadExtensionList(OpenGL *openGL) {
     return true;
 }
 
-bool Initialize(OpenGL *openGL, Display *display, Window win, int screenWidth, int screenHeight, float screenNear,
-                float screenDepth, bool vsync) {
-    openGL = (OpenGL *)malloc(sizeof(OpenGL));
-
+bool InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWidth, int screenHeight, float screenNear,
+                      float screenDepth, bool vsync) {
     openGL->screenWidth = screenWidth;
     openGL->screenHeight = screenWidth;
     openGL->display = display;
@@ -339,46 +337,45 @@ bool Initialize(OpenGL *openGL, Display *display, Window win, int screenWidth, i
     return true;
 }
 
+void BeginScene(float red, float green, float blue, float alpha) {
 
-
-inline void BeginScene(float red, float green, float blue, float alpha) {
     glClearColor(red, green, blue, alpha);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
-inline void EndScene(Display *display, Window hwnd) { glXSwapBuffers(display, hwnd); }
+void EndScene(Display *display, Window hwnd) { glXSwapBuffers(display, hwnd); }
 
-inline void TurnZBufferOn() {
+void TurnZBufferOn() {
     // Enable depth testing.
     glEnable(GL_DEPTH_TEST);
 }
-inline void TurnZBufferOff() {
+void TurnZBufferOff() {
     // Disable depth testing.
     glDisable(GL_DEPTH_TEST);
 }
 
-inline void EnableAlphaBlending(OpenGL *openGL) {
+void EnableAlphaBlending(OpenGL *openGL) {
     // Enable alpha blending.
     glEnable(GL_BLEND);
 
     // Set the blending equation.
     openGL->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 }
-inline void DisableAlphaBlending() {
+void DisableAlphaBlending() {
     // Disable alpha blending.
     glDisable(GL_BLEND);
 }
 
-inline void SetBackBufferRenderTarget(OpenGL *openGL) {
+void SetBackBufferRenderTarget(OpenGL *openGL) {
     openGL->glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return;
 }
-inline void ResetViewport(int screenWidth, int screenHeight) { glViewport(0, 0, screenWidth, screenHeight); }
+void ResetViewport(int screenWidth, int screenHeight) { glViewport(0, 0, screenWidth, screenHeight); }
 
-inline void EnableClipping() {
+void EnableClipping() {
     // Enable clip plane 0.
     glEnable(GL_CLIP_DISTANCE0);
 }
-inline void DisableClipping() {
+void DisableClipping() {
     // Disable clip plane 0.
     glDisable(GL_CLIP_DISTANCE0);
 }
