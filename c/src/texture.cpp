@@ -96,7 +96,7 @@ bool LoadTarga32Bit(Texture *texture, OpenGL *OpenGL, char *filename, bool wrap)
     return true;
 }
 
-bool InitializeTexture(Texture* texture, OpenGL *openGL, char *filename, unsigned int textureUnit, bool wrap) {
+bool InitializeTexture(Texture *texture, OpenGL *openGL, char *filename, unsigned int textureUnit, bool wrap) {
     texture->textureUnit = textureUnit;
     bool result = LoadTarga32Bit(texture, openGL, filename, wrap);
     if (!result) {
@@ -107,14 +107,14 @@ bool InitializeTexture(Texture* texture, OpenGL *openGL, char *filename, unsigne
     return true;
 }
 
-void ShutdownTexture(Texture* texture) {
+void ShutdownTexture(Texture *texture) {
     if (texture->loaded) {
         glDeleteTextures(1, &texture->textureId);
         texture->loaded = false;
     }
 }
 
-void SetTexture(Texture* texture, OpenGL *OpenGl) {
+void SetTexture(Texture *texture, OpenGL *OpenGl) {
     if (texture->loaded) {
         OpenGl->glActiveTexture(GL_TEXTURE0 + texture->textureUnit);
 

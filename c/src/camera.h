@@ -15,6 +15,5 @@ void Render(Camera *camera);
 void MatrixRotationYawPitchRoll(float *, float , float , float );
 void TransformCoord(Vector3 &, float *);
 void BuildViewMatrix(float*, Vector3, Vector3, Vector3);
-void GetViewMatrix(float * matrix, float * m_viewMatrix);
 
 #endif

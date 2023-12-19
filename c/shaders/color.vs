@@ -1,15 +1,12 @@
 #version 400
 
-// Input variables
 in vec3 inputPosition;
 in vec3 inputColor;
 
 
-// Output variables
 out vec3 color;
 
 
-// Uniform variables
 uniform mat4 worldMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;

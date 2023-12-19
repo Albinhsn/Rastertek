@@ -128,7 +128,7 @@ bool LoadTexture(Model *model, char *textureFilename, bool wrap) {
 
     return true;
 }
-bool InitializeModel(Model* model, OpenGL *openGL, char *textureFilename, bool wrap) {
+bool InitializeModel(Model *model, OpenGL *openGL, char *textureFilename, bool wrap) {
     bool result;
 
     model->openGL = openGL;
@@ -137,6 +137,7 @@ bool InitializeModel(Model* model, OpenGL *openGL, char *textureFilename, bool w
     result = InitializeBuffers(model);
 
     if (!result) {
+        printf("ERROR: Failed to initialize buffers\n");
         return false;
     }
 

@@ -4,7 +4,6 @@
 
 int main() {
     System *system = (System *)malloc(sizeof(System));
-
     bool result = InitializeSystem(system);
 
     if (!result) {

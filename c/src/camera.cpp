@@ -1,5 +1,4 @@
 #include "camera.h"
-#include "utils.h"
 
 void initializeCamera(Camera *camera) {
 
@@ -32,6 +31,10 @@ void Render(Camera *camera) {
     up.x = 0.0f;
     up.y = 1.0f;
     up.z = 0.0f;
+
+    position.x = camera->position.x;
+    position.y = camera->position.y;
+    position.z = camera->position.z;
 
     lookAt.x = 0.0f;
     lookAt.y = 0.0f;
@@ -100,18 +103,18 @@ void BuildViewMatrix(float *viewMatrix, Vector3 position, Vector3 lookAt, Vector
     zAxis.y = lookAt.y - position.y;
     zAxis.z = lookAt.z - position.z;
     length = sqrt((zAxis.x * zAxis.x) + (zAxis.y * zAxis.y) + (zAxis.z * zAxis.z));
-    zAxis.x /= zAxis.x;
-    zAxis.y /= zAxis.y;
-    zAxis.z /= zAxis.z;
+    zAxis.x = zAxis.x / length;
+    zAxis.y = zAxis.y / length;
+    zAxis.z = zAxis.z / length;
 
     // xAxis = normal(cross(up, zAxis))
     xAxis.x = (up.y * zAxis.z) - (up.z * zAxis.y);
     xAxis.y = (up.z * zAxis.x) - (up.x * zAxis.z);
     xAxis.z = (up.x * zAxis.y) - (up.y * zAxis.x);
     length = sqrt((xAxis.x * xAxis.x) + (xAxis.y * xAxis.y) + (xAxis.z * xAxis.z));
-    xAxis.x /= xAxis.x;
-    xAxis.y /= xAxis.y;
-    xAxis.z /= xAxis.z;
+    xAxis.x = xAxis.x / length;
+    xAxis.y = xAxis.y / length;
+    xAxis.z = xAxis.z / length;
 
     // yAxis = cross(zAxis, xAxis)
     yAxis.x = (zAxis.y * xAxis.z) - (zAxis.z * xAxis.y);
@@ -147,28 +150,4 @@ void BuildViewMatrix(float *viewMatrix, Vector3 position, Vector3 lookAt, Vector
     viewMatrix[13] = result2;
     viewMatrix[14] = result3;
     viewMatrix[15] = 1.0f;
-}
-
-void GetViewMatrix(float *matrix, float *viewMatrix) {
-    matrix[0] = viewMatrix[0];
-    matrix[1] = viewMatrix[1];
-    matrix[2] = viewMatrix[2];
-    matrix[3] = viewMatrix[3];
-
-    matrix[4] = viewMatrix[4];
-    matrix[5] = viewMatrix[5];
-    matrix[6] = viewMatrix[6];
-    matrix[7] = viewMatrix[7];
-
-    matrix[8] = viewMatrix[8];
-    matrix[9] = viewMatrix[9];
-    matrix[10] = viewMatrix[10];
-    matrix[11] = viewMatrix[11];
-
-    matrix[12] = viewMatrix[12];
-    matrix[13] = viewMatrix[13];
-    matrix[14] = viewMatrix[14];
-    matrix[15] = viewMatrix[15];
-
-    return;
 }

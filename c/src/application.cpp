@@ -10,8 +10,6 @@ bool RenderApplication(Application *application) {
 
     BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
-    // Set the color shader as the current shader program and set the matrices
-    // that it will use for rendering.
     result = SetShaderParameters(application->textureShader, application->openGL->worldMatrix,
                                  application->camera->viewMatrix, application->openGL->projectionMatrix);
     if (!result) {

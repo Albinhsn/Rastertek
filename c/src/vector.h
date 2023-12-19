@@ -18,8 +18,6 @@ void BuildIdentityMatrix(float *);
 void BuildPerspectiveFovMatrix(float *, float, float, float, float);
 void BuildOrthoMatrix(float *, float, float, float, float);
 
-void GetWorldMatrix(float *);
-void GetProjectionMatrix(float *, float *);
-void GetOrthoMatrix(float *);
+void Get4x4Matrix(float *, float *);
 
 #endif
