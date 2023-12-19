@@ -4,7 +4,8 @@ ApplicationClass::ApplicationClass() {
   m_OpenGL = 0;
   m_TextureShader = 0;
   m_Model = 0;
-  m_Camera = 0;
+  m_LightShader = 0;
+  m_Light = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -40,6 +41,17 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
     return false;
   }
 
+  m_LightShader = new LightShaderClass;
+  result = m_LightShader->Initialize(m_OpenGL);
+  if (!result) {
+    printf("ERROR: failed to initialize light shader\n");
+    return false;
+  }
+
+  m_Light = new LightClass;
+  m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+  m_Light->SetDirection(0.0f, 0.0f, 1.0f);
+
   m_TextureShader = new TextureShaderClass;
 
   result = m_TextureShader->Initialize(m_OpenGL);
@@ -52,7 +64,16 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 }
 
 void ApplicationClass::Shutdown() {
-  //
+  if (m_Light) {
+    delete m_Light;
+    m_Light = 0;
+  }
+
+  if (m_LightShader) {
+    m_LightShader->Shutdown();
+    delete m_LightShader;
+    m_LightShader = 0;
+  }
   // Release the color shader object.
   if (m_TextureShader) {
     m_TextureShader->Shutdown();
@@ -83,13 +104,19 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
+  static float rotation = 360.0f;
   bool result;
 
   if (Input->IsEscapePressed() == true) {
     return false;
   }
 
-  result = Render();
+  rotation -= 0.0174532925f * 1.0f;
+  if (rotation <= 0.0f) {
+    rotation += 360.0f;
+  }
+
+  result = Render(rotation);
   if (!result) {
     return false;
   }
@@ -97,8 +124,9 @@ bool ApplicationClass::Frame(InputClass *Input) {
   return true;
 }
 
-bool ApplicationClass::Render() {
+bool ApplicationClass::Render(float rotation) {
   float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  float diffuseLightColor[4], lightDirection[3];
   bool result;
 
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -109,10 +137,15 @@ bool ApplicationClass::Render() {
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
+  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
+  m_Light->GetDirection(lightDirection);
+  m_Light->GetDiffuseColor(diffuseLightColor);
+
   // Set the color shader as the current shader program and set the matrices
   // that it will use for rendering.
-  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                projectionMatrix);
+  result = m_LightShader->SetShaderParameters(
+      worldMatrix, viewMatrix, projectionMatrix, lightDirection,
+      diffuseLightColor);
   if (!result) {
     return false;
   }

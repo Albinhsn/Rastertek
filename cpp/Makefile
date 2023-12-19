@@ -1,9 +1,15 @@
 
-client: applicationclass.o inputclass.o main.o openglclass.o systemclass.o cameraclass.o colorshadersclass.o modelclass.o textureshaderclass.o textureclass.o
-	g++ -o client textureclass.o cameraclass.o modelclass.o colorshadersclass.o applicationclass.o inputclass.o main.o openglclass.o systemclass.o textureshaderclass.o -l GL -l X11
+client: applicationclass.o inputclass.o main.o openglclass.o systemclass.o cameraclass.o colorshadersclass.o modelclass.o textureshaderclass.o textureclass.o lightclass.o lightshaderclass.o
+	g++ -o client textureclass.o cameraclass.o modelclass.o colorshadersclass.o applicationclass.o inputclass.o main.o openglclass.o systemclass.o textureshaderclass.o lightclass.o lightshaderclass.o -l GL -l X11
 
 textureclass.o: ./src/textureclass.cpp
 	g++ -c ./src/textureclass.cpp
+
+lightclass.o: ./src/lightclass.cpp
+	g++ -c ./src/lightclass.cpp
+
+lightshaderclass.o: ./src/lightshaderclass.cpp
+	g++ -c ./src/lightshaderclass.cpp
 
 modelclass.o: ./src/modelclass.cpp
 	g++ -c ./src/modelclass.cpp

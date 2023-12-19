@@ -1,8 +1,7 @@
-#version 400 
-
+#version 400
 
 in vec3 inputPosition;
-in vec3 inputTexCoord;
+in vec2 inputTexCoord;
 in vec3 inputNormal;
 
 
@@ -14,16 +13,15 @@ uniform mat4 worldMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 
-
 void main(void)
 {
-  gl_Position = vec4(inputPosition, 1.0f) * worldMatrix; 
-  gl_Position = gl_position * viewMatrix;
-  gl_Position = gl_Position * projectionMatrix;
+    gl_Position = vec4(inputPosition, 1.0f) * worldMatrix;
+    gl_Position = gl_Position * viewMatrix;
+    gl_Position = gl_Position * projectionMatrix;
 
-  texCoord = inputTexCoord;
+    texCoord = inputTexCoord;
 
-  normal = inputNormal * mat3(worldMatrix);
+    normal = inputNormal * mat3(worldMatrix);
 
-  normal = normalize(normal);
+    normal = normalize(normal);
 }
