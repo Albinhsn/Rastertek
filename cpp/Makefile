@@ -1,40 +1,18 @@
+CC := g++
+CFLAGS := -O2
+TARGET := client
 
-client: applicationclass.o inputclass.o main.o openglclass.o systemclass.o cameraclass.o colorshadersclass.o modelclass.o textureshaderclass.o textureclass.o lightclass.o lightshaderclass.o
-	g++ -o client textureclass.o cameraclass.o modelclass.o colorshadersclass.o applicationclass.o inputclass.o main.o openglclass.o systemclass.o textureshaderclass.o lightclass.o lightshaderclass.o -l GL -l X11
+# $(wildcard *.cpp /xxx/xxx/*.cpp): get all .cpp files from the current directory and dir "/xxx/xxx/"
+SRCS := $(wildcard ./src/*.cpp)
+# $(patsubst %.cpp,%.o,$(SRCS)): substitute all ".cpp" file name strings to ".o" file name strings
+OBJS := $(patsubst ./src/%.cpp,%.o,$(SRCS))
 
-textureclass.o: ./src/textureclass.cpp
-	g++ -c ./src/textureclass.cpp
+all: $(TARGET)
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ -l GL -l X11 
+%.o: %.cpp
+	$(CC) $(CFLAGS) -l GL -l X11  -c $<
+clean:
+	rm -rf $(TARGET) *.o
 
-lightclass.o: ./src/lightclass.cpp
-	g++ -c ./src/lightclass.cpp
-
-lightshaderclass.o: ./src/lightshaderclass.cpp
-	g++ -c ./src/lightshaderclass.cpp
-
-modelclass.o: ./src/modelclass.cpp
-	g++ -c ./src/modelclass.cpp
-
-cameraclass.o: ./src/cameraclass.cpp
-	g++ -c ./src/cameraclass.cpp
-
-colorshadersclass.o: ./src/colorshadersclass.cpp
-	g++ -c ./src/colorshadersclass.cpp
-
-textureshaderclass.o: ./src/textureshaderclass.cpp
-	g++ -c ./src/textureshaderclass.cpp
-
-applicationclass.o: ./src/applicationclass.cpp
-	g++ -c ./src/applicationclass.cpp
-
-inputclass.o: ./src/inputclass.cpp
-	g++ -c ./src/inputclass.cpp
-
-main.o: ./src/main.cpp
-	g++ -c ./src/main.cpp
-
-openglclass.o: ./src/openglclass.cpp
-	g++ -c ./src/openglclass.cpp
-
-systemclass.o: ./src/systemclass.cpp
-	g++ -c ./src/systemclass.cpp
-
+.PHONY: all clean

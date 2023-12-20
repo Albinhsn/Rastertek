@@ -14,6 +14,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
+  char modelFilename[128];
   char textureFilename[128];
   bool result;
 
@@ -31,11 +32,13 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  strcpy(textureFilename, "./stone01.tga");
+  strcpy(modelFilename, "./data/cube.txt");
+
+  strcpy(textureFilename, "./data/stone01.tga");
 
   m_Model = new ModelClass;
 
-  result = m_Model->Initialize(m_OpenGL, textureFilename, false);
+  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, false);
   if (!result) {
     printf("ERROR: Failed to initialize model\n");
     return false;

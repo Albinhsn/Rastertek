@@ -1,4 +1,5 @@
 #include "cameraclass.h"
+#include <stdio.h>
 
 CameraClass::CameraClass() {
   m_positionX = 0.0f;
