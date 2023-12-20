@@ -29,7 +29,7 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 
   m_Camera = new CameraClass;
 
-  m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
+  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
   m_Camera->Render();
 
   strcpy(modelFilename, "./data/cube.txt");
@@ -128,7 +128,8 @@ bool ApplicationClass::Frame(InputClass *Input) {
 }
 
 bool ApplicationClass::Render(float rotation) {
-  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16], rotateMatrix[16],
+      translateMatrix[16], scaleMatrix[16], srMatrix[16];
   float diffuseLightColor[4], lightDirection[3];
   bool result;
 
@@ -144,11 +145,32 @@ bool ApplicationClass::Render(float rotation) {
   m_Light->GetDirection(lightDirection);
   m_Light->GetDiffuseColor(diffuseLightColor);
 
+  m_OpenGL->MatrixRotationY(rotateMatrix, rotation);
+  m_OpenGL->MatrixTranslation(translateMatrix, -2.0f, 0.0f, 0.0f);
+
+  m_OpenGL->MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+
   // Set the color shader as the current shader program and set the matrices
   // that it will use for rendering.
-  result = m_LightShader->SetShaderParameters(
-      worldMatrix, viewMatrix, projectionMatrix, lightDirection,
-      diffuseLightColor);
+  result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                              projectionMatrix, lightDirection,
+                                              diffuseLightColor);
+  if (!result) {
+    return false;
+  }
+  // Render the model.
+  m_Model->Render();
+
+  m_OpenGL->MatrixScale(scaleMatrix, 0.5f, 0.5f, 0.5f);
+  m_OpenGL->MatrixRotationY(rotateMatrix, rotation);
+  m_OpenGL->MatrixTranslation(translateMatrix, 2.0f, 0.0f, 0.0f);
+
+  m_OpenGL->MatrixMultiply(srMatrix, scaleMatrix, rotateMatrix);
+  m_OpenGL->MatrixMultiply(worldMatrix, srMatrix, translateMatrix);
+
+  result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                              projectionMatrix, lightDirection,
+                                              diffuseLightColor);
   if (!result) {
     return false;
   }
