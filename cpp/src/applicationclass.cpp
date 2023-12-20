@@ -53,7 +53,8 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 
   m_Light = new LightClass;
   m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-  m_Light->SetDirection(0.0f, 0.0f, 1.0f);
+  m_Light->SetDirection(1.0f, 0.0f, 0.0f);
+  m_Light->SetAmbientLight(0.15f, 0.15f, 0.15f, 1.0f);
 
   m_TextureShader = new TextureShaderClass;
 
@@ -130,51 +131,29 @@ bool ApplicationClass::Frame(InputClass *Input) {
 bool ApplicationClass::Render(float rotation) {
   float worldMatrix[16], viewMatrix[16], projectionMatrix[16], rotateMatrix[16],
       translateMatrix[16], scaleMatrix[16], srMatrix[16];
-  float diffuseLightColor[4], lightDirection[3];
+  float diffuseLightColor[4], lightDirection[3], ambientLight[4];
   bool result;
 
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
-  // Get the world, view, and projection matrices from the opengl and camera
-  // objects.
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
   m_OpenGL->MatrixRotationY(worldMatrix, rotation);
+
   m_Light->GetDirection(lightDirection);
   m_Light->GetDiffuseColor(diffuseLightColor);
-
-  m_OpenGL->MatrixRotationY(rotateMatrix, rotation);
-  m_OpenGL->MatrixTranslation(translateMatrix, -2.0f, 0.0f, 0.0f);
-
-  m_OpenGL->MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+  m_Light->GetAmbientLight(ambientLight);
 
   // Set the color shader as the current shader program and set the matrices
   // that it will use for rendering.
   result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
                                               projectionMatrix, lightDirection,
-                                              diffuseLightColor);
+                                              diffuseLightColor, ambientLight);
   if (!result) {
     return false;
   }
-  // Render the model.
-  m_Model->Render();
-
-  m_OpenGL->MatrixScale(scaleMatrix, 0.5f, 0.5f, 0.5f);
-  m_OpenGL->MatrixRotationY(rotateMatrix, rotation);
-  m_OpenGL->MatrixTranslation(translateMatrix, 2.0f, 0.0f, 0.0f);
-
-  m_OpenGL->MatrixMultiply(srMatrix, scaleMatrix, rotateMatrix);
-  m_OpenGL->MatrixMultiply(worldMatrix, srMatrix, translateMatrix);
-
-  result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                              projectionMatrix, lightDirection,
-                                              diffuseLightColor);
-  if (!result) {
-    return false;
-  }
-
   // Render the model.
   m_Model->Render();
 

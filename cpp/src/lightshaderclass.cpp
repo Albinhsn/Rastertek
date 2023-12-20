@@ -241,11 +241,9 @@ void LightShaderClass::OutputLinkerErrorMessage(unsigned int programId) {
   return;
 }
 
-bool LightShaderClass::SetShaderParameters(float *worldMatrix,
-                                           float *viewMatrix,
-                                           float *projectionMatrix,
-                                           float *lightDirection,
-                                           float *diffuseLightColor) {
+bool LightShaderClass::SetShaderParameters(
+    float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+    float *lightDirection, float *diffuseLightColor, float *ambientLight) {
   float tpWorldMatrix[16], tpViewMatrix[16], tpProjectionMatrix[16];
   int location;
 
@@ -294,8 +292,12 @@ bool LightShaderClass::SetShaderParameters(float *worldMatrix,
   if (location == -1) {
     return false;
   }
-
   m_OpenGLPtr->glUniform4fv(location, 1, diffuseLightColor);
 
+  location = m_OpenGLPtr->glGetUniformLocation(m_shaderProgram, "ambientLight");
+  if (location == -1) {
+    return false;
+  }
+  m_OpenGLPtr->glUniform4fv(location, 1, ambientLight);
   return true;
 }

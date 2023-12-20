@@ -10,7 +10,7 @@ OBJS := $(patsubst ./src/%.cpp,%.o,$(SRCS))
 all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $^ -l GL -l X11 
-%.o: %.cpp
+%.o: ./src/%.cpp
 	$(CC) $(CFLAGS) -l GL -l X11  -c $<
 clean:
 	rm -rf $(TARGET) *.o
