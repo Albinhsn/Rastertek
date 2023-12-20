@@ -25,6 +25,14 @@ void LightClass::SetAmbientLight(float red, float green, float blue,
   m_ambientLight[2] = blue;
   m_ambientLight[3] = alpha;
 }
+void LightClass::SetSpecularColor(float red, float green, float blue,
+                                  float alpha) {
+  m_specularColor[0] = red;
+  m_specularColor[1] = green;
+  m_specularColor[2] = blue;
+  m_specularColor[3] = alpha;
+}
+void LightClass::SetSpecularPower(float power) { m_specularPower = power; }
 
 void LightClass::GetDiffuseColor(float *color) {
   color[0] = m_diffuseColor[0];
@@ -44,4 +52,15 @@ void LightClass::GetAmbientLight(float *ambient) {
   ambient[1] = m_ambientLight[1];
   ambient[2] = m_ambientLight[2];
   ambient[3] = m_ambientLight[3];
+}
+
+void LightClass::GetSpecularColor(float *specular) {
+  specular[0] = m_specularColor[0];
+  specular[1] = m_specularColor[1];
+  specular[2] = m_specularColor[2];
+  specular[3] = m_specularColor[3];
+}
+
+void LightClass::GetSpecularPower(float & power){
+  power = m_specularPower;
 }

@@ -243,7 +243,8 @@ void LightShaderClass::OutputLinkerErrorMessage(unsigned int programId) {
 
 bool LightShaderClass::SetShaderParameters(
     float *worldMatrix, float *viewMatrix, float *projectionMatrix,
-    float *lightDirection, float *diffuseLightColor, float *ambientLight) {
+    float *lightDirection, float *diffuseLightColor, float *ambientLight,
+    float *cameraPosition, float *specularColor, float specularPower) {
   float tpWorldMatrix[16], tpViewMatrix[16], tpProjectionMatrix[16];
   int location;
 
@@ -273,6 +274,13 @@ bool LightShaderClass::SetShaderParameters(
   m_OpenGLPtr->glUniformMatrix4fv(location, 1, false, tpProjectionMatrix);
 
   location =
+      m_OpenGLPtr->glGetUniformLocation(m_shaderProgram, "cameraPosition");
+  if (location == -1) {
+    return false;
+  }
+  m_OpenGLPtr->glUniform3fv(location, 1, cameraPosition);
+
+  location =
       m_OpenGLPtr->glGetUniformLocation(m_shaderProgram, "shaderTexture");
   if (location == -1) {
     return false;
@@ -299,5 +307,20 @@ bool LightShaderClass::SetShaderParameters(
     return false;
   }
   m_OpenGLPtr->glUniform4fv(location, 1, ambientLight);
+
+  location =
+      m_OpenGLPtr->glGetUniformLocation(m_shaderProgram, "specularPower");
+  if (location == -1) {
+    return false;
+  }
+  m_OpenGLPtr->glUniform1f(location, specularPower);
+
+  location =
+      m_OpenGLPtr->glGetUniformLocation(m_shaderProgram, "specularColor");
+  if (location == -1) {
+    return false;
+  }
+  m_OpenGLPtr->glUniform4fv(location, 1, specularColor);
+
   return true;
 }
