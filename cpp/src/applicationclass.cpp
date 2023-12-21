@@ -1,11 +1,10 @@
 #include "applicationclass.h"
+#include "textureshaderclass.h"
 
 ApplicationClass::ApplicationClass() {
   m_OpenGL = 0;
   m_TextureShader = 0;
-  m_Model = 0;
-  m_LightShader = 0;
-  m_Light = 0;
+  m_Bitmap = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -14,8 +13,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename[128];
-  char textureFilename[128];
+  char bitmapFilename[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -28,41 +26,24 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   }
 
   m_Camera = new CameraClass;
-
   m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
   m_Camera->Render();
-
-  strcpy(modelFilename, "./data/sphere.txt");
-
-  strcpy(textureFilename, "./data/stone01.tga");
-
-  m_Model = new ModelClass;
-
-  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, true);
-  if (!result) {
-    printf("ERROR: Failed to initialize model\n");
-    return false;
-  }
-
-  m_LightShader = new LightShaderClass;
-  result = m_LightShader->Initialize(m_OpenGL);
-  if (!result) {
-    printf("ERROR: failed to initialize light shader\n");
-    return false;
-  }
-
-  m_Light = new LightClass;
-  m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-  m_Light->SetDirection(1.0f, 0.0f, 1.0f);
-  m_Light->SetAmbientLight(0.15f, 0.15f, 0.15f, 1.0f);
-  m_Light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-  m_Light->SetSpecularPower(32.0f);
 
   m_TextureShader = new TextureShaderClass;
 
   result = m_TextureShader->Initialize(m_OpenGL);
   if (!result) {
-    printf("ERROR: Failed to initialize texture shader\n");
+    return false;
+  }
+
+  strcpy(bitmapFilename, "./data/stone01.tga");
+
+  m_Bitmap = new BitmapClass;
+
+  result = m_Bitmap->Initialize(m_OpenGL, screenWidth, screenHeight,
+                                bitmapFilename, 100, 100);
+  if (!result) {
+    printf("ERROR: Failed to initialize bitmap\n");
     return false;
   }
 
@@ -70,15 +51,10 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 }
 
 void ApplicationClass::Shutdown() {
-  if (m_Light) {
-    delete m_Light;
-    m_Light = 0;
-  }
-
-  if (m_LightShader) {
-    m_LightShader->Shutdown();
-    delete m_LightShader;
-    m_LightShader = 0;
+  if (m_Bitmap) {
+    m_Bitmap->Shutdown();
+    delete m_Bitmap;
+    m_Bitmap = 0;
   }
   // Release the color shader object.
   if (m_TextureShader) {
@@ -131,39 +107,25 @@ bool ApplicationClass::Frame(InputClass *Input) {
 }
 
 bool ApplicationClass::Render(float rotation) {
-  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
-  float diffuseLightColor[4], lightDirection[3], ambientLight[4],
-      cameraPosition[3], specularColor[4];
-  float specularPower;
+  float worldMatrix[16], viewMatrix[16], orthoMatrix[16];
   bool result;
 
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
-  m_OpenGL->GetProjectionMatrix(projectionMatrix);
+  m_OpenGL->GetOrthoMatrix(orthoMatrix);
 
-  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
+  m_OpenGL->TurnZBufferOff();
 
-  m_Light->GetDirection(lightDirection);
-  m_Light->GetDiffuseColor(diffuseLightColor);
-  m_Light->GetAmbientLight(ambientLight);
-  m_Light->GetSpecularColor(specularColor);
-  m_Light->GetSpecularPower(specularPower);
-
-  m_Camera->GetPosition(cameraPosition);
-
-  result = m_LightShader->SetShaderParameters(
-      worldMatrix, viewMatrix, projectionMatrix, lightDirection,
-      diffuseLightColor, ambientLight, cameraPosition, specularColor,
-      specularPower);
-
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                orthoMatrix);
   if (!result) {
     return false;
   }
-  // Render the model.
-  m_Model->Render();
 
+  m_Bitmap->Render();
+  m_OpenGL->TurnZBufferOn();
   m_OpenGL->EndScene();
 
   return true;
