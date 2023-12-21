@@ -14,6 +14,7 @@
 #include "spriteclass.h"
 #include "textclass.h"
 #include "textureshaderclass.h"
+#include "multitextureshaderclass.h"
 #include "timerclass.h"
 
 const bool FULL_SCREEN = false;
@@ -37,7 +38,7 @@ private:
   bool UpdateMouseStrings(int, int, bool);
 
   OpenGLClass *m_OpenGL;
-
+  MultiTextureShaderClass * m_MultiTextureShader;
   TextureShaderClass *m_TextureShader;
   ModelClass *m_Model;
   CameraClass *m_Camera;

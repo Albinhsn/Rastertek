@@ -25,7 +25,7 @@ public:
   ModelClass(const ModelClass &);
   ~ModelClass();
 
-  bool Initialize(OpenGLClass *, char *, char *, bool);
+  bool Initialize(OpenGLClass *, char *, char *, char *, bool);
   void Shutdown();
   void Render();
 
@@ -34,8 +34,8 @@ private:
   void ShutdownBuffers();
   void RenderBuffers();
 
-  bool LoadTexture(char *, bool);
-  void ReleaseTexture();
+  bool LoadTextures(char *, char *, bool);
+  void ReleaseTextures();
 
   bool LoadModel(char *);
   void ReleaseModel();
@@ -45,9 +45,9 @@ private:
   int m_vertexCount, m_indexCount;
   unsigned int m_vertexArrayId, m_vertexBufferId, m_indexBufferId;
 
-  TextureClass *m_Texture;
+  TextureClass *m_Textures;
 
-  ModelType * m_model;
+  ModelType *m_model;
 };
 
 #endif

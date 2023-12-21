@@ -14,6 +14,8 @@ ApplicationClass::ApplicationClass() {
   m_Fps = 0;
   m_FpsString = 0;
   m_MouseStrings = 0;
+  m_MultiTextureShader = 0;
+  m_Model = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -22,7 +24,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char mouseString1[32], mouseString2[32], mouseString3[32];
+  char modelFilename[128], textureFilename1[128], textureFilename2[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -35,48 +37,27 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   }
 
   m_Camera = new CameraClass;
-  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+  m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  m_FontShader = new FontShaderClass;
-  result = m_FontShader->Initialize(m_OpenGL);
+  m_MultiTextureShader = new MultiTextureShaderClass;
+
+  result = m_MultiTextureShader->Initialize(m_OpenGL);
   if (!result) {
-    printf("ERROR: failed to initialize font shader\n");
+    printf("Failed to initialize multi texture shader\n");
     return false;
   }
+  strcpy(modelFilename, "./data/square.txt");
 
-  m_Font = new FontClass;
-  result = m_Font->Initialize(m_OpenGL, 0);
+  strcpy(textureFilename1, "./data/stone01.tga");
+  strcpy(textureFilename2, "./data/dirt01.tga");
+
+  m_Model = new ModelClass;
+
+  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename1,
+                               textureFilename2, true);
   if (!result) {
-    printf("ERROR: failed to initialize fontclass\n");
-    return false;
-  }
-  // Set the initial mouse strings.
-  strcpy(mouseString1, "Mouse X: 0");
-  strcpy(mouseString2, "Mouse Y: 0");
-  strcpy(mouseString3, "Mouse Button: No");
-
-  // Create and initialize the text objects for the mouse strings.
-  m_MouseStrings = new TextClass[3];
-
-  result = m_MouseStrings[0].Initialize(m_OpenGL, screenWidth, screenHeight, 32,
-                                        m_Font, mouseString1, 10, 10, 1.0f,
-                                        1.0f, 1.0f);
-  if (!result) {
-    return false;
-  }
-
-  result = m_MouseStrings[1].Initialize(m_OpenGL, screenWidth, screenHeight, 32,
-                                        m_Font, mouseString2, 10, 35, 1.0f,
-                                        1.0f, 1.0f);
-  if (!result) {
-    return false;
-  }
-
-  result = m_MouseStrings[2].Initialize(m_OpenGL, screenWidth, screenHeight, 32,
-                                        m_Font, mouseString3, 10, 60, 1.0f,
-                                        1.0f, 1.0f);
-  if (!result) {
+    printf("Failed to initialize model\n");
     return false;
   }
 
@@ -84,6 +65,11 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_MultiTextureShader) {
+    m_MultiTextureShader->Shutdown();
+    delete m_MultiTextureShader;
+    m_MultiTextureShader = 0;
+  }
   if (m_MouseStrings) {
     m_MouseStrings[0].Shutdown();
     m_MouseStrings[1].Shutdown();
@@ -164,20 +150,8 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  int mouseX, mouseY;
-  bool result, mouseDown;
+  bool result;
   if (Input->IsEscapePressed() == true) {
-    return false;
-  }
-
-  Input->GetMouseLocation(mouseX, mouseY);
-
-  // Check if the mouse has been pressed.
-  mouseDown = Input->IsMousePressed();
-
-  // Update the mouse strings each frame.
-  result = UpdateMouseStrings(mouseX, mouseY, mouseDown);
-  if (!result) {
     return false;
   }
 
@@ -190,38 +164,33 @@ bool ApplicationClass::Frame(InputClass *Input) {
 }
 
 bool ApplicationClass::Render() {
-  float worldMatrix[16], viewMatrix[16], orthoMatrix[16];
-  float pixelColor[4];
-  bool result;
 
-  m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+    float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+    bool result;
 
-  m_OpenGL->GetWorldMatrix(worldMatrix);
-  m_Camera->GetViewMatrix(viewMatrix);
-  m_OpenGL->GetOrthoMatrix(orthoMatrix);
 
-  m_OpenGL->TurnZBufferOff();
-  m_OpenGL->EnableAlphaBlending();
+ 	// Clear the buffers to begin the scene.
+    m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
-  m_MouseStrings[0].GetPixelColor(pixelColor);
+    // Get the world, view, and projection matrices from the opengl and camera objects.
+    m_OpenGL->GetWorldMatrix(worldMatrix);
+    m_Camera->GetViewMatrix(viewMatrix);
+    m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-  result = m_FontShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                             orthoMatrix, pixelColor);
-  if (!result) {
-    return false;
-  }
+	// Set the multitexture shader as active and set its parameters.
+	result = m_MultiTextureShader->SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix);
+	if(!result)
+	{
+        return false;
+	}
 
-  m_Font->SetTexture();
+    // Render the model using the multitexture shader.
+    m_Model->Render();
 
-  m_MouseStrings[0].Render();
-  m_MouseStrings[1].Render();
-  m_MouseStrings[2].Render();
+    // Present the rendered scene to the screen.
+    m_OpenGL->EndScene();
 
-  m_OpenGL->TurnZBufferOn();
-  m_OpenGL->DisableAlphaBlending();
-  m_OpenGL->EndScene();
-
-  return true;
+    return true;
 }
 bool ApplicationClass::UpdateFps() {
   int fps;

@@ -3,7 +3,7 @@
 
 ModelClass::ModelClass() {
   m_OpenGLPtr = 0;
-  m_Texture = 0;
+  m_Textures = 0;
   m_model = 0;
 }
 
@@ -12,23 +12,25 @@ ModelClass::ModelClass(const ModelClass &other) {}
 ModelClass::~ModelClass() {}
 
 bool ModelClass::Initialize(OpenGLClass *OpenGL, char *modelFilename,
-                            char *textureFilename, bool wrap) {
+                            char *textureFilename1, char *textureFilename2,
+                            bool wrap) {
   bool result;
 
   m_OpenGLPtr = OpenGL;
 
   result = LoadModel(modelFilename);
   if (!result) {
-    return false;
+    printf("Failed to load model at '%s'\n", modelFilename);
     return false;
   }
 
   result = InitializeBuffers();
   if (!result) {
+    printf("Failed to initialize buffers\n");
     return false;
   }
 
-  result = LoadTexture(textureFilename, wrap);
+  result = LoadTextures(textureFilename1, textureFilename2, wrap);
   if (!result) {
     printf("ERROR: Failed to load texture\n");
     return false;
@@ -38,7 +40,7 @@ bool ModelClass::Initialize(OpenGLClass *OpenGL, char *modelFilename,
 }
 
 void ModelClass::Shutdown() {
-  ReleaseTexture();
+  ReleaseTextures();
   ShutdownBuffers();
   ReleaseModel();
 
@@ -49,7 +51,8 @@ void ModelClass::Shutdown() {
 
 void ModelClass::Render() {
 
-  m_Texture->SetTexture(m_OpenGLPtr);
+  m_Textures[0].SetTexture(m_OpenGLPtr);
+  m_Textures[1].SetTexture(m_OpenGLPtr);
   RenderBuffers();
 
   return;
@@ -141,30 +144,6 @@ void ModelClass::RenderBuffers() {
   return;
 }
 
-bool ModelClass::LoadTexture(char *textureFilename, bool wrap) {
-  bool result;
-
-  m_Texture = new TextureClass;
-
-  result = m_Texture->Initialize(m_OpenGLPtr, textureFilename, 0, wrap);
-  if (!result) {
-    printf("ERROR: Failed to initialize texture\n");
-    return false;
-  }
-
-  return true;
-}
-
-void ModelClass::ReleaseTexture() {
-  if (m_Texture) {
-    m_Texture->Shutdown();
-    delete m_Texture;
-    m_Texture = 0;
-  }
-
-  return;
-}
-
 bool ModelClass::LoadModel(char *filename) {
   ifstream fin;
   char input;
@@ -211,4 +190,39 @@ void ModelClass::ReleaseModel() {
     delete[] m_model;
     m_model = 0;
   }
+}
+
+bool ModelClass::LoadTextures(char *textureFilename1, char *textureFilename2,
+                              bool wrap) {
+  bool result;
+
+  // Create and initialize the texture objects.
+  m_Textures = new TextureClass[2];
+
+  result = m_Textures[0].Initialize(m_OpenGLPtr, textureFilename1, 0, wrap);
+  if (!result) {
+    printf("Failed to initialize texture at '%s'\n", textureFilename1);
+    return false;
+  }
+
+  result = m_Textures[1].Initialize(m_OpenGLPtr, textureFilename2, 1, wrap);
+  if (!result) {
+    printf("Failed to initialize texture at '%s'\n", textureFilename2);
+    return false;
+  }
+
+  return true;
+}
+
+void ModelClass::ReleaseTextures() {
+  // Release the texture objects.
+  if (m_Textures) {
+    m_Textures[0].Shutdown();
+    m_Textures[1].Shutdown();
+
+    delete[] m_Textures;
+    m_Textures = 0;
+  }
+
+  return;
 }
