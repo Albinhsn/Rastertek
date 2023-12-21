@@ -7,6 +7,10 @@ ApplicationClass::ApplicationClass() {
   m_Bitmap = 0;
   m_Sprite = 0;
   m_Timer = 0;
+  m_FontShader = 0;
+  m_Font = 0;
+  m_TextString1 = 0;
+  m_TextString2 = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -15,7 +19,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char spriteFilename[128];
+  char testString1[32], testString2[32];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -31,30 +35,67 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
   m_Camera->Render();
 
-  m_TextureShader = new TextureShaderClass;
+  m_FontShader = new FontShaderClass;
 
-  result = m_TextureShader->Initialize(m_OpenGL);
+  result = m_FontShader->Initialize(m_OpenGL);
+  if (!result) {
+    printf("ERROR: failed to initialize font shader\n");
+    return false;
+  }
+
+  m_Font = new FontClass;
+
+  result = m_Font->Initialize(m_OpenGL, 0);
+  if (!result) {
+    printf("ERROR: failed to initialize fontclass\n");
+    return false;
+  }
+
+  strcpy(testString1, "Hello");
+  strcpy(testString2, "GoodBye");
+
+  m_TextString1 = new TextClass;
+
+  result =
+      m_TextString1->Initialize(m_OpenGL, screenWidth, screenHeight, 32, m_Font,
+                                testString1, 10, 10, 0.0f, 1.0f, 0.0f);
   if (!result) {
     return false;
   }
 
-  strcpy(spriteFilename, "./data/sprite_data_01.txt");
-
-  m_Sprite = new SpriteClass;
-
-  result = m_Sprite->Initialize(m_OpenGL, screenWidth, screenHeight, 50, 50,
-                                spriteFilename);
+  m_TextString2 = new TextClass;
+  result =
+      m_TextString2->Initialize(m_OpenGL, screenWidth, screenHeight, 32, m_Font,
+                                testString2, 10, 50, 1.0f, 1.0f, 0.0f);
   if (!result) {
-    printf("ERROR: Failed to initialize sprite\n");
     return false;
   }
-  m_Timer = new TimerClass;
-  m_Timer->Initialize();
+  printf("INFO: Initialized Application\n");
 
   return true;
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_TextString2) {
+    m_TextString2->Shutdown();
+    delete m_TextString2;
+    m_TextString2 = 0;
+  }
+  if (m_TextString1) {
+    m_TextString1->Shutdown();
+    delete m_TextString1;
+    m_TextString1 = 0;
+  }
+  if (m_Font) {
+    m_Font->Shutdown();
+    delete m_Font;
+    m_Font = 0;
+  }
+  if (m_FontShader) {
+    m_FontShader->Shutdown();
+    delete m_FontShader;
+    m_FontShader = 0;
+  }
   if (m_Timer) {
     delete m_Timer;
     m_Timer = 0;
@@ -101,16 +142,9 @@ void ApplicationClass::Shutdown() {
 bool ApplicationClass::Frame(InputClass *Input) {
   int frameTime;
   bool result;
-
-  m_Timer->Frame();
-
-  frameTime = m_Timer->GetTime();
-
   if (Input->IsEscapePressed() == true) {
     return false;
   }
-
-  m_Sprite->Update(frameTime);
 
   result = Render();
   if (!result) {
@@ -122,6 +156,7 @@ bool ApplicationClass::Frame(InputClass *Input) {
 
 bool ApplicationClass::Render() {
   float worldMatrix[16], viewMatrix[16], orthoMatrix[16];
+  float pixelColor[4];
   bool result;
 
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -131,14 +166,30 @@ bool ApplicationClass::Render() {
   m_OpenGL->GetOrthoMatrix(orthoMatrix);
 
   m_OpenGL->TurnZBufferOff();
+  m_OpenGL->EnableAlphaBlending();
 
-  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                orthoMatrix);
+  m_TextString1->GetPixelColor(pixelColor);
+
+  result = m_FontShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                             orthoMatrix, pixelColor);
   if (!result) {
     return false;
   }
 
-  m_Sprite->Render();
+  m_Font->SetTexture();
+  m_TextString1->Render();
+
+  m_TextString2->GetPixelColor(pixelColor);
+
+  result = m_FontShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                             orthoMatrix, pixelColor);
+  if (!result) {
+    return false;
+  }
+
+  m_Font->SetTexture();
+  m_TextString2->Render();
+
   m_OpenGL->TurnZBufferOn();
   m_OpenGL->EndScene();
 
