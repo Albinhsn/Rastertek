@@ -3,17 +3,18 @@
 
 #include "bitmapclass.h"
 #include "cameraclass.h"
+#include "fontclass.h"
+#include "fontshaderclass.h"
+#include "fpsclass.h"
 #include "inputclass.h"
 #include "lightclass.h"
 #include "lightshaderclass.h"
 #include "modelclass.h"
 #include "openglclass.h"
-#include "textureshaderclass.h"
 #include "spriteclass.h"
-#include "timerclass.h"
-#include "fontshaderclass.h"
-#include "fontclass.h"
 #include "textclass.h"
+#include "textureshaderclass.h"
+#include "timerclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -32,6 +33,7 @@ public:
 
 private:
   bool Render();
+  bool UpdateFps();
 
   OpenGLClass *m_OpenGL;
 
@@ -41,11 +43,14 @@ private:
   LightShaderClass *m_LightShader;
   LightClass *m_Light;
   BitmapClass *m_Bitmap;
-  SpriteClass * m_Sprite;
-  TimerClass * m_Timer;
-  FontShaderClass * m_FontShader;
-  FontClass * m_Font;
-  TextClass * m_TextString1, * m_TextString2;
+  SpriteClass *m_Sprite;
+  TimerClass *m_Timer;
+  FontShaderClass *m_FontShader;
+  FontClass *m_Font;
+  TextClass *m_TextString1, *m_TextString2;
+  FpsClass * m_Fps;
+  TextClass * m_FpsString;
+  int m_previousFps;
 };
 
 #endif

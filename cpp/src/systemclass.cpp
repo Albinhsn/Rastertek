@@ -46,8 +46,6 @@ void SystemClass::Shutdown() {
     m_Application = 0;
   }
 
-  ShutdownWindow();
-
   if (m_Input) {
     delete m_Input;
     m_Input = 0;

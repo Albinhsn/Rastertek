@@ -11,6 +11,8 @@ ApplicationClass::ApplicationClass() {
   m_Font = 0;
   m_TextString1 = 0;
   m_TextString2 = 0;
+  m_Fps = 0;
+  m_FpsString = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -19,7 +21,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char testString1[32], testString2[32];
+  char fpsString[32];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -36,7 +38,6 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->Render();
 
   m_FontShader = new FontShaderClass;
-
   result = m_FontShader->Initialize(m_OpenGL);
   if (!result) {
     printf("ERROR: failed to initialize font shader\n");
@@ -44,38 +45,39 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   }
 
   m_Font = new FontClass;
-
   result = m_Font->Initialize(m_OpenGL, 0);
   if (!result) {
     printf("ERROR: failed to initialize fontclass\n");
     return false;
   }
 
-  strcpy(testString1, "Hello");
-  strcpy(testString2, "GoodBye");
+  m_Fps = new FpsClass();
+  m_Fps->Initialize();
 
-  m_TextString1 = new TextClass;
+  m_previousFps = -1;
+  strcpy(fpsString, "Fps: 0");
 
-  result =
-      m_TextString1->Initialize(m_OpenGL, screenWidth, screenHeight, 32, m_Font,
-                                testString1, 10, 10, 0.0f, 1.0f, 0.0f);
+  m_FpsString = new TextClass;
+
+  result = m_FpsString->Initialize(m_OpenGL, screenWidth, screenHeight, 16,
+                                   m_Font, fpsString, 10, 50, 0.0f, 1.0f, 0.0f);
   if (!result) {
     return false;
   }
-
-  m_TextString2 = new TextClass;
-  result =
-      m_TextString2->Initialize(m_OpenGL, screenWidth, screenHeight, 32, m_Font,
-                                testString2, 10, 50, 1.0f, 1.0f, 0.0f);
-  if (!result) {
-    return false;
-  }
-  printf("INFO: Initialized Application\n");
 
   return true;
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_FpsString) {
+    m_FpsString->Shutdown();
+    delete m_FpsString;
+    m_FpsString = 0;
+  }
+  if (m_Fps) {
+    delete m_Fps;
+    m_Fps = 0;
+  }
   if (m_TextString2) {
     m_TextString2->Shutdown();
     delete m_TextString2;
@@ -146,6 +148,11 @@ bool ApplicationClass::Frame(InputClass *Input) {
     return false;
   }
 
+  result = UpdateFps();
+  if (!result) {
+    return false;
+  }
+
   result = Render();
   if (!result) {
     return false;
@@ -168,7 +175,7 @@ bool ApplicationClass::Render() {
   m_OpenGL->TurnZBufferOff();
   m_OpenGL->EnableAlphaBlending();
 
-  m_TextString1->GetPixelColor(pixelColor);
+  m_FpsString->GetPixelColor(pixelColor);
 
   result = m_FontShader->SetShaderParameters(worldMatrix, viewMatrix,
                                              orthoMatrix, pixelColor);
@@ -177,21 +184,62 @@ bool ApplicationClass::Render() {
   }
 
   m_Font->SetTexture();
-  m_TextString1->Render();
 
-  m_TextString2->GetPixelColor(pixelColor);
-
-  result = m_FontShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                             orthoMatrix, pixelColor);
-  if (!result) {
-    return false;
-  }
-
-  m_Font->SetTexture();
-  m_TextString2->Render();
+  m_FpsString->Render();
 
   m_OpenGL->TurnZBufferOn();
+  m_OpenGL->DisableAlphaBlending();
   m_OpenGL->EndScene();
+
+  return true;
+}
+bool ApplicationClass::UpdateFps() {
+  int fps;
+  char tempString[16], finalString[16];
+  float red, green, blue;
+  bool result;
+
+  m_Fps->Frame();
+
+  fps = m_Fps->GetFps();
+
+  if (m_previousFps == fps) {
+    return true;
+  }
+
+  m_previousFps = fps;
+
+  if (fps > 99999) {
+    fps = 99999;
+  }
+
+  sprintf(tempString, "%d", fps);
+
+  strcpy(finalString, "Fps: ");
+  strcat(finalString, tempString);
+
+  if (fps >= 60) {
+    red = 0.0f;
+    green = 1.0f;
+    blue = 0.0f;
+  }
+
+  if (fps < 60) {
+    red = 1.0f;
+    green = 1.0f;
+    blue = 0.0f;
+  }
+  if (fps < 30) {
+    red = 1.0f;
+    green = 0.0f;
+    blue = 0.0f;
+  }
+
+  result =
+      m_FpsString->UpdateText(m_Font, finalString, 10, 10, red, green, blue);
+  if (!result) {
+    return false;
+  }
 
   return true;
 }
