@@ -16,6 +16,7 @@
 #include "textureshaderclass.h"
 #include "multitextureshaderclass.h"
 #include "timerclass.h"
+#include "lightmapshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -53,6 +54,7 @@ private:
   FpsClass *m_Fps;
   TextClass *m_FpsString;
   TextClass *m_MouseStrings;
+  LightMapShaderClass * m_LightMapShader;
   int m_previousFps;
 };
 

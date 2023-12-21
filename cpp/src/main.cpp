@@ -13,6 +13,7 @@ int main(){
     printf("ERROR: Couldn't initialize system\n");
     return -1;
   }
+  printf("INFO: Initialized system\n");
   System->Frame();
 
   System->Shutdown();

@@ -16,6 +16,7 @@ ApplicationClass::ApplicationClass() {
   m_MouseStrings = 0;
   m_MultiTextureShader = 0;
   m_Model = 0;
+  m_LightMapShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -40,17 +41,17 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  m_MultiTextureShader = new MultiTextureShaderClass;
+  m_LightMapShader = new LightMapShaderClass;
 
-  result = m_MultiTextureShader->Initialize(m_OpenGL);
+  result = m_LightMapShader->Initialize(m_OpenGL);
   if (!result) {
-    printf("Failed to initialize multi texture shader\n");
+    printf("Failed to initialize light map shader\n");
     return false;
   }
   strcpy(modelFilename, "./data/square.txt");
 
   strcpy(textureFilename1, "./data/stone01.tga");
-  strcpy(textureFilename2, "./data/dirt01.tga");
+  strcpy(textureFilename2, "./data/light01.tga");
 
   m_Model = new ModelClass;
 
@@ -69,6 +70,11 @@ void ApplicationClass::Shutdown() {
     m_MultiTextureShader->Shutdown();
     delete m_MultiTextureShader;
     m_MultiTextureShader = 0;
+  }
+  if(m_LightMapShader){
+    m_LightMapShader->Shutdown();
+    delete m_LightMapShader;
+    m_LightMapShader = 0;
   }
   if (m_MouseStrings) {
     m_MouseStrings[0].Shutdown();
@@ -177,12 +183,12 @@ bool ApplicationClass::Render() {
     m_Camera->GetViewMatrix(viewMatrix);
     m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-	// Set the multitexture shader as active and set its parameters.
-	result = m_MultiTextureShader->SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix);
-	if(!result)
-	{
-        return false;
-	}
+    // Set the multitexture shader as active and set its parameters.
+    result = m_LightMapShader->SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix);
+    if(!result)
+    {
+          return false;
+    }
 
     // Render the model using the multitexture shader.
     m_Model->Render();
