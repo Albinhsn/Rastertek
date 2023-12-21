@@ -116,7 +116,8 @@ bool SystemClass::InitializeWindow(int &screenWidth, int &screenHeight) {
                              AllocNone);
 
   setWindowAttributes.colormap = colorMap;
-  setWindowAttributes.event_mask = KeyPressMask | KeyReleaseMask;
+  setWindowAttributes.event_mask =
+      KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
 
   if (FULL_SCREEN) {
     defaultScreen = XDefaultScreenOfDisplay(m_videoDisplay);
@@ -206,11 +207,15 @@ void SystemClass::ShutdownWindow() {
 void SystemClass::ReadInput() {
   XEvent event;
   long eventMask;
-  bool foundEvent;
+  bool foundEvent, mouseResult;
   char keyBuffer[32];
   KeySym keySymbol;
+  Window rootWindow, childWindow;
+  int rootX, rootY, mouseX, mouseY, windowPositionX, windowPositionY;
+  unsigned int mask;
 
-  eventMask = KeyPressMask | KeyReleaseMask;
+  eventMask =
+      KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
 
   foundEvent = XCheckWindowEvent(m_videoDisplay, m_hwnd, eventMask, &event);
   if (foundEvent) {
@@ -225,7 +230,32 @@ void SystemClass::ReadInput() {
                     NULL);
       m_Input->KeyUp((int)keySymbol);
     }
+    if (event.type == ButtonPress) {
+      m_Input->MouseDown();
+    }
+    if (event.type == ButtonRelease) {
+      m_Input->MouseUp();
+    }
   }
+  mouseResult = XQueryPointer(m_videoDisplay, DefaultRootWindow(m_videoDisplay),
+                              &rootWindow, &childWindow, &rootX, &rootY,
+                              &mouseX, &mouseY, &mask);
+  if (mouseResult) {
+    if (FULL_SCREEN) {
+      XTranslateCoordinates(m_videoDisplay, m_hwnd,
+                            DefaultRootWindow(m_videoDisplay), 0, 0,
+                            &windowPositionX, &windowPositionY, &childWindow);
+      mouseX = mouseX - windowPositionX;
+      mouseY = mouseY - windowPositionY;
 
+      if (mouseX < 0) {
+        mouseX = 0;
+      }
+      if (mouseY < 0) {
+        mouseY = 0;
+      }
+    }
+    m_Input->ProcessMouse(mouseX, mouseY);
+  }
   return;
 }

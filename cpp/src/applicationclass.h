@@ -34,6 +34,7 @@ public:
 private:
   bool Render();
   bool UpdateFps();
+  bool UpdateMouseStrings(int, int, bool);
 
   OpenGLClass *m_OpenGL;
 
@@ -48,8 +49,9 @@ private:
   FontShaderClass *m_FontShader;
   FontClass *m_Font;
   TextClass *m_TextString1, *m_TextString2;
-  FpsClass * m_Fps;
-  TextClass * m_FpsString;
+  FpsClass *m_Fps;
+  TextClass *m_FpsString;
+  TextClass *m_MouseStrings;
   int m_previousFps;
 };
 

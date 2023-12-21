@@ -16,9 +16,18 @@ public:
 
   bool IsEscapePressed();
 
-private:
+  void ProcessMouse(int, int);
+  void GetMouseLocation(int&, int&);
 
+  void MouseDown();
+  void MouseUp();
+
+  bool IsMousePressed();
+
+private:
   bool m_keyboardState[256];
+  int m_mouseX, m_mouseY;
+  bool m_mousePressed;
 };
 
 #endif

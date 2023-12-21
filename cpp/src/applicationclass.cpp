@@ -13,6 +13,7 @@ ApplicationClass::ApplicationClass() {
   m_TextString2 = 0;
   m_Fps = 0;
   m_FpsString = 0;
+  m_MouseStrings = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -21,7 +22,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char fpsString[32];
+  char mouseString1[32], mouseString2[32], mouseString3[32];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -50,17 +51,31 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
     printf("ERROR: failed to initialize fontclass\n");
     return false;
   }
+  // Set the initial mouse strings.
+  strcpy(mouseString1, "Mouse X: 0");
+  strcpy(mouseString2, "Mouse Y: 0");
+  strcpy(mouseString3, "Mouse Button: No");
 
-  m_Fps = new FpsClass();
-  m_Fps->Initialize();
+  // Create and initialize the text objects for the mouse strings.
+  m_MouseStrings = new TextClass[3];
 
-  m_previousFps = -1;
-  strcpy(fpsString, "Fps: 0");
+  result = m_MouseStrings[0].Initialize(m_OpenGL, screenWidth, screenHeight, 32,
+                                        m_Font, mouseString1, 10, 10, 1.0f,
+                                        1.0f, 1.0f);
+  if (!result) {
+    return false;
+  }
 
-  m_FpsString = new TextClass;
+  result = m_MouseStrings[1].Initialize(m_OpenGL, screenWidth, screenHeight, 32,
+                                        m_Font, mouseString2, 10, 35, 1.0f,
+                                        1.0f, 1.0f);
+  if (!result) {
+    return false;
+  }
 
-  result = m_FpsString->Initialize(m_OpenGL, screenWidth, screenHeight, 16,
-                                   m_Font, fpsString, 10, 50, 0.0f, 1.0f, 0.0f);
+  result = m_MouseStrings[2].Initialize(m_OpenGL, screenWidth, screenHeight, 32,
+                                        m_Font, mouseString3, 10, 60, 1.0f,
+                                        1.0f, 1.0f);
   if (!result) {
     return false;
   }
@@ -69,6 +84,13 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_MouseStrings) {
+    m_MouseStrings[0].Shutdown();
+    m_MouseStrings[1].Shutdown();
+    m_MouseStrings[2].Shutdown();
+    delete[] m_MouseStrings;
+    m_MouseStrings = 0;
+  }
   if (m_FpsString) {
     m_FpsString->Shutdown();
     delete m_FpsString;
@@ -142,13 +164,19 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  int frameTime;
-  bool result;
+  int mouseX, mouseY;
+  bool result, mouseDown;
   if (Input->IsEscapePressed() == true) {
     return false;
   }
 
-  result = UpdateFps();
+  Input->GetMouseLocation(mouseX, mouseY);
+
+  // Check if the mouse has been pressed.
+  mouseDown = Input->IsMousePressed();
+
+  // Update the mouse strings each frame.
+  result = UpdateMouseStrings(mouseX, mouseY, mouseDown);
   if (!result) {
     return false;
   }
@@ -175,7 +203,7 @@ bool ApplicationClass::Render() {
   m_OpenGL->TurnZBufferOff();
   m_OpenGL->EnableAlphaBlending();
 
-  m_FpsString->GetPixelColor(pixelColor);
+  m_MouseStrings[0].GetPixelColor(pixelColor);
 
   result = m_FontShader->SetShaderParameters(worldMatrix, viewMatrix,
                                              orthoMatrix, pixelColor);
@@ -185,7 +213,9 @@ bool ApplicationClass::Render() {
 
   m_Font->SetTexture();
 
-  m_FpsString->Render();
+  m_MouseStrings[0].Render();
+  m_MouseStrings[1].Render();
+  m_MouseStrings[2].Render();
 
   m_OpenGL->TurnZBufferOn();
   m_OpenGL->DisableAlphaBlending();
@@ -237,6 +267,55 @@ bool ApplicationClass::UpdateFps() {
 
   result =
       m_FpsString->UpdateText(m_Font, finalString, 10, 10, red, green, blue);
+  if (!result) {
+    return false;
+  }
+
+  return true;
+}
+bool ApplicationClass::UpdateMouseStrings(int mouseX, int mouseY,
+                                          bool mouseDown) {
+  char tempString[16], finalString[32];
+  bool result;
+
+  // Convert the mouse X integer to string format.
+  sprintf(tempString, "%d", mouseX);
+
+  // Setup the mouse X string.
+  strcpy(finalString, "Mouse X: ");
+  strcat(finalString, tempString);
+
+  // Update the sentence vertex buffer with the new string information.
+  result = m_MouseStrings[0].UpdateText(m_Font, finalString, 10, 10, 1.0f, 1.0f,
+                                        1.0f);
+  if (!result) {
+    return false;
+  }
+
+  // Convert the mouse Y integer to string format.
+  sprintf(tempString, "%d", mouseY);
+
+  // Setup the mouse Y string.
+  strcpy(finalString, "Mouse Y: ");
+  strcat(finalString, tempString);
+
+  // Update the sentence vertex buffer with the new string information.
+  result = m_MouseStrings[1].UpdateText(m_Font, finalString, 10, 35, 1.0f, 1.0f,
+                                        1.0f);
+  if (!result) {
+    return false;
+  }
+
+  // Setup the mouse button string.
+  if (mouseDown) {
+    strcpy(finalString, "Mouse Button: Yes");
+  } else {
+    strcpy(finalString, "Mouse Button: No");
+  }
+
+  // Update the sentence vertex buffer with the new string information.
+  result = m_MouseStrings[2].UpdateText(m_Font, finalString, 10, 60, 1.0f, 1.0f,
+                                        1.0f);
   if (!result) {
     return false;
   }
