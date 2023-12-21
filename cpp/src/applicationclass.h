@@ -9,6 +9,8 @@
 #include "modelclass.h"
 #include "openglclass.h"
 #include "textureshaderclass.h"
+#include "spriteclass.h"
+#include "timerclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -26,7 +28,7 @@ public:
   bool Frame(InputClass *);
 
 private:
-  bool Render(float);
+  bool Render();
 
   OpenGLClass *m_OpenGL;
 
@@ -36,6 +38,8 @@ private:
   LightShaderClass *m_LightShader;
   LightClass *m_Light;
   BitmapClass *m_Bitmap;
+  SpriteClass * m_Sprite;
+  TimerClass * m_Timer;
 };
 
 #endif

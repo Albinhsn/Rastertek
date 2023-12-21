@@ -5,6 +5,8 @@ ApplicationClass::ApplicationClass() {
   m_OpenGL = 0;
   m_TextureShader = 0;
   m_Bitmap = 0;
+  m_Sprite = 0;
+  m_Timer = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -13,7 +15,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char bitmapFilename[128];
+  char spriteFilename[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -36,21 +38,32 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
     return false;
   }
 
-  strcpy(bitmapFilename, "./data/stone01.tga");
+  strcpy(spriteFilename, "./data/sprite_data_01.txt");
 
-  m_Bitmap = new BitmapClass;
+  m_Sprite = new SpriteClass;
 
-  result = m_Bitmap->Initialize(m_OpenGL, screenWidth, screenHeight,
-                                bitmapFilename, 100, 100);
+  result = m_Sprite->Initialize(m_OpenGL, screenWidth, screenHeight, 50, 50,
+                                spriteFilename);
   if (!result) {
-    printf("ERROR: Failed to initialize bitmap\n");
+    printf("ERROR: Failed to initialize sprite\n");
     return false;
   }
+  m_Timer = new TimerClass;
+  m_Timer->Initialize();
 
   return true;
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_Timer) {
+    delete m_Timer;
+    m_Timer = 0;
+  }
+  if (m_Sprite) {
+    m_Sprite->Shutdown();
+    delete m_Sprite;
+    m_Sprite = 0;
+  }
   if (m_Bitmap) {
     m_Bitmap->Shutdown();
     delete m_Bitmap;
@@ -86,19 +99,20 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  static float rotation = 360.0f;
+  int frameTime;
   bool result;
+
+  m_Timer->Frame();
+
+  frameTime = m_Timer->GetTime();
 
   if (Input->IsEscapePressed() == true) {
     return false;
   }
 
-  rotation -= 0.0174532925f * 1.0f;
-  if (rotation <= 0.0f) {
-    rotation += 360.0f;
-  }
+  m_Sprite->Update(frameTime);
 
-  result = Render(rotation);
+  result = Render();
   if (!result) {
     return false;
   }
@@ -106,7 +120,7 @@ bool ApplicationClass::Frame(InputClass *Input) {
   return true;
 }
 
-bool ApplicationClass::Render(float rotation) {
+bool ApplicationClass::Render() {
   float worldMatrix[16], viewMatrix[16], orthoMatrix[16];
   bool result;
 
@@ -124,7 +138,7 @@ bool ApplicationClass::Render(float rotation) {
     return false;
   }
 
-  m_Bitmap->Render();
+  m_Sprite->Render();
   m_OpenGL->TurnZBufferOn();
   m_OpenGL->EndScene();
 
