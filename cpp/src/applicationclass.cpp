@@ -20,6 +20,7 @@ ApplicationClass::ApplicationClass() {
   m_LightMapShader = 0;
   m_AlphaMapShader = 0;
   m_NormalMapShader = 0;
+  m_SpecMapShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -28,7 +29,8 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename[128], textureFilename1[128], textureFilename2[128];
+  char modelFilename[128], textureFilename1[128], textureFilename2[128],
+      textureFilename3[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -44,22 +46,23 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  m_NormalMapShader = new NormalMapShaderClass;
+  m_SpecMapShader = new SpecMapShaderClass;
 
-  result = m_NormalMapShader->Initialize(m_OpenGL);
+  result = m_SpecMapShader->Initialize(m_OpenGL);
   if (!result) {
     printf("Failed to initialize normal map shader\n");
     return false;
   }
   strcpy(modelFilename, "./data/cube.txt");
 
-  strcpy(textureFilename1, "./data/stone01.tga");
-  strcpy(textureFilename2, "./data/normal01.tga");
+  strcpy(textureFilename1, "./data/stone02.tga");
+  strcpy(textureFilename2, "./data/normal02.tga");
+  strcpy(textureFilename3, "./data/spec02.tga");
 
   m_Model = new ModelClass;
 
   result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename1,
-                               textureFilename2, true);
+                               textureFilename2, textureFilename3, true);
   if (!result) {
     printf("Failed to initialize model\n");
     return false;
@@ -68,11 +71,17 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Light = new LightClass;
   m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
   m_Light->SetDirection(0.0f, 0.0f, 1.0f);
+  m_Light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
+  m_Light->SetSpecularPower(16.0f);
 
   return true;
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_Light) {
+    delete m_Light;
+    m_Light = 0;
+  }
   if (m_NormalMapShader) {
     m_NormalMapShader->Shutdown();
     delete m_NormalMapShader;
@@ -156,6 +165,11 @@ void ApplicationClass::Shutdown() {
     delete m_Model;
     m_Model = 0;
   }
+  if (m_SpecMapShader) {
+    m_SpecMapShader->Shutdown();
+    delete m_SpecMapShader;
+    m_SpecMapShader = 0;
+  }
 
   // Release the camera object.
   if (m_Camera) {
@@ -198,7 +212,9 @@ bool ApplicationClass::Frame(InputClass *Input) {
 bool ApplicationClass::Render(float rotation) {
 
   float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
-  float diffuseLightColor[4], lightDirection[3];
+  float diffuseLightColor[4], lightDirection[3], cameraPosition[3],
+      specularColor[4];
+  float specularPower;
   bool result;
 
   // Clear the buffers to begin the scene.
@@ -214,11 +230,15 @@ bool ApplicationClass::Render(float rotation) {
 
   m_Light->GetDirection(lightDirection);
   m_Light->GetDiffuseColor(diffuseLightColor);
+  m_Light->GetSpecularColor(specularColor);
+  m_Light->GetSpecularPower(specularPower);
+
+  m_Camera->GetPosition(cameraPosition);
 
   // Set the multitexture shader as active and set its parameters.
-  result = m_NormalMapShader->SetShaderParameters(
+  result = m_SpecMapShader->SetShaderParameters(
       worldMatrix, viewMatrix, projectionMatrix, lightDirection,
-      diffuseLightColor);
+      diffuseLightColor, cameraPosition, specularColor, specularPower);
   if (!result) {
     return false;
   }

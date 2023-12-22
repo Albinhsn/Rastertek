@@ -19,6 +19,7 @@
 #include "textureshaderclass.h"
 #include "timerclass.h"
 #include "normalmapshaderclass.h"
+#include "specmapshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -59,6 +60,7 @@ private:
   LightMapShaderClass *m_LightMapShader;
   AlphaMapShaderClass *m_AlphaMapShader;
   NormalMapShaderClass * m_NormalMapShader;
+  SpecMapShaderClass * m_SpecMapShader;
   int m_previousFps;
 };
 

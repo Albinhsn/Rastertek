@@ -38,7 +38,7 @@ public:
   ModelClass(const ModelClass &);
   ~ModelClass();
 
-  bool Initialize(OpenGLClass *, char *, char *, char *, bool);
+  bool Initialize(OpenGLClass *, char*, char *, char *, char *, bool);
   void Shutdown();
   void Render();
 
@@ -47,7 +47,7 @@ private:
   void ShutdownBuffers();
   void RenderBuffers();
 
-  bool LoadTextures(char *, char *, bool);
+  bool LoadTextures(char *, char *, char *, bool);
   void ReleaseTextures();
 
   bool LoadModel(char *);
