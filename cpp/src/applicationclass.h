@@ -18,6 +18,7 @@
 #include "textclass.h"
 #include "textureshaderclass.h"
 #include "timerclass.h"
+#include "normalmapshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -35,7 +36,7 @@ public:
   bool Frame(InputClass *);
 
 private:
-  bool Render();
+  bool Render(float);
   bool UpdateFps();
   bool UpdateMouseStrings(int, int, bool);
 
@@ -57,6 +58,7 @@ private:
   TextClass *m_MouseStrings;
   LightMapShaderClass *m_LightMapShader;
   AlphaMapShaderClass *m_AlphaMapShader;
+  NormalMapShaderClass * m_NormalMapShader;
   int m_previousFps;
 };
 

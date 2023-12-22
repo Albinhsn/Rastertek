@@ -13,11 +13,24 @@ private:
     float x, y, z;
     float tu, tv;
     float nx, ny, nz;
+    float tx, ty, tz;
+    float bx, by, bz;
   };
   struct ModelType {
     float x, y, z;
     float tu, tv;
     float nx, ny, nz;
+    float tx, ty, tz;
+    float bx, by, bz;
+  };
+
+  struct TempVertexType {
+    float x, y, z;
+    float tu, tv;
+  };
+
+  struct VectorType {
+    float x, y, z;
   };
 
 public:
@@ -25,7 +38,7 @@ public:
   ModelClass(const ModelClass &);
   ~ModelClass();
 
-  bool Initialize(OpenGLClass *, char *, char *, char *, char *, bool);
+  bool Initialize(OpenGLClass *, char *, char *, char *, bool);
   void Shutdown();
   void Render();
 
@@ -34,11 +47,15 @@ private:
   void ShutdownBuffers();
   void RenderBuffers();
 
-  bool LoadTextures(char *, char *,char*, bool);
+  bool LoadTextures(char *, char *, bool);
   void ReleaseTextures();
 
   bool LoadModel(char *);
   void ReleaseModel();
+
+  void CalculateModelVectors();
+  void CalculateTangentBinormal(TempVertexType, TempVertexType, TempVertexType,
+                                VectorType &, VectorType &);
 
 private:
   OpenGLClass *m_OpenGLPtr;

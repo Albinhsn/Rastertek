@@ -1,4 +1,5 @@
 #include "applicationclass.h"
+#include "normalmapshaderclass.h"
 #include "textureshaderclass.h"
 
 ApplicationClass::ApplicationClass() {
@@ -18,6 +19,7 @@ ApplicationClass::ApplicationClass() {
   m_Model = 0;
   m_LightMapShader = 0;
   m_AlphaMapShader = 0;
+  m_NormalMapShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -26,8 +28,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename[128], textureFilename1[128], textureFilename2[128],
-      textureFilename3[128];
+  char modelFilename[128], textureFilename1[128], textureFilename2[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -43,32 +44,40 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  m_AlphaMapShader = new AlphaMapShaderClass;
+  m_NormalMapShader = new NormalMapShaderClass;
 
-  result = m_AlphaMapShader->Initialize(m_OpenGL);
+  result = m_NormalMapShader->Initialize(m_OpenGL);
   if (!result) {
-    printf("Failed to initialize alpha map shader\n");
+    printf("Failed to initialize normal map shader\n");
     return false;
   }
-  strcpy(modelFilename, "./data/square.txt");
+  strcpy(modelFilename, "./data/cube.txt");
 
   strcpy(textureFilename1, "./data/stone01.tga");
-  strcpy(textureFilename2, "./data/dirt01.tga");
-  strcpy(textureFilename3, "./data/alpha01.tga");
+  strcpy(textureFilename2, "./data/normal01.tga");
 
   m_Model = new ModelClass;
 
   result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename1,
-                               textureFilename2, textureFilename3, true);
+                               textureFilename2, true);
   if (!result) {
     printf("Failed to initialize model\n");
     return false;
   }
 
+  m_Light = new LightClass;
+  m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+  m_Light->SetDirection(0.0f, 0.0f, 1.0f);
+
   return true;
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_NormalMapShader) {
+    m_NormalMapShader->Shutdown();
+    delete m_NormalMapShader;
+    m_NormalMapShader = 0;
+  }
   if (m_AlphaMapShader) {
     m_AlphaMapShader->Shutdown();
     delete m_AlphaMapShader;
@@ -164,12 +173,21 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
+  static float rotation = 360.0f;
   bool result;
+
+  // Check if the escape key has been pressed, if so quit.
   if (Input->IsEscapePressed() == true) {
     return false;
   }
 
-  result = Render();
+  // Update the rotation variable each frame.
+  rotation -= 0.0174532925f * 1.0f;
+  if (rotation <= 0.0f) {
+    rotation += 360.0f;
+  }
+
+  result = Render(rotation);
   if (!result) {
     return false;
   }
@@ -177,9 +195,10 @@ bool ApplicationClass::Frame(InputClass *Input) {
   return true;
 }
 
-bool ApplicationClass::Render() {
+bool ApplicationClass::Render(float rotation) {
 
   float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  float diffuseLightColor[4], lightDirection[3];
   bool result;
 
   // Clear the buffers to begin the scene.
@@ -191,9 +210,15 @@ bool ApplicationClass::Render() {
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
+  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
+
+  m_Light->GetDirection(lightDirection);
+  m_Light->GetDiffuseColor(diffuseLightColor);
+
   // Set the multitexture shader as active and set its parameters.
-  result = m_AlphaMapShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                 projectionMatrix);
+  result = m_NormalMapShader->SetShaderParameters(
+      worldMatrix, viewMatrix, projectionMatrix, lightDirection,
+      diffuseLightColor);
   if (!result) {
     return false;
   }
