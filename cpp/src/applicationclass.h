@@ -1,6 +1,7 @@
 #ifndef APPLICATIONCLASS_H
 #define APPLICATIONCLASS_H
 
+#include "alphamapshaderclass.h"
 #include "bitmapclass.h"
 #include "cameraclass.h"
 #include "fontclass.h"
@@ -8,15 +9,15 @@
 #include "fpsclass.h"
 #include "inputclass.h"
 #include "lightclass.h"
+#include "lightmapshaderclass.h"
 #include "lightshaderclass.h"
 #include "modelclass.h"
+#include "multitextureshaderclass.h"
 #include "openglclass.h"
 #include "spriteclass.h"
 #include "textclass.h"
 #include "textureshaderclass.h"
-#include "multitextureshaderclass.h"
 #include "timerclass.h"
-#include "lightmapshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -39,7 +40,7 @@ private:
   bool UpdateMouseStrings(int, int, bool);
 
   OpenGLClass *m_OpenGL;
-  MultiTextureShaderClass * m_MultiTextureShader;
+  MultiTextureShaderClass *m_MultiTextureShader;
   TextureShaderClass *m_TextureShader;
   ModelClass *m_Model;
   CameraClass *m_Camera;
@@ -54,7 +55,8 @@ private:
   FpsClass *m_Fps;
   TextClass *m_FpsString;
   TextClass *m_MouseStrings;
-  LightMapShaderClass * m_LightMapShader;
+  LightMapShaderClass *m_LightMapShader;
+  AlphaMapShaderClass *m_AlphaMapShader;
   int m_previousFps;
 };
 

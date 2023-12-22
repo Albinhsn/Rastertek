@@ -17,6 +17,7 @@ ApplicationClass::ApplicationClass() {
   m_MultiTextureShader = 0;
   m_Model = 0;
   m_LightMapShader = 0;
+  m_AlphaMapShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -25,7 +26,8 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename[128], textureFilename1[128], textureFilename2[128];
+  char modelFilename[128], textureFilename1[128], textureFilename2[128],
+      textureFilename3[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -41,22 +43,23 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  m_LightMapShader = new LightMapShaderClass;
+  m_AlphaMapShader = new AlphaMapShaderClass;
 
-  result = m_LightMapShader->Initialize(m_OpenGL);
+  result = m_AlphaMapShader->Initialize(m_OpenGL);
   if (!result) {
-    printf("Failed to initialize light map shader\n");
+    printf("Failed to initialize alpha map shader\n");
     return false;
   }
   strcpy(modelFilename, "./data/square.txt");
 
   strcpy(textureFilename1, "./data/stone01.tga");
-  strcpy(textureFilename2, "./data/light01.tga");
+  strcpy(textureFilename2, "./data/dirt01.tga");
+  strcpy(textureFilename3, "./data/alpha01.tga");
 
   m_Model = new ModelClass;
 
   result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename1,
-                               textureFilename2, true);
+                               textureFilename2, textureFilename3, true);
   if (!result) {
     printf("Failed to initialize model\n");
     return false;
@@ -66,12 +69,17 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_AlphaMapShader) {
+    m_AlphaMapShader->Shutdown();
+    delete m_AlphaMapShader;
+    m_AlphaMapShader = 0;
+  }
   if (m_MultiTextureShader) {
     m_MultiTextureShader->Shutdown();
     delete m_MultiTextureShader;
     m_MultiTextureShader = 0;
   }
-  if(m_LightMapShader){
+  if (m_LightMapShader) {
     m_LightMapShader->Shutdown();
     delete m_LightMapShader;
     m_LightMapShader = 0;
@@ -171,32 +179,32 @@ bool ApplicationClass::Frame(InputClass *Input) {
 
 bool ApplicationClass::Render() {
 
-    float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
-    bool result;
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  bool result;
 
+  // Clear the buffers to begin the scene.
+  m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
- 	// Clear the buffers to begin the scene.
-    m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+  // Get the world, view, and projection matrices from the opengl and camera
+  // objects.
+  m_OpenGL->GetWorldMatrix(worldMatrix);
+  m_Camera->GetViewMatrix(viewMatrix);
+  m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-    // Get the world, view, and projection matrices from the opengl and camera objects.
-    m_OpenGL->GetWorldMatrix(worldMatrix);
-    m_Camera->GetViewMatrix(viewMatrix);
-    m_OpenGL->GetProjectionMatrix(projectionMatrix);
+  // Set the multitexture shader as active and set its parameters.
+  result = m_AlphaMapShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                 projectionMatrix);
+  if (!result) {
+    return false;
+  }
 
-    // Set the multitexture shader as active and set its parameters.
-    result = m_LightMapShader->SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix);
-    if(!result)
-    {
-          return false;
-    }
+  // Render the model using the multitexture shader.
+  m_Model->Render();
 
-    // Render the model using the multitexture shader.
-    m_Model->Render();
+  // Present the rendered scene to the screen.
+  m_OpenGL->EndScene();
 
-    // Present the rendered scene to the screen.
-    m_OpenGL->EndScene();
-
-    return true;
+  return true;
 }
 bool ApplicationClass::UpdateFps() {
   int fps;
