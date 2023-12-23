@@ -29,6 +29,7 @@ ApplicationClass::ApplicationClass() {
   m_DisplayPlane = 0;
   m_FogShader = 0;
   m_ClipPlaneShader = 0;
+  m_TranslateShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -50,24 +51,24 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   }
 
   m_Camera = new CameraClass;
-  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+  m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  strcpy(modelFilename, "./data/cube.txt");
+  strcpy(modelFilename, "./data/square.txt");
   strcpy(textureFilename, "./data/stone01.tga");
 
   m_Model = new ModelClass;
 
-  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, false);
+  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, true);
   if (!result) {
     printf("ERROR: Failed to initialize model\n");
     return false;
   }
 
-  m_ClipPlaneShader = new ClipPlaneShaderClass;
-  result = m_ClipPlaneShader->Initialize(m_OpenGL);
+  m_TranslateShader = new TranslateShaderClass;
+  result = m_TranslateShader->Initialize(m_OpenGL);
   if (!result) {
-    printf("ERROR: Failed to initialize clip plane shader\n");
+    printf("ERROR: Failed to initialize translate shader\n");
     return false;
   }
 
@@ -75,6 +76,11 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_TranslateShader) {
+    m_TranslateShader->Shutdown();
+    delete m_TranslateShader;
+    m_TranslateShader = 0;
+  }
   if (m_ClipPlaneShader) {
     m_ClipPlaneShader->Shutdown();
     delete m_ClipPlaneShader;
@@ -232,7 +238,7 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  static float rotation = 360.0f;
+  static float textureTranslation = 0.0f;
   bool result;
 
   // Check if the escape key has been pressed, if so quit.
@@ -240,13 +246,13 @@ bool ApplicationClass::Frame(InputClass *Input) {
     return false;
   }
 
-  rotation -= 0.0174532925f * 1.0f;
-  if (rotation <= 0.0f) {
-    rotation += 360.0f;
+  textureTranslation += 0.01f;
+  if (textureTranslation > 1.0f) {
+    textureTranslation -= 1.0f;
   }
 
   // Render the final graphics scene.
-  result = Render(rotation);
+  result = Render(textureTranslation);
   if (!result) {
     return false;
   }
@@ -294,15 +300,9 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
   return true;
 }
 
-bool ApplicationClass::Render(float rotation) {
+bool ApplicationClass::Render(float textureTranslation) {
   float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
-  float clipPlane[4];
   bool result;
-
-  clipPlane[0] = 0.0f;
-  clipPlane[1] = -1.0f;
-  clipPlane[2] = 0.0f;
-  clipPlane[3] = 0.0f;
 
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -310,17 +310,13 @@ bool ApplicationClass::Render(float rotation) {
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
-
-  m_OpenGL->EnableClipping();
-  result = m_ClipPlaneShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                  projectionMatrix, clipPlane);
+  result = m_TranslateShader->SetShaderParameters(
+      worldMatrix, viewMatrix, projectionMatrix, textureTranslation);
   if (!result) {
     return false;
   }
 
   m_Model->Render();
-  m_OpenGL->DisableClipping();
   m_OpenGL->EndScene();
 
   return true;

@@ -28,6 +28,7 @@
 #include "timerclass.h"
 #include "fogshaderclass.h"
 #include "clipplaneshaderclass.h"
+#include "translateshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -82,6 +83,7 @@ private:
   DisplayPlaneClass * m_DisplayPlane;
   FogShaderClass * m_FogShader;
   ClipPlaneShaderClass * m_ClipPlaneShader;
+  TranslateShaderClass * m_TranslateShader;
 };
 
 #endif

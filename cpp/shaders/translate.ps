@@ -1,0 +1,24 @@
+#version 400
+
+in vec2 texCoord;
+
+out vec4 outputColor;
+
+uniform sampler2D shaderTexture;
+
+uniform float textureTranslation;
+
+void main(void)
+{
+  vec4 textureColor;
+  vec2 tex;
+
+  tex.x = texCoord.x;
+  tex.y = texCoord.y;
+
+  tex.x += textureTranslation;
+
+  textureColor = texture(shaderTexture, tex);
+
+  outputColor = textureColor;
+}
