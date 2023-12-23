@@ -28,6 +28,7 @@ ApplicationClass::ApplicationClass() {
   m_RenderTexture = 0;
   m_DisplayPlane = 0;
   m_FogShader = 0;
+  m_ClipPlaneShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -59,20 +60,26 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 
   result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, false);
   if (!result) {
+    printf("ERROR: Failed to initialize model\n");
     return false;
   }
 
-  m_FogShader = new FogShaderClass;
-  result = m_FogShader->Initialize(m_OpenGL);
+  m_ClipPlaneShader = new ClipPlaneShaderClass;
+  result = m_ClipPlaneShader->Initialize(m_OpenGL);
   if (!result) {
+    printf("ERROR: Failed to initialize clip plane shader\n");
     return false;
   }
-  printf("INFO: Initialized system\n");
 
   return true;
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_ClipPlaneShader) {
+    m_ClipPlaneShader->Shutdown();
+    delete m_ClipPlaneShader;
+    m_ClipPlaneShader = 0;
+  }
   if (m_FogShader) {
     m_FogShader->Shutdown();
     delete m_FogShader;
@@ -288,18 +295,16 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
 }
 
 bool ApplicationClass::Render(float rotation) {
-  float worldMatrix[16], viewMatrix[16], projectionMatrix[16], fogPosition[2];
-  float fogColor, fogStart, fogEnd;
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  float clipPlane[4];
   bool result;
 
-  fogColor = 0.5f;
-  fogStart = 0.0f;
-  fogEnd = 10.0f;
+  clipPlane[0] = 0.0f;
+  clipPlane[1] = -1.0f;
+  clipPlane[2] = 0.0f;
+  clipPlane[3] = 0.0f;
 
-  fogPosition[0] = fogStart;
-  fogPosition[1] = fogEnd;
-
-  m_OpenGL->BeginScene(fogColor, fogColor, fogColor, 1.0f);
+  m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
@@ -307,14 +312,15 @@ bool ApplicationClass::Render(float rotation) {
 
   m_OpenGL->MatrixRotationY(worldMatrix, rotation);
 
-  result = m_FogShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                            projectionMatrix, fogPosition);
+  m_OpenGL->EnableClipping();
+  result = m_ClipPlaneShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                  projectionMatrix, clipPlane);
   if (!result) {
     return false;
   }
 
   m_Model->Render();
-
+  m_OpenGL->DisableClipping();
   m_OpenGL->EndScene();
 
   return true;

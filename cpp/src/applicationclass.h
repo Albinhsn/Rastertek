@@ -27,6 +27,7 @@
 #include "textureshaderclass.h"
 #include "timerclass.h"
 #include "fogshaderclass.h"
+#include "clipplaneshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -80,6 +81,7 @@ private:
   RenderTextureClass * m_RenderTexture;
   DisplayPlaneClass * m_DisplayPlane;
   FogShaderClass * m_FogShader;
+  ClipPlaneShaderClass * m_ClipPlaneShader;
 };
 
 #endif
