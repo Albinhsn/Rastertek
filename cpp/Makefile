@@ -14,5 +14,8 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -l GL -l X11  -c $<
 clean:
 	rm -rf $(TARGET) *.o
+conv:
+	$(CC) ./convert/convert.cpp -o ./convert_blender && ./convert_blender
 
 .PHONY: all clean
+
