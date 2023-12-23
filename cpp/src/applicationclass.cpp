@@ -30,6 +30,7 @@ ApplicationClass::ApplicationClass() {
   m_FogShader = 0;
   m_ClipPlaneShader = 0;
   m_TranslateShader = 0;
+  m_TransparentShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -38,7 +39,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename[128], textureFilename[128];
+  char modelFilename[128], textureFilename1[128], textureFilename2[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -55,18 +56,36 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->Render();
 
   strcpy(modelFilename, "./data/square.txt");
-  strcpy(textureFilename, "./data/stone01.tga");
+  strcpy(textureFilename1, "./data/dirt01.tga");
+  strcpy(textureFilename2, "./data/stone01.tga");
 
-  m_Model = new ModelClass;
+  m_Model1 = new ModelClass;
 
-  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, true);
+  result =
+      m_Model1->Initialize(m_OpenGL, modelFilename, textureFilename1, false);
   if (!result) {
     printf("ERROR: Failed to initialize model\n");
     return false;
   }
 
-  m_TranslateShader = new TranslateShaderClass;
-  result = m_TranslateShader->Initialize(m_OpenGL);
+  m_Model2 = new ModelClass;
+
+  result =
+      m_Model2->Initialize(m_OpenGL, modelFilename, textureFilename2, false);
+  if (!result) {
+    printf("ERROR: Failed to initialize model\n");
+    return false;
+  }
+
+  m_TextureShader = new TextureShaderClass;
+  result = m_TextureShader->Initialize(m_OpenGL);
+  if (!result) {
+    printf("ERROR: Failed to initialize translate shader\n");
+    return false;
+  }
+
+  m_TransparentShader = new TransparentShaderClass;
+  result = m_TransparentShader->Initialize(m_OpenGL);
   if (!result) {
     printf("ERROR: Failed to initialize translate shader\n");
     return false;
@@ -76,6 +95,21 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_TransparentShader) {
+    m_TransparentShader->Shutdown();
+    delete m_TransparentShader;
+    m_TransparentShader = 0;
+  }
+  if (m_Model1) {
+    m_Model1->Shutdown();
+    delete m_Model1;
+    m_Model1 = 0;
+  }
+  if (m_Model2) {
+    m_Model2->Shutdown();
+    delete m_Model2;
+    m_Model2 = 0;
+  }
   if (m_TranslateShader) {
     m_TranslateShader->Shutdown();
     delete m_TranslateShader;
@@ -238,7 +272,6 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  static float textureTranslation = 0.0f;
   bool result;
 
   // Check if the escape key has been pressed, if so quit.
@@ -246,13 +279,8 @@ bool ApplicationClass::Frame(InputClass *Input) {
     return false;
   }
 
-  textureTranslation += 0.01f;
-  if (textureTranslation > 1.0f) {
-    textureTranslation -= 1.0f;
-  }
-
   // Render the final graphics scene.
-  result = Render(textureTranslation);
+  result = Render();
   if (!result) {
     return false;
   }
@@ -300,23 +328,35 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
   return true;
 }
 
-bool ApplicationClass::Render(float textureTranslation) {
+bool ApplicationClass::Render() {
   float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  float blendAmount;
   bool result;
 
+  blendAmount = 0.5f;
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-  result = m_TranslateShader->SetShaderParameters(
-      worldMatrix, viewMatrix, projectionMatrix, textureTranslation);
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                projectionMatrix);
   if (!result) {
     return false;
   }
 
-  m_Model->Render();
+  m_Model1->Render();
+  m_OpenGL->MatrixTranslation(worldMatrix, 1.0f, 0.0f, -1.0f);
+  m_OpenGL->EnableAlphaBlending();
+
+  result = m_TransparentShader->SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix, blendAmount);
+  if(!result){
+    return false;
+  }
+
+  m_Model2->Render();
+  m_OpenGL->DisableAlphaBlending();
   m_OpenGL->EndScene();
 
   return true;

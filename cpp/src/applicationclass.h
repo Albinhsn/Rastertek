@@ -29,6 +29,7 @@
 #include "fogshaderclass.h"
 #include "clipplaneshaderclass.h"
 #include "translateshaderclass.h"
+#include "transparentshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -47,7 +48,7 @@ public:
 
 private:
   bool RenderSceneToTexture(float);
-  bool Render(float);
+  bool Render();
   bool UpdateFps();
   bool UpdateRenderCountString(int renderCount);
   bool UpdateMouseStrings(int, int, bool);
@@ -56,6 +57,8 @@ private:
   MultiTextureShaderClass *m_MultiTextureShader;
   TextureShaderClass *m_TextureShader;
   ModelClass *m_Model;
+  ModelClass *m_Model1;
+  ModelClass *m_Model2;
   CameraClass *m_Camera;
   LightShaderClass *m_LightShader;
   LightClass *m_Light;
@@ -84,6 +87,7 @@ private:
   FogShaderClass * m_FogShader;
   ClipPlaneShaderClass * m_ClipPlaneShader;
   TranslateShaderClass * m_TranslateShader;
+  TransparentShaderClass * m_TransparentShader;
 };
 
 #endif
