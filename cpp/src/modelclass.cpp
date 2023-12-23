@@ -12,8 +12,7 @@ ModelClass::ModelClass(const ModelClass &other) {}
 ModelClass::~ModelClass() {}
 
 bool ModelClass::Initialize(OpenGLClass *OpenGL, char *modelFilename,
-                            char *textureFilename1, char *textureFilename2,
-                            bool wrap) {
+                            char *textureFilename, bool wrap) {
   bool result;
 
   m_OpenGLPtr = OpenGL;
@@ -32,7 +31,7 @@ bool ModelClass::Initialize(OpenGLClass *OpenGL, char *modelFilename,
     return false;
   }
 
-  result = LoadTextures(textureFilename1, textureFilename2, wrap);
+  result = LoadTextures(textureFilename, wrap);
   if (!result) {
     printf("ERROR: Failed to load texture\n");
     return false;
@@ -51,13 +50,8 @@ void ModelClass::Shutdown() {
   return;
 }
 
-void ModelClass::Render(int textureCount) {
-  if (textureCount == 1) {
-    m_Textures[0].SetTexture(m_OpenGLPtr);
-  } else {
-    m_Textures[1].SetTexture(m_OpenGLPtr);
-    m_Textures[2].SetTexture(m_OpenGLPtr);
-  }
+void ModelClass::Render() {
+  m_Textures[0].SetTexture(m_OpenGLPtr);
   RenderBuffers();
 
   return;
@@ -213,22 +207,15 @@ void ModelClass::ReleaseModel() {
   }
 }
 
-bool ModelClass::LoadTextures(char *textureFilename1, char *textureFilename2,
-                              bool wrap) {
+bool ModelClass::LoadTextures(char *textureFilename, bool wrap) {
   bool result;
 
   // Create and initialize the texture objects.
-  m_Textures = new TextureClass[2];
+  m_Textures = new TextureClass[1];
 
-  result = m_Textures[0].Initialize(m_OpenGLPtr, textureFilename1, 0, wrap);
+  result = m_Textures[0].Initialize(m_OpenGLPtr, textureFilename, 0, wrap);
   if (!result) {
-    printf("Failed to initialize texture at '%s'\n", textureFilename1);
-    return false;
-  }
-
-  result = m_Textures[1].Initialize(m_OpenGLPtr, textureFilename2, 1, wrap);
-  if (!result) {
-    printf("Failed to initialize texture at '%s'\n", textureFilename2);
+    printf("Failed to initialize texture at '%s'\n", textureFilename);
     return false;
   }
 
@@ -239,8 +226,6 @@ void ModelClass::ReleaseTextures() {
   // Release the texture objects.
   if (m_Textures) {
     m_Textures[0].Shutdown();
-    m_Textures[1].Shutdown();
-    m_Textures[2].Shutdown();
 
     delete[] m_Textures;
     m_Textures = 0;

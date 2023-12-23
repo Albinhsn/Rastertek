@@ -2,6 +2,8 @@
 #define INPUTCLASS_H
 
 const int KEY_ESCAPE = 0;
+const int KEY_LEFT = 1;
+const int KEY_RIGHT = 2;
 
 class InputClass {
 public:
@@ -15,9 +17,11 @@ public:
   void KeyUp(int);
 
   bool IsEscapePressed();
+  bool IsLeftArrowPressed();
+  bool IsRightArrowPressed();
 
   void ProcessMouse(int, int);
-  void GetMouseLocation(int&, int&);
+  void GetMouseLocation(int &, int &);
 
   void MouseDown();
   void MouseUp();

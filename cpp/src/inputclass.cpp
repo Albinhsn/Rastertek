@@ -18,21 +18,49 @@ void InputClass::Initialize() {
 }
 
 void InputClass::KeyDown(int keySymbol) {
-  if (keySymbol == 65307) {
+  switch (keySymbol) {
+  case 65307: {
     m_keyboardState[KEY_ESCAPE] = true;
+    break;
   }
-
-  return;
+  case 65361: {
+    m_keyboardState[KEY_LEFT] = true;
+    break;
+  }
+  case 65363: {
+    m_keyboardState[KEY_RIGHT] = true;
+    break;
+  }
+  default: {
+    break;
+  }
+  }
 }
 
 void InputClass::KeyUp(int keySymbol) {
-  if (keySymbol == 65307) {
+  switch (keySymbol) {
+  case 65307: {
     m_keyboardState[KEY_ESCAPE] = false;
+    break;
+  }
+  case 65361: {
+    m_keyboardState[KEY_LEFT] = false;
+    break;
+  }
+  case 65363: {
+    m_keyboardState[KEY_RIGHT] = false;
+    break;
+  }
+  default: {
+    break;
   }
 
-  return;
+    return;
+  }
 }
 
+bool InputClass::IsLeftArrowPressed() { return m_keyboardState[KEY_LEFT]; }
+bool InputClass::IsRightArrowPressed() { return m_keyboardState[KEY_RIGHT]; }
 bool InputClass::IsEscapePressed() { return m_keyboardState[KEY_ESCAPE]; }
 
 void InputClass::ProcessMouse(int mouseMotionX, int mouseMotionY) {

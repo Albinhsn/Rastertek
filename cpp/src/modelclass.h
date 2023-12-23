@@ -38,16 +38,16 @@ public:
   ModelClass(const ModelClass &);
   ~ModelClass();
 
-  bool Initialize(OpenGLClass *, char *, char *, char *, bool);
+  bool Initialize(OpenGLClass *, char *, char *, bool);
   void Shutdown();
-  void Render(int);
+  void Render();
 
 private:
   bool InitializeBuffers();
   void ShutdownBuffers();
   void RenderBuffers();
 
-  bool LoadTextures(char *, char *, bool);
+  bool LoadTextures(char *, bool);
   void ReleaseTextures();
 
   bool LoadModel(char *);
