@@ -4,6 +4,7 @@
 #include "alphamapshaderclass.h"
 #include "bitmapclass.h"
 #include "cameraclass.h"
+#include "displayplaneclass.h"
 #include "fontclass.h"
 #include "fontshaderclass.h"
 #include "fpsclass.h"
@@ -18,6 +19,7 @@
 #include "normalmapshaderclass.h"
 #include "openglclass.h"
 #include "positionclass.h"
+#include "rendertextureclass.h"
 #include "shadermanagerclass.h"
 #include "specmapshaderclass.h"
 #include "spriteclass.h"
@@ -41,6 +43,7 @@ public:
   bool Frame(InputClass *);
 
 private:
+  bool RenderSceneToTexture(float);
   bool Render();
   bool UpdateFps();
   bool UpdateRenderCountString(int renderCount);
@@ -73,6 +76,8 @@ private:
   ModelListClass *m_ModelList;
   float m_baseViewMatrix[16];
   TextClass *m_RenderCountString;
+  RenderTextureClass * m_RenderTexture;
+  DisplayPlaneClass * m_DisplayPlane;
 };
 
 #endif

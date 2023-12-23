@@ -25,6 +25,8 @@ ApplicationClass::ApplicationClass() {
   m_ModelList = 0;
   m_Position = 0;
   m_RenderCountString = 0;
+  m_RenderTexture = 0;
+  m_DisplayPlane = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -33,7 +35,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename[128], textureFilename[128], renderString[32];
+  char modelFilename[128], textureFilename[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -48,9 +50,8 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera = new CameraClass;
   m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
   m_Camera->Render();
-  m_Camera->GetViewMatrix(m_baseViewMatrix);
 
-  strcpy(modelFilename, "./data/sphere.txt");
+  strcpy(modelFilename, "./data/cube.txt");
   strcpy(textureFilename, "./data/stone01.tga");
 
   m_Model = new ModelClass;
@@ -60,57 +61,43 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
     return false;
   }
 
-  // Create and initialize the light object.
-  m_Light = new LightClass;
+  m_TextureShader = new TextureShaderClass;
 
-  m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-  m_Light->SetDirection(0.0f, 0.0f, 1.0f);
+  result = m_TextureShader->Initialize(m_OpenGL);
 
-  // Create and initialize the shader manager object.
-  m_LightShader = new LightShaderClass;
-
-  result = m_LightShader->Initialize(m_OpenGL);
   if (!result) {
     return false;
   }
 
-  m_FontShader = new FontShaderClass;
-  result = m_FontShader->Initialize(m_OpenGL);
+  m_RenderTexture = new RenderTextureClass;
+
+  result = m_RenderTexture->Initialize(m_OpenGL, 256, 256, SCREEN_NEAR,
+                                       SCREEN_DEPTH, 0, 0);
   if (!result) {
     return false;
   }
 
-  m_Font = new FontClass;
-  result = m_Font->Initialize(m_OpenGL, 0);
+  m_DisplayPlane = new DisplayPlaneClass;
+
+  result = m_DisplayPlane->Initialize(m_OpenGL, 1.0f, 1.0f);
   if (!result) {
     return false;
   }
-
-  strcpy(renderString, "Render Count: 0");
-
-  m_RenderCountString = new TextClass;
-
-  result = m_RenderCountString->Initialize(m_OpenGL, screenWidth, screenHeight,
-                                           32, m_Font, renderString, 10, 10,
-                                           1.0f, 1.0f, 1.0f);
-  if (!result) {
-    return false;
-  }
-
-  m_Position = new PositionClass;
-
-  m_Timer = new TimerClass;
-  m_Timer->Initialize();
-
-  m_ModelList = new ModelListClass;
-  m_ModelList->Initialize(25);
-
-  m_Frustum = new FrustumClass;
 
   return true;
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_DisplayPlane) {
+    m_DisplayPlane->Shutdown();
+    delete m_DisplayPlane;
+    m_DisplayPlane = 0;
+  }
+  if (m_RenderTexture) {
+    m_RenderTexture->Shutdown();
+    delete m_RenderTexture;
+    m_RenderTexture = 0;
+  }
   if (m_Frustum) {
     delete m_Frustum;
     m_Frustum = 0;
@@ -239,120 +226,148 @@ void ApplicationClass::Shutdown() {
     m_OpenGL = 0;
   }
 
+  unsigned int error = glGetError();
+  if (error != GL_NO_ERROR) {
+    cout << "GL Error: " << error << endl;
+  }
+
   return;
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  float rotationY;
-  bool result, keyDown;
-
-  m_Timer->Frame();
+  static float rotation = 360.0f;
+  bool result;
 
   // Check if the escape key has been pressed, if so quit.
   if (Input->IsEscapePressed() == true) {
     return false;
   }
 
-  m_Position->SetFrameTime(m_Timer->GetTime());
+  rotation -= 0.0174532925f * 1.0f;
+  if (rotation <= 0.0f) {
+    rotation += 360.0f;
+  }
 
-  keyDown = Input->IsLeftArrowPressed();
-  m_Position->TurnLeft(keyDown);
+  // Render the scene to a render texture.
+  result = RenderSceneToTexture(rotation);
+  if (!result) {
+    return false;
+  }
 
-  keyDown = Input->IsRightArrowPressed();
-  m_Position->TurnRight(keyDown);
-
-  m_Position->GetRotation(rotationY);
-
-  m_Camera->SetRotation(0.0f, rotationY, 0.0f);
-  m_Camera->Render();
-
+  // Render the final graphics scene.
   result = Render();
   if (!result) {
     return false;
   }
+  return true;
+}
+
+bool ApplicationClass::RenderSceneToTexture(float rotation) {
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  bool result;
+
+  // Set the render target to be the render texture and clear it.
+  m_RenderTexture->SetRenderTarget();
+  m_RenderTexture->ClearRenderTarget(1.0f, 0.5f, 0.0f, 1.0f);
+
+  // Set the position of the camera for viewing the cube.
+  m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
+  m_Camera->Render();
+
+  // Get the matrices.
+  m_OpenGL->GetWorldMatrix(worldMatrix);
+  m_Camera->GetViewMatrix(viewMatrix);
+  m_RenderTexture->GetProjectionMatrix(projectionMatrix);
+
+  // Rotate the world matrix by the rotation value so that the triangle will
+  // spin.
+  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
+
+  // Set the texture shader as the current shader program and set the matrices
+  // that it will use for rendering.
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                projectionMatrix);
+  if (!result) {
+    return false;
+  }
+
+  // Render the model.
+  m_Model->Render();
+
+  // Reset the render target back to the original back buffer and not the
+  // render to texture anymore.  And reset the viewport back to the
+  // original.
+  m_OpenGL->SetBackBufferRenderTarget();
+  m_OpenGL->ResetViewport();
 
   return true;
 }
 
 bool ApplicationClass::Render() {
-
-  float worldMatrix[16], viewMatrix[16], projectionMatrix[16], orthoMatrix[16];
-  float diffuseLightColor[4], lightDirection[3], pixelColor[4];
-  float positionX, positionY, positionZ, radius;
-  int modelCount, renderCount, i;
-  bool result, renderModel;
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  bool result;
 
   // Clear the buffers to begin the scene.
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
+  // Set the position of the camera for viewing the display planes with the
+  // render textures on them.
+  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+  m_Camera->Render();
 
   // Get the world, view, and projection matrices from the opengl and camera
   // objects.
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
-  m_OpenGL->GetOrthoMatrix(orthoMatrix);
 
-  m_Frustum->ConstructFrustum(m_OpenGL, SCREEN_DEPTH, viewMatrix,
-                              projectionMatrix);
+  // Setup matrices - Top display plane.
+  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 1.5f, 0.0f);
 
-  // Get the light properties.
-  m_Light->GetDirection(lightDirection);
-  m_Light->GetDiffuseColor(diffuseLightColor);
-
-  modelCount = m_ModelList->GetModelCount();
-
-  renderCount = 0;
-
-  for (i = 0; i < modelCount; i++) {
-    m_ModelList->GetData(i, positionX, positionY, positionZ);
-
-    radius = 1.0f;
-
-    renderModel =
-        m_Frustum->CheckSphere(positionX, positionY, positionZ, radius);
-
-    if (renderModel) {
-      m_OpenGL->MatrixTranslation(worldMatrix, positionX, positionY, positionZ);
-
-      result = m_LightShader->SetShaderParameters(
-          worldMatrix, viewMatrix, projectionMatrix, lightDirection,
-          diffuseLightColor);
-      if (!result) {
-        return false;
-      }
-
-      m_Model->Render();
-
-      m_OpenGL->GetWorldMatrix(worldMatrix);
-
-      renderCount++;
-    }
-  }
-
-  m_OpenGL->TurnZBufferOff();
-  m_OpenGL->EnableAlphaBlending();
-
-  result = UpdateRenderCountString(renderCount);
-
+  // Set the texture shader as the current shader program and set the matrices
+  // that it will use for rendering.
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                projectionMatrix);
   if (!result) {
     return false;
   }
 
-  m_RenderCountString->GetPixelColor(pixelColor);
+  // Set the render texture as the texture to be used and then render the
+  // display plane.
+  m_RenderTexture->SetTexture();
+  m_DisplayPlane->Render();
 
-  result = m_FontShader->SetShaderParameters(worldMatrix, m_baseViewMatrix,
-                                             orthoMatrix, pixelColor);
+  // Setup matrices - Bottom left display plane.
+  m_OpenGL->MatrixTranslation(worldMatrix, -1.5f, -1.5f, 0.0f);
+
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                projectionMatrix);
   if (!result) {
     return false;
   }
 
-  m_Font->SetTexture();
+  // Set the render texture as the texture to be used and then render the
+  // display plane.
+  m_RenderTexture->SetTexture();
+  m_DisplayPlane->Render();
 
-  m_RenderCountString->Render();
+  // Setup matrices - Bottom right display plane.
+  m_OpenGL->MatrixTranslation(worldMatrix, 1.5f, -1.5f, 0.0f);
 
-  m_OpenGL->TurnZBufferOn();
-  m_OpenGL->DisableAlphaBlending();
+  // Set the texture shader as the current shader program and set the matrices
+  // that it will use for rendering.
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                projectionMatrix);
+  if (!result) {
+    return false;
+  }
 
+  // Set the render texture as the texture to be used and then render the
+  // display plane.
+  m_RenderTexture->SetTexture();
+  m_DisplayPlane->Render();
+
+  // Present the rendered scene to the screen.
   m_OpenGL->EndScene();
 
   return true;
