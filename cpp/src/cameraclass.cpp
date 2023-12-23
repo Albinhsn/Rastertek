@@ -214,3 +214,141 @@ void CameraClass::GetViewMatrix(float *matrix) {
 
   return;
 }
+void CameraClass::RenderReflection(float height) {
+  VectorType up, position, lookAt;
+  float yaw, pitch, roll;
+  float rotationMatrix[9];
+
+  // Setup the vector that points upwards.
+  up.x = 0.0f;
+  up.y = 1.0f;
+  up.z = 0.0f;
+
+  // Setup the position of the camera in the world.
+  // For planar reflection invert the Y position of the camera.
+  position.x = m_positionX;
+  position.y = -m_positionY + (height * 2.0f);
+  position.z = m_positionZ;
+
+  // Setup where the camera is looking by default.
+  lookAt.x = 0.0f;
+  lookAt.y = 0.0f;
+  lookAt.z = 1.0f;
+
+  // Set the yaw (Y axis), pitch (X axis), and roll (Z axis) rotations in
+  // radians.
+  pitch = (-1.0f * m_rotationX) * 0.0174532925f; // Invert for reflection
+  yaw = m_rotationY * 0.0174532925f;
+  roll = m_rotationZ * 0.0174532925f;
+
+  // Create the rotation matrix from the yaw, pitch, and roll values.
+  MatrixRotationYawPitchRoll(rotationMatrix, yaw, pitch, roll);
+
+  // Transform the lookAt and up vector by the rotation matrix so the view is
+  // correctly rotated at the origin.
+  TransformCoord(lookAt, rotationMatrix);
+  TransformCoord(up, rotationMatrix);
+
+  // Translate the rotated camera position to the location of the viewer.
+  lookAt.x = position.x + lookAt.x;
+  lookAt.y = position.y + lookAt.y;
+  lookAt.z = position.z + lookAt.z;
+
+  // Finally create the view matrix from the three updated vectors.
+  BuildReflectionViewMatrix(position, lookAt, up);
+
+  return;
+}
+
+void CameraClass::BuildReflectionViewMatrix(VectorType position,
+                                            VectorType lookAt, VectorType up) {
+  VectorType zAxis, xAxis, yAxis;
+  float length, result1, result2, result3;
+
+  // zAxis = normal(lookAt - position)
+  zAxis.x = lookAt.x - position.x;
+  zAxis.y = lookAt.y - position.y;
+  zAxis.z = lookAt.z - position.z;
+  length =
+      sqrt((zAxis.x * zAxis.x) + (zAxis.y * zAxis.y) + (zAxis.z * zAxis.z));
+  zAxis.x = zAxis.x / length;
+  zAxis.y = zAxis.y / length;
+  zAxis.z = zAxis.z / length;
+
+  // xAxis = normal(cross(up, zAxis))
+  xAxis.x = (up.y * zAxis.z) - (up.z * zAxis.y);
+  xAxis.y = (up.z * zAxis.x) - (up.x * zAxis.z);
+  xAxis.z = (up.x * zAxis.y) - (up.y * zAxis.x);
+  length =
+      sqrt((xAxis.x * xAxis.x) + (xAxis.y * xAxis.y) + (xAxis.z * xAxis.z));
+  xAxis.x = xAxis.x / length;
+  xAxis.y = xAxis.y / length;
+  xAxis.z = xAxis.z / length;
+
+  // yAxis = cross(zAxis, xAxis)
+  yAxis.x = (zAxis.y * xAxis.z) - (zAxis.z * xAxis.y);
+  yAxis.y = (zAxis.z * xAxis.x) - (zAxis.x * xAxis.z);
+  yAxis.z = (zAxis.x * xAxis.y) - (zAxis.y * xAxis.x);
+
+  // -dot(xAxis, position)
+  result1 = ((xAxis.x * position.x) + (xAxis.y * position.y) +
+             (xAxis.z * position.z)) *
+            -1.0f;
+
+  // -dot(yaxis, eye)
+  result2 = ((yAxis.x * position.x) + (yAxis.y * position.y) +
+             (yAxis.z * position.z)) *
+            -1.0f;
+
+  // -dot(zaxis, eye)
+  result3 = ((zAxis.x * position.x) + (zAxis.y * position.y) +
+             (zAxis.z * position.z)) *
+            -1.0f;
+
+  // Set the computed values in the view matrix.
+  m_reflectionViewMatrix[0] = xAxis.x;
+  m_reflectionViewMatrix[1] = yAxis.x;
+  m_reflectionViewMatrix[2] = zAxis.x;
+  m_reflectionViewMatrix[3] = 0.0f;
+
+  m_reflectionViewMatrix[4] = xAxis.y;
+  m_reflectionViewMatrix[5] = yAxis.y;
+  m_reflectionViewMatrix[6] = zAxis.y;
+  m_reflectionViewMatrix[7] = 0.0f;
+
+  m_reflectionViewMatrix[8] = xAxis.z;
+  m_reflectionViewMatrix[9] = yAxis.z;
+  m_reflectionViewMatrix[10] = zAxis.z;
+  m_reflectionViewMatrix[11] = 0.0f;
+
+  m_reflectionViewMatrix[12] = result1;
+  m_reflectionViewMatrix[13] = result2;
+  m_reflectionViewMatrix[14] = result3;
+  m_reflectionViewMatrix[15] = 1.0f;
+
+  return;
+}
+
+void CameraClass::GetReflectionViewMatrix(float *matrix) {
+  matrix[0] = m_reflectionViewMatrix[0];
+  matrix[1] = m_reflectionViewMatrix[1];
+  matrix[2] = m_reflectionViewMatrix[2];
+  matrix[3] = m_reflectionViewMatrix[3];
+
+  matrix[4] = m_reflectionViewMatrix[4];
+  matrix[5] = m_reflectionViewMatrix[5];
+  matrix[6] = m_reflectionViewMatrix[6];
+  matrix[7] = m_reflectionViewMatrix[7];
+
+  matrix[8] = m_reflectionViewMatrix[8];
+  matrix[9] = m_reflectionViewMatrix[9];
+  matrix[10] = m_reflectionViewMatrix[10];
+  matrix[11] = m_reflectionViewMatrix[11];
+
+  matrix[12] = m_reflectionViewMatrix[12];
+  matrix[13] = m_reflectionViewMatrix[13];
+  matrix[14] = m_reflectionViewMatrix[14];
+  matrix[15] = m_reflectionViewMatrix[15];
+
+  return;
+}

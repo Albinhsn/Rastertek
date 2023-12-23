@@ -4,7 +4,9 @@
 #include "alphamapshaderclass.h"
 #include "bitmapclass.h"
 #include "cameraclass.h"
+#include "clipplaneshaderclass.h"
 #include "displayplaneclass.h"
+#include "fogshaderclass.h"
 #include "fontclass.h"
 #include "fontshaderclass.h"
 #include "fpsclass.h"
@@ -19,6 +21,7 @@
 #include "normalmapshaderclass.h"
 #include "openglclass.h"
 #include "positionclass.h"
+#include "reflectionshaderclass.h"
 #include "rendertextureclass.h"
 #include "shadermanagerclass.h"
 #include "specmapshaderclass.h"
@@ -26,8 +29,6 @@
 #include "textclass.h"
 #include "textureshaderclass.h"
 #include "timerclass.h"
-#include "fogshaderclass.h"
-#include "clipplaneshaderclass.h"
 #include "translateshaderclass.h"
 #include "transparentshaderclass.h"
 
@@ -47,8 +48,9 @@ public:
   bool Frame(InputClass *);
 
 private:
+  bool RenderReflectionToTexture(float);
   bool RenderSceneToTexture(float);
-  bool Render();
+  bool Render(float);
   bool UpdateFps();
   bool UpdateRenderCountString(int renderCount);
   bool UpdateMouseStrings(int, int, bool);
@@ -59,6 +61,7 @@ private:
   ModelClass *m_Model;
   ModelClass *m_Model1;
   ModelClass *m_Model2;
+  ModelClass *m_CubeModel, *m_FloorModel;
   CameraClass *m_Camera;
   LightShaderClass *m_LightShader;
   LightClass *m_Light;
@@ -82,12 +85,13 @@ private:
   ModelListClass *m_ModelList;
   float m_baseViewMatrix[16];
   TextClass *m_RenderCountString;
-  RenderTextureClass * m_RenderTexture;
-  DisplayPlaneClass * m_DisplayPlane;
-  FogShaderClass * m_FogShader;
-  ClipPlaneShaderClass * m_ClipPlaneShader;
-  TranslateShaderClass * m_TranslateShader;
-  TransparentShaderClass * m_TransparentShader;
+  RenderTextureClass *m_RenderTexture;
+  DisplayPlaneClass *m_DisplayPlane;
+  FogShaderClass *m_FogShader;
+  ClipPlaneShaderClass *m_ClipPlaneShader;
+  TranslateShaderClass *m_TranslateShader;
+  TransparentShaderClass *m_TransparentShader;
+  ReflectionShaderClass *m_ReflectionShader;
 };
 
 #endif
