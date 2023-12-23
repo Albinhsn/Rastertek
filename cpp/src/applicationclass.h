@@ -26,6 +26,7 @@
 #include "textclass.h"
 #include "textureshaderclass.h"
 #include "timerclass.h"
+#include "fogshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -44,7 +45,7 @@ public:
 
 private:
   bool RenderSceneToTexture(float);
-  bool Render();
+  bool Render(float);
   bool UpdateFps();
   bool UpdateRenderCountString(int renderCount);
   bool UpdateMouseStrings(int, int, bool);
@@ -78,6 +79,7 @@ private:
   TextClass *m_RenderCountString;
   RenderTextureClass * m_RenderTexture;
   DisplayPlaneClass * m_DisplayPlane;
+  FogShaderClass * m_FogShader;
 };
 
 #endif

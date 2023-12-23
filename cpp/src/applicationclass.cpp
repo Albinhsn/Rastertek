@@ -27,6 +27,7 @@ ApplicationClass::ApplicationClass() {
   m_RenderCountString = 0;
   m_RenderTexture = 0;
   m_DisplayPlane = 0;
+  m_FogShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -56,38 +57,27 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 
   m_Model = new ModelClass;
 
-  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, true);
+  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, false);
   if (!result) {
     return false;
   }
 
-  m_TextureShader = new TextureShaderClass;
-
-  result = m_TextureShader->Initialize(m_OpenGL);
-
+  m_FogShader = new FogShaderClass;
+  result = m_FogShader->Initialize(m_OpenGL);
   if (!result) {
     return false;
   }
-
-  m_RenderTexture = new RenderTextureClass;
-
-  result = m_RenderTexture->Initialize(m_OpenGL, 256, 256, SCREEN_NEAR,
-                                       SCREEN_DEPTH, 0, 0);
-  if (!result) {
-    return false;
-  }
-
-  m_DisplayPlane = new DisplayPlaneClass;
-
-  result = m_DisplayPlane->Initialize(m_OpenGL, 1.0f, 1.0f);
-  if (!result) {
-    return false;
-  }
+  printf("INFO: Initialized system\n");
 
   return true;
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_FogShader) {
+    m_FogShader->Shutdown();
+    delete m_FogShader;
+    m_FogShader = 0;
+  }
   if (m_DisplayPlane) {
     m_DisplayPlane->Shutdown();
     delete m_DisplayPlane;
@@ -248,14 +238,8 @@ bool ApplicationClass::Frame(InputClass *Input) {
     rotation += 360.0f;
   }
 
-  // Render the scene to a render texture.
-  result = RenderSceneToTexture(rotation);
-  if (!result) {
-    return false;
-  }
-
   // Render the final graphics scene.
-  result = Render();
+  result = Render(rotation);
   if (!result) {
     return false;
   }
@@ -303,71 +287,34 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
   return true;
 }
 
-bool ApplicationClass::Render() {
-  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+bool ApplicationClass::Render(float rotation) {
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16], fogPosition[2];
+  float fogColor, fogStart, fogEnd;
   bool result;
 
-  // Clear the buffers to begin the scene.
-  m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+  fogColor = 0.5f;
+  fogStart = 0.0f;
+  fogEnd = 10.0f;
 
-  // Set the position of the camera for viewing the display planes with the
-  // render textures on them.
-  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
-  m_Camera->Render();
+  fogPosition[0] = fogStart;
+  fogPosition[1] = fogEnd;
 
-  // Get the world, view, and projection matrices from the opengl and camera
-  // objects.
+  m_OpenGL->BeginScene(fogColor, fogColor, fogColor, 1.0f);
+
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-  // Setup matrices - Top display plane.
-  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 1.5f, 0.0f);
+  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
 
-  // Set the texture shader as the current shader program and set the matrices
-  // that it will use for rendering.
-  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                projectionMatrix);
+  result = m_FogShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                            projectionMatrix, fogPosition);
   if (!result) {
     return false;
   }
 
-  // Set the render texture as the texture to be used and then render the
-  // display plane.
-  m_RenderTexture->SetTexture();
-  m_DisplayPlane->Render();
+  m_Model->Render();
 
-  // Setup matrices - Bottom left display plane.
-  m_OpenGL->MatrixTranslation(worldMatrix, -1.5f, -1.5f, 0.0f);
-
-  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                projectionMatrix);
-  if (!result) {
-    return false;
-  }
-
-  // Set the render texture as the texture to be used and then render the
-  // display plane.
-  m_RenderTexture->SetTexture();
-  m_DisplayPlane->Render();
-
-  // Setup matrices - Bottom right display plane.
-  m_OpenGL->MatrixTranslation(worldMatrix, 1.5f, -1.5f, 0.0f);
-
-  // Set the texture shader as the current shader program and set the matrices
-  // that it will use for rendering.
-  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                projectionMatrix);
-  if (!result) {
-    return false;
-  }
-
-  // Set the render texture as the texture to be used and then render the
-  // display plane.
-  m_RenderTexture->SetTexture();
-  m_DisplayPlane->Render();
-
-  // Present the rendered scene to the screen.
   m_OpenGL->EndScene();
 
   return true;
