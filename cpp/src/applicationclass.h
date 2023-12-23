@@ -20,6 +20,7 @@
 #include "timerclass.h"
 #include "normalmapshaderclass.h"
 #include "specmapshaderclass.h"
+#include "shadermanagerclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -62,6 +63,7 @@ private:
   NormalMapShaderClass * m_NormalMapShader;
   SpecMapShaderClass * m_SpecMapShader;
   int m_previousFps;
+  ShaderManagerClass * m_ShaderManager;
 };
 
 #endif

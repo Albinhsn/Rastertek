@@ -1,53 +1,52 @@
+////////////////////////////////////////////////////////////////////////////////
+// Filename: light.ps
+////////////////////////////////////////////////////////////////////////////////
 #version 400
 
 
+/////////////////////
+// INPUT VARIABLES //
+/////////////////////
 in vec2 texCoord;
 in vec3 normal;
-in vec3 viewDirection;
 
 
+//////////////////////
+// OUTPUT VARIABLES //
+//////////////////////
 out vec4 outputColor;
 
+
+///////////////////////
+// UNIFORM VARIABLES //
+///////////////////////
 uniform sampler2D shaderTexture;
 uniform vec3 lightDirection;
 uniform vec4 diffuseLightColor;
-uniform vec4 ambientLight;
-uniform float specularPower;
-uniform vec4 specularColor;
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Pixel Shader
+////////////////////////////////////////////////////////////////////////////////
 void main(void)
 {
-    vec4 textureColor;
-    vec4 color;
-    vec3 lightDir;
-    float lightIntensity;
-    vec3 reflection;
-    vec4 specular;
-    float specValue;
+	vec4 textureColor;
+	vec3 lightDir;
+	float lightIntensity;
 
 
-    textureColor = texture(shaderTexture, texCoord);
-    color = ambientLight;
-    specular = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	// Sample the pixel color from the texture using the sampler at this texture coordinate location.
+	textureColor = texture(shaderTexture, texCoord);
 
-    lightDir = -lightDirection;
+	// Invert the light direction for calculations.
+	lightDir = -lightDirection;
 
+	// Calculate the amount of light on this pixel.
+	lightIntensity = clamp(dot(normal, lightDir), 0.0f, 1.0f);
 
-    lightIntensity = clamp(dot(normal, lightDir), 0.0f, 1.0f);
-    if(lightIntensity > 0.0f)
-    {
-        color += (diffuseLightColor * lightIntensity);
-        color = clamp(color, 0.0f, 1.0f);
+	// Determine the final amount of diffuse color based on the diffuse color combined with the light intensity.
+	outputColor =  clamp((diffuseLightColor * lightIntensity), 0.0f, 1.0f);
 
-        reflection = normalize(2.0f * lightIntensity * normal - lightDir);
-
-        specValue = pow(clamp(dot(reflection, viewDirection), 0.0f, 1.0f), specularPower);
-        specular = vec4(specValue, specValue, specValue, 1.0f);
-
-        specular = specular * specularColor;
-    }
-
-    color = color * textureColor;
-    outputColor = clamp(color + specular, 0.0f, 1.0f);
+	// Multiply the texture pixel and the final diffuse color to get the final pixel color result.
+	outputColor = outputColor * textureColor;
 }
-

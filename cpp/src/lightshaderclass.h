@@ -1,38 +1,38 @@
-#ifndef LIGHTSHADERCLASS_H
-#define LIGHTSHADERCLASS_H
+#ifndef _LIGHTSHADERCLASS_H_
+#define _LIGHTSHADERCLASS_H_
+
 
 #include <iostream>
 using namespace std;
 
+
 #include "openglclass.h"
 
-class LightShaderClass {
+
+class LightShaderClass
+{
 public:
-  LightShaderClass();
-  LightShaderClass(const LightShaderClass &);
-  ~LightShaderClass();
+	LightShaderClass();
+	LightShaderClass(const LightShaderClass&);
+	~LightShaderClass();
 
-  bool Initialize(OpenGLClass *);
-  void Shutdown();
+	bool Initialize(OpenGLClass*);
+	void Shutdown();
 
-  bool SetShaderParameters(float *worldMatrix, float *viewMatrix,
-                           float *projectionMatrix, float *lightDirection,
-                           float *diffuseLightColor, float *ambientLight,
-                           float *cameraPosition, float *specularColor,
-                           float specularPower);
+	bool SetShaderParameters(float*, float*, float*, float*, float*);
 
 private:
-  bool InitializeShader(char *, char *);
-  void ShutdownShader();
-  char *LoadShaderSourceFile(char *);
-  void OutputShaderErrorMessage(unsigned int, char *);
-  void OutputLinkerErrorMessage(unsigned int);
+	bool InitializeShader(char*, char*);
+	void ShutdownShader();
+    char* LoadShaderSourceFile(char*);
+	void OutputShaderErrorMessage(unsigned int, char*);
+	void OutputLinkerErrorMessage(unsigned int);
 
 private:
-  OpenGLClass *m_OpenGLPtr;
-  unsigned int m_vertexShader;
-  unsigned int m_fragmentShader;
-  unsigned int m_shaderProgram;
+    OpenGLClass* m_OpenGLPtr;
+	unsigned int m_vertexShader;
+	unsigned int m_fragmentShader;
+	unsigned int m_shaderProgram;
 };
 
 #endif

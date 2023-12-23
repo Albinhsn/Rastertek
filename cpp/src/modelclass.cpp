@@ -13,7 +13,7 @@ ModelClass::~ModelClass() {}
 
 bool ModelClass::Initialize(OpenGLClass *OpenGL, char *modelFilename,
                             char *textureFilename1, char *textureFilename2,
-                            char *textureFilename3, bool wrap) {
+                            bool wrap) {
   bool result;
 
   m_OpenGLPtr = OpenGL;
@@ -32,8 +32,7 @@ bool ModelClass::Initialize(OpenGLClass *OpenGL, char *modelFilename,
     return false;
   }
 
-  result =
-      LoadTextures(textureFilename1, textureFilename2, textureFilename3, wrap);
+  result = LoadTextures(textureFilename1, textureFilename2, wrap);
   if (!result) {
     printf("ERROR: Failed to load texture\n");
     return false;
@@ -52,11 +51,13 @@ void ModelClass::Shutdown() {
   return;
 }
 
-void ModelClass::Render() {
-
-  m_Textures[0].SetTexture(m_OpenGLPtr);
-  m_Textures[1].SetTexture(m_OpenGLPtr);
-  m_Textures[2].SetTexture(m_OpenGLPtr);
+void ModelClass::Render(int textureCount) {
+  if (textureCount == 1) {
+    m_Textures[0].SetTexture(m_OpenGLPtr);
+  } else {
+    m_Textures[1].SetTexture(m_OpenGLPtr);
+    m_Textures[2].SetTexture(m_OpenGLPtr);
+  }
   RenderBuffers();
 
   return;
@@ -213,11 +214,11 @@ void ModelClass::ReleaseModel() {
 }
 
 bool ModelClass::LoadTextures(char *textureFilename1, char *textureFilename2,
-                              char *textureFilename3, bool wrap) {
+                              bool wrap) {
   bool result;
 
   // Create and initialize the texture objects.
-  m_Textures = new TextureClass[3];
+  m_Textures = new TextureClass[2];
 
   result = m_Textures[0].Initialize(m_OpenGLPtr, textureFilename1, 0, wrap);
   if (!result) {
@@ -228,12 +229,6 @@ bool ModelClass::LoadTextures(char *textureFilename1, char *textureFilename2,
   result = m_Textures[1].Initialize(m_OpenGLPtr, textureFilename2, 1, wrap);
   if (!result) {
     printf("Failed to initialize texture at '%s'\n", textureFilename2);
-    return false;
-  }
-
-  result = m_Textures[2].Initialize(m_OpenGLPtr, textureFilename3, 2, wrap);
-  if (!result) {
-    printf("Failed to initialize texture at '%s'\n", textureFilename3);
     return false;
   }
 

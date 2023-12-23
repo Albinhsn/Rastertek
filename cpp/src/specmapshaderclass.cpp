@@ -256,7 +256,6 @@ bool SpecMapShaderClass::SetShaderParameters(
     int location;
 
 
-    // Transpose the matrices to prepare them for the shader.
     m_OpenGLPtr->MatrixTranspose(tpWorldMatrix, worldMatrix);
     m_OpenGLPtr->MatrixTranspose(tpViewMatrix, viewMatrix);
     m_OpenGLPtr->MatrixTranspose(tpProjectionMatrix, projectionMatrix);

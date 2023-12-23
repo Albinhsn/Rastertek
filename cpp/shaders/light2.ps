@@ -1,0 +1,53 @@
+#version 400
+
+
+in vec2 texCoord;
+in vec3 normal;
+in vec3 viewDirection;
+
+
+out vec4 outputColor;
+
+uniform sampler2D shaderTexture;
+uniform vec3 lightDirection;
+uniform vec4 diffuseLightColor;
+uniform vec4 ambientLight;
+uniform float specularPower;
+uniform vec4 specularColor;
+
+void main(void)
+{
+    vec4 textureColor;
+    vec4 color;
+    vec3 lightDir;
+    float lightIntensity;
+    vec3 reflection;
+    vec4 specular;
+    float specValue;
+
+
+    textureColor = texture(shaderTexture, texCoord);
+    color = ambientLight;
+    specular = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    lightDir = -lightDirection;
+
+
+    lightIntensity = clamp(dot(normal, lightDir), 0.0f, 1.0f);
+    if(lightIntensity > 0.0f)
+    {
+        color += (diffuseLightColor * lightIntensity);
+        color = clamp(color, 0.0f, 1.0f);
+
+        reflection = normalize(2.0f * lightIntensity * normal - lightDir);
+
+        specValue = pow(clamp(dot(reflection, viewDirection), 0.0f, 1.0f), specularPower);
+        specular = vec4(specValue, specValue, specValue, 1.0f);
+
+        specular = specular * specularColor;
+    }
+
+    color = color * textureColor;
+    outputColor = clamp(color + specular, 0.0f, 1.0f);
+}
+

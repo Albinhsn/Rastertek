@@ -29,8 +29,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename[128], textureFilename1[128], textureFilename2[128],
-      textureFilename3[128];
+  char modelFilename[128], textureFilename1[128], textureFilename2[128];
   bool result;
 
   m_OpenGL = new OpenGLClass;
@@ -43,41 +42,45 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   }
 
   m_Camera = new CameraClass;
-  m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
+  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
   m_Camera->Render();
 
-  m_SpecMapShader = new SpecMapShaderClass;
+  strcpy(modelFilename, "./data/sphere.txt");
 
-  result = m_SpecMapShader->Initialize(m_OpenGL);
-  if (!result) {
-    printf("Failed to initialize normal map shader\n");
-    return false;
-  }
-  strcpy(modelFilename, "./data/cube.txt");
-
-  strcpy(textureFilename1, "./data/stone02.tga");
-  strcpy(textureFilename2, "./data/normal02.tga");
-  strcpy(textureFilename3, "./data/spec02.tga");
+  strcpy(textureFilename1, "./data/stone01.tga");
+  strcpy(textureFilename2, "./data/normal01.tga");
 
   m_Model = new ModelClass;
 
   result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename1,
-                               textureFilename2, textureFilename3, true);
+                               textureFilename2, true);
   if (!result) {
-    printf("Failed to initialize model\n");
     return false;
   }
 
+  // Create and initialize the light object.
   m_Light = new LightClass;
+
   m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
   m_Light->SetDirection(0.0f, 0.0f, 1.0f);
-  m_Light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-  m_Light->SetSpecularPower(16.0f);
+
+  // Create and initialize the shader manager object.
+  m_ShaderManager = new ShaderManagerClass;
+
+  result = m_ShaderManager->Initialize(m_OpenGL);
+  if (!result) {
+    return false;
+  }
 
   return true;
 }
 
 void ApplicationClass::Shutdown() {
+  if (m_ShaderManager) {
+    m_ShaderManager->Shutdown();
+    delete m_ShaderManager;
+    m_ShaderManager = 0;
+  }
   if (m_Light) {
     delete m_Light;
     m_Light = 0;
@@ -211,10 +214,9 @@ bool ApplicationClass::Frame(InputClass *Input) {
 
 bool ApplicationClass::Render(float rotation) {
 
-  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
-  float diffuseLightColor[4], lightDirection[3], cameraPosition[3],
-      specularColor[4];
-  float specularPower;
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16], rotateMatrix[16],
+      translateMatrix[16];
+  float diffuseLightColor[4], lightDirection[3];
   bool result;
 
   // Clear the buffers to begin the scene.
@@ -226,25 +228,50 @@ bool ApplicationClass::Render(float rotation) {
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
+  // Setup the rotation matrix.
+  m_OpenGL->MatrixRotationY(rotateMatrix, rotation);
 
+  // Get the light properties.
   m_Light->GetDirection(lightDirection);
   m_Light->GetDiffuseColor(diffuseLightColor);
-  m_Light->GetSpecularColor(specularColor);
-  m_Light->GetSpecularPower(specularPower);
 
-  m_Camera->GetPosition(cameraPosition);
+  // Setup matrices.
+  m_OpenGL->MatrixTranslation(translateMatrix, 0.0f, 1.0f, 0.0f);
+  m_OpenGL->MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
 
-  // Set the multitexture shader as active and set its parameters.
-  result = m_SpecMapShader->SetShaderParameters(
-      worldMatrix, viewMatrix, projectionMatrix, lightDirection,
-      diffuseLightColor, cameraPosition, specularColor, specularPower);
+  // Render the model using the texture shader.
+  result = m_ShaderManager->RenderTextureShader(worldMatrix, viewMatrix,
+                                                projectionMatrix);
   if (!result) {
     return false;
   }
+  m_Model->Render(1);
 
-  // Render the model using the multitexture shader.
-  m_Model->Render();
+  // Setup matrices.
+  m_OpenGL->MatrixTranslation(translateMatrix, -1.5f, -1.0f, 0.0f);
+  m_OpenGL->MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+
+  // Render the model using the light shader.
+  result = m_ShaderManager->RenderLightShader(worldMatrix, viewMatrix,
+                                              projectionMatrix, lightDirection,
+                                              diffuseLightColor);
+  if (!result) {
+    return false;
+  }
+  m_Model->Render(1);
+
+  // Setup matrices.
+  m_OpenGL->MatrixTranslation(translateMatrix, 1.5f, -1.0f, 0.0f);
+  m_OpenGL->MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+
+  // Render the model using the normal map shader.
+  result = m_ShaderManager->RenderNormalMapShader(
+      worldMatrix, viewMatrix, projectionMatrix, lightDirection,
+      diffuseLightColor);
+  if (!result) {
+    return false;
+  }
+  m_Model->Render(2);
 
   // Present the rendered scene to the screen.
   m_OpenGL->EndScene();
