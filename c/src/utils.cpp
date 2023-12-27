@@ -50,7 +50,7 @@ void OutputShaderErrorMessage(unsigned int shaderId, const char *shaderFilename)
     FILE *filePtr;
 
     // Now retrieve the info log.
-    char *infoLog = GetShaderInfoLog(shaderId);
+    char *infoLog = glGetShaderInfoLog(shaderId);
 
     // Open a text file to write the error message to.
     filePtr = fopen("shader-error.txt", "w");
@@ -86,7 +86,7 @@ void OutputLinkerErrorMessage(unsigned int programId) {
     FILE *filePtr;
     int error;
 
-    char *infoLog = GetProgramInfoLog(programId);
+    char *infoLog = glGetProgramInfoLog(programId);
     int logSize = strlen(infoLog);
 
     // Open a file to write the error message to.

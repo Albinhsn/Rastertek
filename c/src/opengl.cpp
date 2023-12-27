@@ -5,7 +5,7 @@
 #include <GL/gl.h>
 #include <stdio.h>
 
-uint CreateShader(uint shaderType) {
+uint glCreateShader(uint shaderType) {
     auto glCreateShader = (PFNGLCREATESHADERPROC)glXGetProcAddress((unsigned char *)"glCreateShader");
     if (!glCreateShader) {
         return false;
@@ -40,7 +40,7 @@ void glGetShaderiv(uint shader, uint pname, int *status) {
     glGetShaderiv(shader, pname, status);
 }
 
-char *GetShaderInfoLog(uint shaderId) {
+char *glGetShaderInfoLog(uint shaderId) {
     int logSize;
     char *infoLog;
 
@@ -60,7 +60,7 @@ char *GetShaderInfoLog(uint shaderId) {
     return infoLog;
 }
 
-uint CreateProgram() {
+uint glCreateProgram() {
     auto glCreateProgram = (PFNGLCREATEPROGRAMPROC)glXGetProcAddress((unsigned char *)"glCreateProgram");
     if (!glCreateProgram) {
         printf("ERROR: Unable to cast glCreateProgram\n");
@@ -69,7 +69,7 @@ uint CreateProgram() {
     return glCreateProgram();
 }
 
-void AttachShaders(uint shaderProgram, uint vShader, uint fShader) {
+void glAttachShaders(uint shaderProgram, uint vShader, uint fShader) {
     auto glAttachShader = (PFNGLATTACHSHADERPROC)glXGetProcAddress((unsigned char *)"glAttachShader");
     if (!glAttachShader) {
         printf("ERROR: Unable to cast attachShader\n");
@@ -79,7 +79,7 @@ void AttachShaders(uint shaderProgram, uint vShader, uint fShader) {
     glAttachShader(shaderProgram, fShader);
 }
 
-void BindAttribLocation(uint shaderProgram, int location, const char *variableName) {
+void glBindAttribLocation(uint shaderProgram, int location, const char *variableName) {
     auto glBindAttribLocation = (PFNGLBINDATTRIBLOCATIONPROC)glXGetProcAddress((unsigned char *)"glBindAttribLocation");
     if (!glBindAttribLocation) {
         printf("ERROR: Unable to cast bindAttribLocation\n");
@@ -89,7 +89,7 @@ void BindAttribLocation(uint shaderProgram, int location, const char *variableNa
     glBindAttribLocation(shaderProgram, location, variableName);
 }
 
-void LinkProgram(uint shaderProgram) {
+void glLinkProgram(uint shaderProgram) {
     auto glLinkProgram = (PFNGLLINKPROGRAMPROC)glXGetProcAddress((unsigned char *)"glLinkProgram");
     if (!glLinkProgram) {
         printf("ERROR: Unable to cast glLinkProgram\n");
@@ -98,7 +98,7 @@ void LinkProgram(uint shaderProgram) {
     glLinkProgram(shaderProgram);
 }
 
-void GetProgramiv(uint shaderProgram, uint pname, int *status) {
+void glGetProgramiv(uint shaderProgram, uint pname, int *status) {
     auto glGetProgramiv = (PFNGLGETPROGRAMIVPROC)glXGetProcAddress((unsigned char *)"glGetProgramiv");
     if (!glGetProgramiv) {
         printf("ERROR: Unable to cast glGetProgramiv\n");
@@ -107,11 +107,11 @@ void GetProgramiv(uint shaderProgram, uint pname, int *status) {
     glGetProgramiv(shaderProgram, pname, status);
 }
 
-char *GetProgramInfoLog(uint programId) {
+char *glGetProgramInfoLog(uint programId) {
     int logSize;
     char *infoLog;
 
-    GetProgramiv(programId, GL_INFO_LOG_LENGTH, &logSize);
+    glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &logSize);
     logSize++;
 
     infoLog = new char[logSize];
@@ -128,7 +128,7 @@ char *GetProgramInfoLog(uint programId) {
     return infoLog;
 }
 
-void DetachShader(uint program, uint shader) {
+void glDetachShader(uint program, uint shader) {
     auto glDetachShader = (PFNGLDETACHSHADERPROC)glXGetProcAddress((unsigned char *)"glDetachShader");
     if (!glDetachShader) {
         printf("ERROR: Unable to cast glDetachShader\n");
@@ -137,7 +137,7 @@ void DetachShader(uint program, uint shader) {
     glDetachShader(program, shader);
 }
 
-void DeleteShader(uint shader) {
+void glDeleteShader(uint shader) {
 
     auto glDeleteShader = (PFNGLDELETESHADERPROC)glXGetProcAddress((unsigned char *)"glDeleteShader");
     if (!glDeleteShader) {
@@ -146,7 +146,7 @@ void DeleteShader(uint shader) {
     }
     glDeleteShader(shader);
 }
-void DeleteProgram(uint program) {
+void glDeleteProgram(uint program) {
     auto glDeleteProgram = (PFNGLDELETEPROGRAMPROC)glXGetProcAddress((unsigned char *)"glDeleteProgram");
     if (!glDeleteProgram) {
         printf("ERROR: Unable to cast glDeleteShader\n");
@@ -155,7 +155,7 @@ void DeleteProgram(uint program) {
     glDeleteProgram(program);
 }
 
-void UseProgram(uint program) {
+void glUseProgram(uint program) {
     auto glUseProgram = (PFNGLUSEPROGRAMPROC)glXGetProcAddress((unsigned char *)"glUseProgram");
     if (!glUseProgram) {
         printf("ERROR: Unable to cast glDeleteShader\n");
@@ -164,7 +164,7 @@ void UseProgram(uint program) {
     glUseProgram(program);
 }
 
-int GetUniformLocation(uint program, const char *variableName) {
+int glGetUniformLocation(uint program, const char *variableName) {
     auto glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)glXGetProcAddress((unsigned char *)"glGetUniformLocation");
     if (!glGetUniformLocation) {
         printf("ERROR: Unable to cast glGetUniformLocation\n");
@@ -523,4 +523,41 @@ void EnableClipping() {
 void DisableClipping() {
     // Disable clip plane 0.
     glDisable(GL_CLIP_DISTANCE0);
+}
+
+bool MoveMatrix4fvToShader(const char *variableName, uint program, float *matrix) {
+    int location = glGetUniformLocation(program, variableName);
+    if (location == -1) {
+        return false;
+    }
+    glUniformMatrix4fv(location, 1, false, matrix);
+    return true;
+}
+
+bool Move1iToShader(const char *variableName, uint program, int value) {
+    int location = glGetUniformLocation(program, variableName);
+    if (location == -1) {
+        return false;
+    }
+    glUniform1i(location, value);
+    return true;
+}
+uint CreateAndCompileShader(const char *fileName, GLenum shaderType) {
+    int status;
+    const char *vertexShaderBuffer;
+    vertexShaderBuffer = ReadFile(fileName);
+    if (!vertexShaderBuffer) {
+        return false;
+    }
+    uint shader = glCreateShader(shaderType);
+    glShaderSource(shader, vertexShaderBuffer);
+    delete[] vertexShaderBuffer;
+    vertexShaderBuffer = 0;
+    glCompileShader(shader);
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    if (status != 1) {
+        OutputShaderErrorMessage(shader, fileName);
+        return -1;
+    }
+    return shader;
 }

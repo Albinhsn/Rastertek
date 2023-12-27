@@ -31,12 +31,6 @@ bool LoadTarga32Bit(Texture *texture, char *filename, bool wrap) {
     texture->height = (int)targaFileHeader.height;
     bpp = (int)targaFileHeader.bpp;
 
-    // Check that it is 32 bit and not 24 bit.
-    if (bpp != 32) {
-        printf("ERROR: bpp isn't 32 but %d\n", bpp);
-        return false;
-    }
-
     // Calculate the size of the 32 bit image data.
     imageSize = texture->width * texture->height * 4;
 
@@ -56,13 +50,18 @@ bool LoadTarga32Bit(Texture *texture, char *filename, bool wrap) {
     }
 
     targaData = new unsigned char[imageSize];
+    bool _32bit = bpp == 32;
     index = 0;
     for (j = 0; j < texture->height; j++) {
         for (i = 0; i < texture->width; i++) {
             targaData[index] = targaImage[index + 2];     // Red
             targaData[index + 1] = targaImage[index + 1]; // Green
             targaData[index + 2] = targaImage[index];     // Blue
-            targaData[index + 3] = targaImage[index + 3]; // Blue
+            if (_32bit) {
+                targaData[index + 3] = targaImage[index + 3]; // Alpha
+            } else {
+                targaData[index + 3] = 0;
+            }
 
             index += 4;
         }

@@ -85,23 +85,22 @@ void ResetViewport();
 
 void EnableClipping();
 void DisableClipping();
-bool LoadExtensionList();
-uint CreateShader(uint shaderType);
+uint glCreateShader(uint shaderType);
 void glShaderSource(uint shader, const char *buffer);
 void glCompileShader(uint shader);
 void glGetShaderiv(uint shader, uint pname, int *status);
-char *GetShaderInfoLog(uint shaderId);
-uint CreateProgram();
-void AttachShaders(uint shaderProgram, uint vShader, uint fShader);
-void BindAttribLocation(uint shaderProgram, int location, const char *variableName);
-void LinkProgram(uint shaderProgram);
-void GetProgramiv(uint shaderProgram, uint pname, int *status);
-char *GetProgramInfoLog(uint programId);
-void DetachShader(uint program, uint shader);
-void DeleteShader(uint shader);
-void DeleteProgram(uint program);
-void UseProgram(uint program);
-int GetUniformLocation(uint program, const char *variableName);
+char *glGetShaderInfoLog(uint shaderId);
+uint glCreateProgram();
+void glAttachShaders(uint shaderProgram, uint vShader, uint fShader);
+void glBindAttribLocation(uint shaderProgram, int location, const char *variableName);
+void glLinkProgram(uint shaderProgram);
+void glGetProgramiv(uint shaderProgram, uint pname, int *status);
+char *glGetProgramInfoLog(uint programId);
+void glDetachShader(uint program, uint shader);
+void glDeleteShader(uint shader);
+void glDeleteProgram(uint program);
+void glUseProgram(uint program);
+int glGetUniformLocation(uint program, const char *variableName);
 void glUniformMatrix4fv(int location, int count, bool transpose, const float *matrix);
 void glGenVertexArrays(int n, uint *buffer);
 void glBindVertexArray(uint buffer);
@@ -133,6 +132,8 @@ void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbu
 void glDrawBuffers(int n, const GLenum *bufs);
 void glDeleteRenderbuffers(int n, uint *renderbuffers);
 void glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
-bool MoveDataToShader(const char *);
+bool MoveMatrix4fvToShader(const char *variableName, uint program, float *matrix);
+bool Move1iToShader(const char * variableName, uint program, int value);
+uint CreateAndCompileShader(const char *fileName, GLenum shaderType);
 
 #endif
