@@ -39,6 +39,7 @@
 #include "translateshaderclass.h"
 #include "transparentshaderclass.h"
 #include "watershaderclass.h"
+#include "fadeshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -59,7 +60,7 @@ private:
   bool RenderReflectionToTexture();
   bool RenderRefractionToTexture();
   bool RenderSceneToTexture(float);
-  bool Render();
+  bool Render(float);
   bool UpdateFps();
   bool UpdateRenderCountString(int renderCount);
   bool UpdateMouseStrings(int, int, bool);
@@ -108,6 +109,7 @@ private:
   RenderTextureClass *m_RefractionTexture, *m_ReflectionTexture;
   RefractionShaderClass *m_RefractionShader;
   WaterShaderClass *m_WaterShader;
+  float m_waterHeight, m_waterTranslation;
 
   // Glass and Ice
   GlassShaderClass *m_GlassShader;
@@ -126,7 +128,10 @@ private:
   BlurClass *m_Blur;
   BlurShaderClass *m_BlurShader;
 
-  float m_waterHeight, m_waterTranslation;
+  // Screen Fade
+  FadeShaderClass * m_FadeShader;
+  int m_accumulatedTime, m_fadeInTime;
+
 };
 
 #endif

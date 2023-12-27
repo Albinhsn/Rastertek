@@ -47,6 +47,8 @@ ApplicationClass::ApplicationClass() {
   m_Blur = 0;
   m_FullScreenWindow = 0;
   m_BlurShader = 0;
+  m_FadeShader = 0;
+  m_Timer = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -56,7 +58,6 @@ ApplicationClass::~ApplicationClass() {}
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
   char modelFilename[128], textureFilename[128];
-  int downSampleWidth, downSampleHeight;
   bool result;
 
   // Create and initialize the OpenGL object.
@@ -105,27 +106,27 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
     return false;
   }
 
-  downSampleWidth = screenWidth / 2;
-  downSampleHeight = screenHeight / 2;
+  m_FadeShader = new FadeShaderClass;
 
-  m_Blur = new BlurClass;
-
-  result =
-      m_Blur->Initialize(m_OpenGL, downSampleWidth, downSampleHeight,
-                         SCREEN_NEAR, SCREEN_DEPTH, screenWidth, screenHeight);
-  if (!result) {
+  result = m_FadeShader->Initialize(m_OpenGL);
+  if(!result){
     return false;
   }
 
-  m_BlurShader = new BlurShaderClass;
-  result = m_BlurShader->Initialize(m_OpenGL);
-  if (!result) {
-    return false;
-  }
+  m_Timer = new TimerClass;
+  m_Timer->Initialize();
+
+  m_accumulatedTime = 0;
+  m_fadeInTime = 5000;
 
   return true;
 }
 void ApplicationClass::Shutdown() {
+  if(m_FadeShader){
+    m_FadeShader->Shutdown();
+    delete m_FadeShader;
+    m_FadeShader = 0;
+  }
   if (m_BlurShader) {
     m_BlurShader->Shutdown();
     delete m_BlurShader;
@@ -399,7 +400,11 @@ void ApplicationClass::Shutdown() {
 
 bool ApplicationClass::Frame(InputClass *Input) {
   static float rotation = 360.0f;
+  int frameTime;
+  float fadePercentage;
   bool result;
+
+  m_Timer->Frame();
 
   // Check if the escape key has been pressed, if so quit.
   if (Input->IsEscapePressed() == true) {
@@ -412,21 +417,22 @@ bool ApplicationClass::Frame(InputClass *Input) {
     rotation += 360.0f;
   }
 
+  frameTime = m_Timer->GetTime();
+  m_accumulatedTime += frameTime;
+  if(m_accumulatedTime < m_fadeInTime){
+    fadePercentage = (float) m_accumulatedTime / (float)m_fadeInTime;
+  }else{
+    fadePercentage = 1.0f;
+  }
+    
   // Render the scene to a render texture.
   result = RenderSceneToTexture(rotation);
   if (!result) {
     return false;
   }
 
-  // Blur the texture using the BlurClass object.
-  result = m_Blur->BlurTexture(m_RenderTexture, m_OpenGL, m_Camera,
-                               m_TextureShader, m_BlurShader);
-  if (!result) {
-    return true;
-  }
-
   // Render the graphics scene.
-  result = Render();
+  result = Render(fadePercentage);
   if (!result) {
     return false;
   }
@@ -539,7 +545,7 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
   return true;
 }
 
-bool ApplicationClass::Render() {
+bool ApplicationClass::Render(float fadeAmount) {
   float worldMatrix[16], viewMatrix[16], orthoMatrix[16];
   bool result;
 
@@ -549,8 +555,8 @@ bool ApplicationClass::Render() {
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetOrthoMatrix(orthoMatrix);
 
-  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                orthoMatrix);
+  result = m_FadeShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                orthoMatrix, fadeAmount);
   if (!result) {
     return false;
   }
