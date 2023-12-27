@@ -43,7 +43,7 @@ public:
     ModelClass(const ModelClass&);
     ~ModelClass();
 
-    bool Initialize(OpenGLClass*, char*, char*, bool);
+    bool Initialize(OpenGLClass*, char*, bool);
     void Shutdown();
     void Render();
 

@@ -35,11 +35,12 @@
 #include "translateshaderclass.h"
 #include "transparentshaderclass.h"
 #include "watershaderclass.h"
+#include "depthshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
-const float SCREEN_NEAR = 0.3f;
-const float SCREEN_DEPTH = 1000.0f;
+const float SCREEN_NEAR = 1.0f;
+const float SCREEN_DEPTH = 100.0f;
 
 class ApplicationClass {
 public:
@@ -113,6 +114,9 @@ private:
 
   // Billboarding
   ModelClass *m_BillboardModel;
+
+  // Depth Buffer
+  DepthShaderClass * m_DepthShader;
 
   float m_waterHeight, m_waterTranslation;
 };
