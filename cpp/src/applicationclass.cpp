@@ -40,6 +40,7 @@ ApplicationClass::ApplicationClass() {
   m_ReflectionTexture = 0;
   m_RefractionShader = 0;
   m_WaterShader = 0;
+  m_GlassShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -49,7 +50,7 @@ ApplicationClass::~ApplicationClass() {}
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
   char modelFilename[128];
-  char textureFilename[128];
+  char textureFilename1[128], textureFilename2[128];
   bool result;
 
   // Create and initialize the OpenGL object.
@@ -63,91 +64,64 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 
   // Create and initialize the camera object.
   m_Camera = new CameraClass;
-
-  m_Camera->SetPosition(-10.0f, 6.0f, -10.0f);
-  m_Camera->SetRotation(0.0f, 45.0f, 0.0f);
+  m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  strcpy(modelFilename, "./data/ground.txt");
-  strcpy(textureFilename, "./data/ground01.tga");
-  m_GroundModel = new ModelClass;
-  result =
-      m_GroundModel->Initialize(m_OpenGL, modelFilename, textureFilename, true);
+  strcpy(modelFilename, "./data/cube.txt");
+  strcpy(textureFilename1, "./data/stone01.tga");
+  strcpy(textureFilename2, "./data/normal03.tga");
+
+  m_Model = new ModelClass;
+  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename1,
+                               textureFilename2, true);
   if (!result) {
+    printf("Failed to initialize model\n");
     return false;
   }
 
-  strcpy(modelFilename, "./data/wall.txt");
-  strcpy(textureFilename, "./data/wall01.tga");
-  m_WallModel = new ModelClass;
-  result =
-      m_WallModel->Initialize(m_OpenGL, modelFilename, textureFilename, true);
+  strcpy(modelFilename, "./data/square.txt");
+  strcpy(textureFilename1, "./data/glass01.tga");
+  strcpy(textureFilename2, "./data/normal03.tga");
+
+  m_WindowModel = new ModelClass;
+  result = m_WindowModel->Initialize(m_OpenGL, modelFilename, textureFilename1,
+                                     textureFilename2, true);
   if (!result) {
+    printf("Failed to initialize window model\n");
     return false;
   }
 
-  strcpy(modelFilename, "./data/bath.txt");
-  strcpy(textureFilename, "./data/marble01.tga");
-  m_BathModel = new ModelClass;
-  result =
-      m_BathModel->Initialize(m_OpenGL, modelFilename, textureFilename, true);
+  m_RenderTexture = new RenderTextureClass;
+
+  result = m_RenderTexture->Initialize(m_OpenGL, screenWidth, screenHeight,
+                                       SCREEN_NEAR, SCREEN_DEPTH, 0, 2);
   if (!result) {
+    printf("Failed to initialize render texture\n");
     return false;
   }
 
-  strcpy(modelFilename, "./data/water.txt");
-  strcpy(textureFilename, "./data/water01.tga");
-  m_WaterModel = new ModelClass;
-  result =
-      m_WaterModel->Initialize(m_OpenGL, modelFilename, textureFilename, true);
+  m_TextureShader = new TextureShaderClass;
+  result = m_TextureShader->Initialize(m_OpenGL);
   if (!result) {
+    printf("Failed to initialize texture shader\n");
     return false;
   }
 
-  m_Light = new LightClass;
-  m_Light->SetAmbientLight(0.15f, 0.15f, 0.15f, 1.0f);
-  m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-  m_Light->SetDirection(0.0f, -1.0f, 0.5f);
-
-  m_RefractionTexture = new RenderTextureClass;
-
-  result = m_RefractionTexture->Initialize(m_OpenGL, screenWidth, screenHeight,
-                                           SCREEN_NEAR, SCREEN_DEPTH, 0, 1);
+  m_GlassShader = new GlassShaderClass;
+  result = m_GlassShader->Initialize(m_OpenGL);
   if (!result) {
+    printf("Failed to initialize glass shader\n");
     return false;
   }
-
-  m_ReflectionTexture = new RenderTextureClass;
-  result = m_ReflectionTexture->Initialize(m_OpenGL, screenWidth, screenHeight,
-                                           SCREEN_NEAR, SCREEN_DEPTH, 0, 2);
-  if (!result) {
-    return false;
-  }
-
-  m_LightShader = new LightShaderClass;
-  result = m_LightShader->Initialize(m_OpenGL);
-  if (!result) {
-    return false;
-  }
-
-  m_RefractionShader = new RefractionShaderClass;
-  result = m_RefractionShader->Initialize(m_OpenGL);
-  if (!result) {
-    return false;
-  }
-
-  m_WaterShader = new WaterShaderClass;
-  result = m_WaterShader->Initialize(m_OpenGL);
-  if (!result) {
-    return false;
-  }
-
-  m_waterHeight = 2.75f;
-  m_waterTranslation = 0.0f;
 
   return true;
 }
 void ApplicationClass::Shutdown() {
+  if (m_GlassShader) {
+    m_GlassShader->Shutdown();
+    delete m_GlassShader;
+    m_GlassShader = 0;
+  }
   if (m_WaterShader) {
     m_WaterShader->Shutdown();
     delete m_WaterShader;
@@ -385,6 +359,7 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
+  static float rotation = 360.0f;
   bool result;
 
   // Check if the escape key has been pressed, if so quit.
@@ -392,22 +367,18 @@ bool ApplicationClass::Frame(InputClass *Input) {
     return false;
   }
 
-  m_waterTranslation += 0.001f;
-  if (m_waterTranslation > 1.0f) {
-    m_waterTranslation -= 1.0f;
+  rotation -= 0.0174532925f * 1.0f;
+  if (rotation <= 0.0f) {
+    rotation += 360.0f;
   }
 
-  // Render the entire scene as a reflection to the texture first.
-  result = RenderRefractionToTexture();
+  result = RenderSceneToTexture(rotation);
   if (!result) {
     return false;
   }
-  result = RenderReflectionToTexture();
-  if (!result) {
-    return false;
-  }
+
   // Render the final graphics scene.
-  result = Render();
+  result = Render(rotation);
   if (!result) {
     return false;
   }
@@ -497,46 +468,34 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
 
   // Set the render target to be the render texture and clear it.
   m_RenderTexture->SetRenderTarget();
-  m_RenderTexture->ClearRenderTarget(1.0f, 0.5f, 0.0f, 1.0f);
+  m_RenderTexture->ClearRenderTarget(0.0f, 0.0f, 0.0f, 1.0f);
 
-  // Set the position of the camera for viewing the cube.
-  m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
-  m_Camera->Render();
-
-  // Get the matrices.
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
   m_RenderTexture->GetProjectionMatrix(projectionMatrix);
 
-  // Rotate the world matrix by the rotation value so that the triangle will
-  // spin.
   m_OpenGL->MatrixRotationY(worldMatrix, rotation);
 
-  // Set the texture shader as the current shader program and set the matrices
-  // that it will use for rendering.
   result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
                                                 projectionMatrix);
   if (!result) {
     return false;
   }
 
-  // Render the model.
   m_Model->Render();
 
-  // Reset the render target back to the original back buffer and not the
-  // render to texture anymore.  And reset the viewport back to the
-  // original.
   m_OpenGL->SetBackBufferRenderTarget();
   m_OpenGL->ResetViewport();
 
   return true;
 }
 
-bool ApplicationClass::Render() {
-  float worldMatrix[16], viewMatrix[16], projectionMatrix[16],
-      reflectionViewMatrix[16];
-  float diffuseLightColor[4], lightDirection[3], ambientLight[4];
+bool ApplicationClass::Render(float rotation) {
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  float refractionScale;
   bool result;
+
+  refractionScale = 0.01f;
 
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -544,59 +503,24 @@ bool ApplicationClass::Render() {
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-  m_Light->GetDirection(lightDirection);
-  m_Light->GetDiffuseColor(diffuseLightColor);
-  m_Light->GetAmbientLight(ambientLight);
-  //
-  // Rotate the world matrix by the rotation value so that the cube will spin.
-  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 1.0f, 0.0f);
+  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
 
-  // Set the texture shader as the current shader program and set the matrices
-  // that it will use for rendering.
-  result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                              projectionMatrix, lightDirection,
-                                              diffuseLightColor, ambientLight);
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                projectionMatrix);
   if (!result) {
     return false;
   }
 
-  m_GroundModel->Render();
+  m_Model->Render();
+  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 0.0f, -1.5f);
 
-  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 6.0f, 8.0f);
-
-  result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                              projectionMatrix, lightDirection,
-                                              diffuseLightColor, ambientLight);
+  result = m_GlassShader->SetShaderParameters(
+      worldMatrix, viewMatrix, projectionMatrix, refractionScale);
   if (!result) {
     return false;
   }
 
-  m_WallModel->Render();
-
-  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 2.0f, 0.0f);
-  result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                              projectionMatrix, lightDirection,
-                                              diffuseLightColor, ambientLight);
-  if (!result) {
-    return false;
-  }
-
-  m_BathModel->Render();
-  m_Camera->GetReflectionViewMatrix(reflectionViewMatrix);
-
-  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, m_waterHeight, 0.0f);
-
-  result = m_WaterShader->SetShaderParameters(
-      worldMatrix, viewMatrix, projectionMatrix, reflectionViewMatrix,
-      m_waterTranslation, 0.01f);
-  if (!result) {
-    return false;
-  }
-
-  m_RefractionTexture->SetTexture();
-  m_ReflectionTexture->SetTexture();
-
-  m_WaterModel->Render();
+  m_WindowModel->Render();
 
   m_OpenGL->EndScene();
 

@@ -1,70 +1,58 @@
-#ifndef MODELCLASS_H
-#define MODELCLASS_H
+#ifndef _MODELCLASS_H_
+#define _MODELCLASS_H_
+
 
 #include <fstream>
-
 using namespace std;
+
 
 #include "textureclass.h"
 
-class ModelClass {
+
+class ModelClass
+{
 private:
-  struct VertexType {
-    float x, y, z;
-    float tu, tv;
-    float nx, ny, nz;
-    float tx, ty, tz;
-    float bx, by, bz;
-  };
-  struct ModelType {
-    float x, y, z;
-    float tu, tv;
-    float nx, ny, nz;
-    float tx, ty, tz;
-    float bx, by, bz;
-  };
+    struct VertexType
+    {
+        float x, y, z;
+        float tu, tv;
+        float nx, ny, nz;
+    };
 
-  struct TempVertexType {
-    float x, y, z;
-    float tu, tv;
-  };
-
-  struct VectorType {
-    float x, y, z;
-  };
+    struct ModelType
+    {
+        float x, y, z;
+        float tu, tv;
+        float nx, ny, nz;
+    };
 
 public:
-  ModelClass();
-  ModelClass(const ModelClass &);
-  ~ModelClass();
+    ModelClass();
+    ModelClass(const ModelClass&);
+    ~ModelClass();
 
-  bool Initialize(OpenGLClass *, char *, char *, bool);
-  void Shutdown();
-  void Render();
-
-private:
-  bool InitializeBuffers();
-  void ShutdownBuffers();
-  void RenderBuffers();
-
-  bool LoadTextures(char *, bool);
-  void ReleaseTextures();
-
-  bool LoadModel(char *);
-  void ReleaseModel();
-
-  void CalculateModelVectors();
-  void CalculateTangentBinormal(TempVertexType, TempVertexType, TempVertexType,
-                                VectorType &, VectorType &);
+    bool Initialize(OpenGLClass*, char*, char*, char*, bool);
+    void Shutdown();
+    void Render();
 
 private:
-  OpenGLClass *m_OpenGLPtr;
-  int m_vertexCount, m_indexCount;
-  unsigned int m_vertexArrayId, m_vertexBufferId, m_indexBufferId;
+    bool InitializeBuffers();
+    void ShutdownBuffers();
+    void RenderBuffers();
 
-  TextureClass *m_Textures;
+    bool LoadTextures(char*, char*, bool);
+    void ReleaseTextures();
 
-  ModelType *m_model;
+    bool LoadModel(char*);
+    void ReleaseModel();
+
+private:
+    OpenGLClass* m_OpenGLPtr;
+    int m_vertexCount, m_indexCount;
+    unsigned int m_vertexArrayId, m_vertexBufferId, m_indexBufferId;
+    TextureClass* m_Textures;
+    ModelType* m_model;
 };
 
 #endif
+

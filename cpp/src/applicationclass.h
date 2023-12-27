@@ -11,6 +11,7 @@
 #include "fontshaderclass.h"
 #include "fpsclass.h"
 #include "frustumclass.h"
+#include "glassshaderclass.h"
 #include "inputclass.h"
 #include "lightclass.h"
 #include "lightmapshaderclass.h"
@@ -53,7 +54,7 @@ private:
   bool RenderReflectionToTexture();
   bool RenderRefractionToTexture();
   bool RenderSceneToTexture(float);
-  bool Render();
+  bool Render(float);
   bool UpdateFps();
   bool UpdateRenderCountString(int renderCount);
   bool UpdateMouseStrings(int, int, bool);
@@ -62,6 +63,7 @@ private:
   MultiTextureShaderClass *m_MultiTextureShader;
   TextureShaderClass *m_TextureShader;
   ModelClass *m_Model;
+  ModelClass *m_WindowModel;
   ModelClass *m_Model1;
   ModelClass *m_Model2;
   ModelClass *m_CubeModel, *m_FloorModel;
@@ -99,11 +101,13 @@ private:
   // Water
   ModelClass *m_GroundModel, *m_WallModel, *m_BathModel, *m_WaterModel;
   RenderTextureClass *m_RefractionTexture, *m_ReflectionTexture;
-  RefractionShaderClass * m_RefractionShader;
-  WaterShaderClass * m_WaterShader;
+  RefractionShaderClass *m_RefractionShader;
+  WaterShaderClass *m_WaterShader;
+
+  // Glass and Ice
+  GlassShaderClass *m_GlassShader;
 
   float m_waterHeight, m_waterTranslation;
-
 };
 
 #endif
