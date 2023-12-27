@@ -19,7 +19,7 @@ public:
 	bool Initialize(OpenGLClass*);
 	void Shutdown();
 
-	bool SetShaderParameters(float*, float*, float*, float*, float*);
+	bool SetShaderParameters(float*, float*, float*, float*, float*, float*);
 
 private:
 	bool InitializeShader(char*, char*);

@@ -70,7 +70,7 @@ bool ShaderManagerClass::RenderLightShader(float *worldMatrix,
                                            float *diffuseLightColor) {
   return m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
                                             projectionMatrix, lightDirection,
-                                            diffuseLightColor);
+                                            diffuseLightColor, 0);
 }
 
 bool ShaderManagerClass::RenderNormalMapShader(float *worldMatrix,

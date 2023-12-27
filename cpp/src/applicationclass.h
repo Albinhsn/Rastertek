@@ -22,6 +22,7 @@
 #include "openglclass.h"
 #include "positionclass.h"
 #include "reflectionshaderclass.h"
+#include "refractionshaderclass.h"
 #include "rendertextureclass.h"
 #include "shadermanagerclass.h"
 #include "specmapshaderclass.h"
@@ -31,6 +32,7 @@
 #include "timerclass.h"
 #include "translateshaderclass.h"
 #include "transparentshaderclass.h"
+#include "watershaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -48,9 +50,10 @@ public:
   bool Frame(InputClass *);
 
 private:
-  bool RenderReflectionToTexture(float);
+  bool RenderReflectionToTexture();
+  bool RenderRefractionToTexture();
   bool RenderSceneToTexture(float);
-  bool Render(float);
+  bool Render();
   bool UpdateFps();
   bool UpdateRenderCountString(int renderCount);
   bool UpdateMouseStrings(int, int, bool);
@@ -92,6 +95,15 @@ private:
   TranslateShaderClass *m_TranslateShader;
   TransparentShaderClass *m_TransparentShader;
   ReflectionShaderClass *m_ReflectionShader;
+
+  // Water
+  ModelClass *m_GroundModel, *m_WallModel, *m_BathModel, *m_WaterModel;
+  RenderTextureClass *m_RefractionTexture, *m_ReflectionTexture;
+  RefractionShaderClass * m_RefractionShader;
+  WaterShaderClass * m_WaterShader;
+
+  float m_waterHeight, m_waterTranslation;
+
 };
 
 #endif

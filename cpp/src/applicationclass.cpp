@@ -32,6 +32,14 @@ ApplicationClass::ApplicationClass() {
   m_TranslateShader = 0;
   m_TransparentShader = 0;
   m_ReflectionShader = 0;
+  m_GroundModel = 0;
+  m_WallModel = 0;
+  m_BathModel = 0;
+  m_WaterModel = 0;
+  m_RefractionTexture = 0;
+  m_ReflectionTexture = 0;
+  m_RefractionShader = 0;
+  m_WaterShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -40,8 +48,8 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename1[128], modelFilename2[128], textureFilename1[128],
-      textureFilename2[128];
+  char modelFilename[128];
+  char textureFilename[128];
   bool result;
 
   // Create and initialize the OpenGL object.
@@ -56,65 +64,135 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   // Create and initialize the camera object.
   m_Camera = new CameraClass;
 
-  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+  m_Camera->SetPosition(-10.0f, 6.0f, -10.0f);
+  m_Camera->SetRotation(0.0f, 45.0f, 0.0f);
   m_Camera->Render();
 
-  // Set the file names of the models.
-  strcpy(modelFilename1, "./data/cube.txt");
-  strcpy(modelFilename2, "./data/floor.txt");
-
-  // Set the file names of the textures.
-  strcpy(textureFilename1, "./data/stone01.tga");
-  strcpy(textureFilename2, "./data/blue01.tga");
-
-  // Create and initialize the cube model object.
-  m_CubeModel = new ModelClass;
-
+  strcpy(modelFilename, "./data/ground.txt");
+  strcpy(textureFilename, "./data/ground01.tga");
+  m_GroundModel = new ModelClass;
   result =
-      m_CubeModel->Initialize(m_OpenGL, modelFilename1, textureFilename1, true);
+      m_GroundModel->Initialize(m_OpenGL, modelFilename, textureFilename, true);
   if (!result) {
     return false;
   }
 
-  // Create and initialize the floor model object.
-  m_FloorModel = new ModelClass;
-
-  result = m_FloorModel->Initialize(m_OpenGL, modelFilename2, textureFilename2,
-                                    true);
+  strcpy(modelFilename, "./data/wall.txt");
+  strcpy(textureFilename, "./data/wall01.tga");
+  m_WallModel = new ModelClass;
+  result =
+      m_WallModel->Initialize(m_OpenGL, modelFilename, textureFilename, true);
   if (!result) {
     return false;
   }
 
-  // Create and initialize the texture shader object.
-  m_TextureShader = new TextureShaderClass;
-
-  result = m_TextureShader->Initialize(m_OpenGL);
+  strcpy(modelFilename, "./data/bath.txt");
+  strcpy(textureFilename, "./data/marble01.tga");
+  m_BathModel = new ModelClass;
+  result =
+      m_BathModel->Initialize(m_OpenGL, modelFilename, textureFilename, true);
   if (!result) {
     return false;
   }
 
-  // Create and initialize the reflection shader object.
-  m_ReflectionShader = new ReflectionShaderClass;
-
-  result = m_ReflectionShader->Initialize(m_OpenGL);
+  strcpy(modelFilename, "./data/water.txt");
+  strcpy(textureFilename, "./data/water01.tga");
+  m_WaterModel = new ModelClass;
+  result =
+      m_WaterModel->Initialize(m_OpenGL, modelFilename, textureFilename, true);
   if (!result) {
     return false;
   }
 
-  // Create and initialize the render to texture object.
-  m_RenderTexture = new RenderTextureClass;
+  m_Light = new LightClass;
+  m_Light->SetAmbientLight(0.15f, 0.15f, 0.15f, 1.0f);
+  m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+  m_Light->SetDirection(0.0f, -1.0f, 0.5f);
 
-  // Set the texture to use unit texture unit 1, since the floor texture will be
-  // using unit 0.
-  result = m_RenderTexture->Initialize(m_OpenGL, screenWidth, screenHeight,
-                                       SCREEN_NEAR, SCREEN_DEPTH, 0, 1);
+  m_RefractionTexture = new RenderTextureClass;
+
+  result = m_RefractionTexture->Initialize(m_OpenGL, screenWidth, screenHeight,
+                                           SCREEN_NEAR, SCREEN_DEPTH, 0, 1);
   if (!result) {
     return false;
   }
+
+  m_ReflectionTexture = new RenderTextureClass;
+  result = m_ReflectionTexture->Initialize(m_OpenGL, screenWidth, screenHeight,
+                                           SCREEN_NEAR, SCREEN_DEPTH, 0, 2);
+  if (!result) {
+    return false;
+  }
+
+  m_LightShader = new LightShaderClass;
+  result = m_LightShader->Initialize(m_OpenGL);
+  if (!result) {
+    return false;
+  }
+
+  m_RefractionShader = new RefractionShaderClass;
+  result = m_RefractionShader->Initialize(m_OpenGL);
+  if (!result) {
+    return false;
+  }
+
+  m_WaterShader = new WaterShaderClass;
+  result = m_WaterShader->Initialize(m_OpenGL);
+  if (!result) {
+    return false;
+  }
+
+  m_waterHeight = 2.75f;
+  m_waterTranslation = 0.0f;
 
   return true;
 }
 void ApplicationClass::Shutdown() {
+  if (m_WaterShader) {
+    m_WaterShader->Shutdown();
+    delete m_WaterShader;
+    m_WaterShader = 0;
+  }
+  if (m_RefractionShader) {
+    m_RefractionShader->Shutdown();
+    delete m_RefractionShader;
+    m_RefractionShader = 0;
+  }
+  if (m_LightShader) {
+    m_LightShader->Shutdown();
+    delete m_LightShader;
+    m_LightShader = 0;
+  }
+  if (m_ReflectionTexture) {
+    m_ReflectionTexture->Shutdown();
+    delete m_ReflectionTexture;
+    m_ReflectionTexture = 0;
+  }
+  if (m_RefractionTexture) {
+    m_RefractionTexture->Shutdown();
+    delete m_RefractionTexture;
+    m_RefractionTexture = 0;
+  }
+  if (m_WaterModel) {
+    m_WaterModel->Shutdown();
+    delete m_WaterModel;
+    m_WaterModel = 0;
+  }
+  if (m_BathModel) {
+    m_BathModel->Shutdown();
+    delete m_BathModel;
+    m_BathModel = 0;
+  }
+  if (m_WallModel) {
+    m_WallModel->Shutdown();
+    delete m_WallModel;
+    m_WallModel = 0;
+  }
+  if (m_GroundModel) {
+    m_GroundModel->Shutdown();
+    delete m_GroundModel;
+    m_GroundModel = 0;
+  }
   if (m_ReflectionShader) {
     m_ReflectionShader->Shutdown();
     delete m_ReflectionShader;
@@ -307,68 +385,106 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  static float rotation = 360.0f;
   bool result;
 
   // Check if the escape key has been pressed, if so quit.
   if (Input->IsEscapePressed() == true) {
     return false;
   }
-  // Update the rotation variable each frame.
-  rotation -= 0.0174532925f * 1.0f;
-  if (rotation <= 0.0f) {
-    rotation += 360.0f;
+
+  m_waterTranslation += 0.001f;
+  if (m_waterTranslation > 1.0f) {
+    m_waterTranslation -= 1.0f;
   }
+
   // Render the entire scene as a reflection to the texture first.
-  result = RenderReflectionToTexture(rotation);
+  result = RenderRefractionToTexture();
   if (!result) {
     return false;
   }
-
+  result = RenderReflectionToTexture();
+  if (!result) {
+    return false;
+  }
   // Render the final graphics scene.
-  result = Render(rotation);
+  result = Render();
   if (!result) {
     return false;
   }
   return true;
 }
-bool ApplicationClass::RenderReflectionToTexture(float rotation) {
-  float worldMatrix[16], reflectionViewMatrix[16], projectionMatrix[16];
+bool ApplicationClass::RenderRefractionToTexture() {
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  float clipPlane[4];
+  float diffuseLightColor[4], lightDirection[3], ambientLight[4];
   bool result;
 
-  // Set the render target to be the render texture and clear it.
-  m_RenderTexture->SetRenderTarget();
-  m_RenderTexture->ClearRenderTarget(0.0f, 0.0f, 0.0f, 1.0f);
+  clipPlane[0] = 0.0f;
+  clipPlane[0] = -1.0f;
+  clipPlane[2] = 0.0f;
+  clipPlane[3] = m_waterHeight + 0.1f;
 
-  // Use the camera to calculate the reflection matrix.
-  m_Camera->RenderReflection(-1.5f);
+  m_RefractionTexture->SetRenderTarget();
+  m_RefractionTexture->ClearRenderTarget(0.0f, 0.0f, 0.0f, 1.0f);
 
-  // Get the reflection view matrix.
-  m_Camera->GetReflectionViewMatrix(reflectionViewMatrix);
-
-  // Get the camera reflection view matrix instead of the regular camera view
-  // matrix.  Also good practice to use the projection matrix from the render
-  // texture.
   m_OpenGL->GetWorldMatrix(worldMatrix);
-  m_RenderTexture->GetProjectionMatrix(projectionMatrix);
+  m_Camera->GetViewMatrix(viewMatrix);
+  m_RefractionTexture->GetProjectionMatrix(projectionMatrix);
 
-  // Rotate the world matrix by the rotation value so that the cube will spin.
-  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
+  m_Light->GetDirection(lightDirection);
+  m_Light->GetDiffuseColor(diffuseLightColor);
+  m_Light->GetAmbientLight(ambientLight);
 
-  // Set the texture shader as the current shader program and set the matrices
-  // that it will use for rendering.
-  result = m_TextureShader->SetShaderParameters(
-      worldMatrix, reflectionViewMatrix, projectionMatrix);
+  m_OpenGL->EnableClipping();
+
+  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 2.0f, 0.0f);
+
+  result = m_RefractionShader->SetShaderParameters(
+      worldMatrix, viewMatrix, projectionMatrix, lightDirection,
+      diffuseLightColor, ambientLight, clipPlane);
   if (!result) {
     return false;
   }
 
-  // Render the cube model using the texture shader and the reflection view
-  // matrix.
-  m_CubeModel->Render();
+  m_BathModel->Render();
 
-  // Reset the render target back to the original back buffer and not the render
-  // to texture anymore.  And reset the viewport back to the original.
+  m_OpenGL->DisableClipping();
+  m_OpenGL->SetBackBufferRenderTarget();
+  m_OpenGL->ResetViewport();
+
+  return true;
+}
+
+bool ApplicationClass::RenderReflectionToTexture() {
+  float worldMatrix[16], reflectionViewMatrix[16], projectionMatrix[16];
+  float diffuseLightColor[4], lightDirection[3], ambientLight[4];
+  bool result;
+
+  // Set the render target to be the render texture and clear it.
+  m_ReflectionTexture->SetRenderTarget();
+  m_ReflectionTexture->ClearRenderTarget(0.0f, 0.0f, 0.0f, 1.0f);
+
+  m_Camera->RenderReflection(m_waterHeight);
+  m_Camera->GetReflectionViewMatrix(reflectionViewMatrix);
+
+  m_OpenGL->GetWorldMatrix(worldMatrix);
+  m_ReflectionTexture->GetProjectionMatrix(projectionMatrix);
+
+  m_Light->GetDirection(lightDirection);
+  m_Light->GetDiffuseColor(diffuseLightColor);
+  m_Light->GetAmbientLight(ambientLight);
+
+  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 6.0f, 8.0f);
+
+  result = m_LightShader->SetShaderParameters(worldMatrix, reflectionViewMatrix,
+                                              projectionMatrix, lightDirection,
+                                              diffuseLightColor, ambientLight);
+  if (!result) {
+    return false;
+  }
+
+  m_WallModel->Render();
+
   m_OpenGL->SetBackBufferRenderTarget();
   m_OpenGL->ResetViewport();
 
@@ -416,59 +532,72 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
   return true;
 }
 
-bool ApplicationClass::Render(float rotation) {
+bool ApplicationClass::Render() {
   float worldMatrix[16], viewMatrix[16], projectionMatrix[16],
       reflectionViewMatrix[16];
+  float diffuseLightColor[4], lightDirection[3], ambientLight[4];
   bool result;
 
-  // Clear the buffers to begin the scene.
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
-  // Get the world, view, and projection matrices from the opengl and camera
-  // objects.
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
+  m_Light->GetDirection(lightDirection);
+  m_Light->GetDiffuseColor(diffuseLightColor);
+  m_Light->GetAmbientLight(ambientLight);
+  //
   // Rotate the world matrix by the rotation value so that the cube will spin.
-  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
+  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 1.0f, 0.0f);
 
   // Set the texture shader as the current shader program and set the matrices
   // that it will use for rendering.
-  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                projectionMatrix);
+  result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                              projectionMatrix, lightDirection,
+                                              diffuseLightColor, ambientLight);
   if (!result) {
     return false;
   }
 
-  // Render the cube model as normal with the texture shader.
-  m_CubeModel->Render();
+  m_GroundModel->Render();
 
-  // Now get the world matrix again and translate down for the floor model
-  // to render underneath the cube.
-  m_OpenGL->GetWorldMatrix(worldMatrix);
-  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, -1.5f, 0.0f);
+  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 6.0f, 8.0f);
 
-  // Get the camera reflection view matrix for the reflection shader.
+  result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                              projectionMatrix, lightDirection,
+                                              diffuseLightColor, ambientLight);
+  if (!result) {
+    return false;
+  }
+
+  m_WallModel->Render();
+
+  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 2.0f, 0.0f);
+  result = m_LightShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                              projectionMatrix, lightDirection,
+                                              diffuseLightColor, ambientLight);
+  if (!result) {
+    return false;
+  }
+
+  m_BathModel->Render();
   m_Camera->GetReflectionViewMatrix(reflectionViewMatrix);
 
-  // Render the floor model using the reflection shader, reflection texture, and
-  // reflection view matrix.
-  result = m_ReflectionShader->SetShaderParameters(
-      worldMatrix, viewMatrix, projectionMatrix, reflectionViewMatrix);
+  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, m_waterHeight, 0.0f);
+
+  result = m_WaterShader->SetShaderParameters(
+      worldMatrix, viewMatrix, projectionMatrix, reflectionViewMatrix,
+      m_waterTranslation, 0.01f);
   if (!result) {
     return false;
   }
 
-  // Set the render texture as the texture to be used in texture unit 1 for the
-  // reflection shader.
-  m_RenderTexture->SetTexture();
+  m_RefractionTexture->SetTexture();
+  m_ReflectionTexture->SetTexture();
 
-  // Render the floor model using the reflection shader and using texture unit 0
-  // for the floor texture and texture unit 1 for the reflection render texture.
-  m_FloorModel->Render();
+  m_WaterModel->Render();
 
-  // Present the rendered scene to the screen.
   m_OpenGL->EndScene();
 
   return true;
