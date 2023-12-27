@@ -164,7 +164,7 @@ void UseProgram(uint program) {
     glUseProgram(program);
 }
 
-int GetUniformLocation(uint program, char *variableName) {
+int GetUniformLocation(uint program, const char *variableName) {
     auto glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)glXGetProcAddress((unsigned char *)"glGetUniformLocation");
     if (!glGetUniformLocation) {
         printf("ERROR: Unable to cast glGetUniformLocation\n");
@@ -454,7 +454,7 @@ void glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlp
     glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 }
 
-bool InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWidth, int screenHeight, float screenNear,
+void InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWidth, int screenHeight, float screenNear,
                       float screenDepth, bool vsync) {
     openGL->screenWidth = screenWidth;
     openGL->screenHeight = screenWidth;
@@ -480,8 +480,6 @@ bool InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWi
 
     BuildPerspectiveFovMatrix(openGL->projectionMatrix, fov, screenAspect, screenNear, screenDepth);
     BuildOrthoMatrix(openGL->orthoMatrix, (float)screenWidth, (float)screenHeight, screenNear, screenDepth);
-
-    return true;
 }
 
 void BeginScene(float red, float green, float blue, float alpha) {

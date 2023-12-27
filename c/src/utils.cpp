@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string.h>
 
-char *ReadFile(char *filename) {
+char *ReadFile(const char *filename) {
 
     FILE *filePtr;
     char *buffer;
@@ -43,7 +43,7 @@ char *ReadFile(char *filename) {
 
     return buffer;
 }
-void OutputShaderErrorMessage(unsigned int shaderId, char *shaderFilename) {
+void OutputShaderErrorMessage(unsigned int shaderId, const char *shaderFilename) {
 
     long count;
     int error;

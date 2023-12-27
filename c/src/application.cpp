@@ -10,7 +10,7 @@ bool RenderApplication(Application *application) {
 
     BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
-    result = SetShaderParameters(application->textureShader, application->openGL->worldMatrix,
+    result = SetShaderParameters(*application->shader, application->openGL->worldMatrix,
                                  application->camera->viewMatrix, application->openGL->projectionMatrix);
     if (!result) {
         return false;
@@ -27,19 +27,15 @@ bool RenderApplication(Application *application) {
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth,
                            int screenHeight) {
     application->openGL = (OpenGL *)malloc(sizeof(OpenGL));
-    application->textureShader = 0;
+    application->shader = 0;
     application->model = 0;
     application->camera = 0;
 
     char textureFilename[128];
     bool result;
 
-    result = InitializeOpenGL(application->openGL, display, window, screenWidth, screenHeight, SCREEN_NEAR,
-                              SCREEN_DEPTH, VSYNC_ENABLED);
-    if (!result) {
-        printf("ERROR: Failed to initialize openGL\n");
-        return false;
-    }
+    InitializeOpenGL(application->openGL, display, window, screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH,
+                     VSYNC_ENABLED);
 
     application->camera = (Camera *)malloc(sizeof(Camera));
     SetPosition(application->camera, 0.0f, 0.0f, -5.0f);
@@ -56,9 +52,11 @@ bool InitializeApplication(Application *application, Display *display, Window wi
         return false;
     }
 
-    application->textureShader = (TextureShader *)malloc(sizeof(TextureShader));
-
-    result = InitializeTextureShader(application->textureShader);
+    application->shader = (Shader *)malloc(sizeof(Shader));
+    const char *variables[2];
+    variables[0] = "inputPosition";
+    variables[1] = "inputTexCoord";
+    result = InitializeShader(*application->shader, "./shaders/texture.vs", "./shaders/texture.ps", variables, 2);
     if (!result) {
         printf("ERROR: Failed to initialize texture shader\n");
         return false;
@@ -69,7 +67,7 @@ bool InitializeApplication(Application *application, Display *display, Window wi
 void ShutdownApplication(Application *application) {
 
     // Release the color shader object.
-    auto texture = application->textureShader;
+    auto texture = application->shader;
     if (texture) {
         free(texture);
         texture = 0;

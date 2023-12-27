@@ -103,9 +103,7 @@ bool InitializeBuffers(Model *model) {
 }
 void RenderBuffers(Model *model) {
     glBindVertexArray(model->vertexArrayId);
-
     glDrawElements(GL_TRIANGLES, model->indexCount, GL_UNSIGNED_INT, 0);
-
     return;
 }
 

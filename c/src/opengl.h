@@ -67,7 +67,7 @@ struct OpenGL {
     float screenWidth, screenHeight;
 };
 
-bool InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWidth, int screenHeight, float screenNear,
+void InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWidth, int screenHeight, float screenNear,
                       float screenDepth, bool vsync);
 void ShutdownOpenGL();
 
@@ -101,7 +101,7 @@ void DetachShader(uint program, uint shader);
 void DeleteShader(uint shader);
 void DeleteProgram(uint program);
 void UseProgram(uint program);
-int GetUniformLocation(uint program, char *variableName);
+int GetUniformLocation(uint program, const char *variableName);
 void glUniformMatrix4fv(int location, int count, bool transpose, const float *matrix);
 void glGenVertexArrays(int n, uint *buffer);
 void glBindVertexArray(uint buffer);
@@ -133,5 +133,6 @@ void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbu
 void glDrawBuffers(int n, const GLenum *bufs);
 void glDeleteRenderbuffers(int n, uint *renderbuffers);
 void glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
+bool MoveDataToShader(const char *);
 
 #endif

@@ -16,8 +16,8 @@ struct TargaHeader {
 };
 
 // read file?
-char *ReadFile(char *filename);
-void OutputShaderErrorMessage(unsigned int shaderId, char * shaderFilename);
+char *ReadFile(const char *filename);
+void OutputShaderErrorMessage(unsigned int shaderId, const char * shaderFilename);
 void OutputLinkerErrorMessage(unsigned int programId);
 
 #endif

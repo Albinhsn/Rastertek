@@ -5,7 +5,7 @@
 #include "input.h"
 #include "model.h"
 #include "opengl.h"
-#include "textureshader.h"
+#include "shader.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -15,7 +15,7 @@ const float SCREEN_DEPTH = 1000.0f;
 struct Application {
     OpenGL *openGL;
     Camera *camera;
-    TextureShader *textureShader;
+    Shader *shader;
     Model *model;
 };
 bool RenderApplication(Application *application);
