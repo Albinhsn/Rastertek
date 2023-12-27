@@ -41,6 +41,7 @@ ApplicationClass::ApplicationClass() {
   m_RefractionShader = 0;
   m_WaterShader = 0;
   m_GlassShader = 0;
+  m_FireShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -50,7 +51,7 @@ ApplicationClass::~ApplicationClass() {}
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
   char modelFilename[128];
-  char textureFilename1[128], textureFilename2[128];
+  char textureFilename1[128], textureFilename2[128], textureFilename3[128];
   bool result;
 
   // Create and initialize the OpenGL object.
@@ -67,56 +68,34 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
   m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
   m_Camera->Render();
 
-  strcpy(modelFilename, "./data/cube.txt");
-  strcpy(textureFilename1, "./data/stone01.tga");
-  strcpy(textureFilename2, "./data/normal03.tga");
+  strcpy(modelFilename, "./data/square.txt");
+
+  strcpy(textureFilename1, "./data/fire01.tga");
+  strcpy(textureFilename2, "./data/noise01.tga");
+  strcpy(textureFilename3, "./data/alpha01.tga");
 
   m_Model = new ModelClass;
-  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename1,
-                               textureFilename2, true);
+  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename1, false,
+                               textureFilename2, true, textureFilename3, false);
   if (!result) {
     printf("Failed to initialize model\n");
     return false;
   }
 
-  strcpy(modelFilename, "./data/square.txt");
-  strcpy(textureFilename1, "./data/glass01.tga");
-  strcpy(textureFilename2, "./data/normal03.tga");
-
-  m_WindowModel = new ModelClass;
-  result = m_WindowModel->Initialize(m_OpenGL, modelFilename, textureFilename1,
-                                     textureFilename2, true);
+  m_FireShader = new FireShaderClass;
+  result = m_FireShader->Initialize(m_OpenGL);
   if (!result) {
-    printf("Failed to initialize window model\n");
-    return false;
-  }
-
-  m_RenderTexture = new RenderTextureClass;
-
-  result = m_RenderTexture->Initialize(m_OpenGL, screenWidth, screenHeight,
-                                       SCREEN_NEAR, SCREEN_DEPTH, 0, 2);
-  if (!result) {
-    printf("Failed to initialize render texture\n");
-    return false;
-  }
-
-  m_TextureShader = new TextureShaderClass;
-  result = m_TextureShader->Initialize(m_OpenGL);
-  if (!result) {
-    printf("Failed to initialize texture shader\n");
-    return false;
-  }
-
-  m_GlassShader = new GlassShaderClass;
-  result = m_GlassShader->Initialize(m_OpenGL);
-  if (!result) {
-    printf("Failed to initialize glass shader\n");
     return false;
   }
 
   return true;
 }
 void ApplicationClass::Shutdown() {
+  if (m_FireShader) {
+    m_FireShader->Shutdown();
+    delete m_FireShader;
+    m_FireShader = 0;
+  }
   if (m_GlassShader) {
     m_GlassShader->Shutdown();
     delete m_GlassShader;
@@ -359,7 +338,6 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  static float rotation = 360.0f;
   bool result;
 
   // Check if the escape key has been pressed, if so quit.
@@ -367,18 +345,7 @@ bool ApplicationClass::Frame(InputClass *Input) {
     return false;
   }
 
-  rotation -= 0.0174532925f * 1.0f;
-  if (rotation <= 0.0f) {
-    rotation += 360.0f;
-  }
-
-  result = RenderSceneToTexture(rotation);
-  if (!result) {
-    return false;
-  }
-
-  // Render the final graphics scene.
-  result = Render(rotation);
+  result = Render();
   if (!result) {
     return false;
   }
@@ -490,12 +457,39 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
   return true;
 }
 
-bool ApplicationClass::Render(float rotation) {
+bool ApplicationClass::Render() {
   float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
-  float refractionScale;
+  float scrollSpeeds[3], scales[3], distortion1[2], distortion2[2],
+      distortion3[2];
+  float distortionScale, distortionBias;
   bool result;
 
-  refractionScale = 0.01f;
+  static float frameTime = 0.0f;
+
+  frameTime += 0.01f;
+  if (frameTime > 1000.0f) {
+    frameTime = 0.0f;
+  }
+
+  scrollSpeeds[0] = 1.3f;
+  scrollSpeeds[1] = 2.1f;
+  scrollSpeeds[2] = 2.3f;
+
+  scales[0] = 1.0f;
+  scales[1] = 2.0f;
+  scales[2] = 3.0f;
+
+  distortion1[0] = 0.1f;
+  distortion1[1] = 0.2f;
+
+  distortion2[0] = 0.1f;
+  distortion2[1] = 0.3f;
+
+  distortion3[0] = 0.1f;
+  distortion3[1] = 0.1f;
+
+  distortionScale = 0.8f;
+  distortionBias = 0.5f;
 
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -503,24 +497,18 @@ bool ApplicationClass::Render(float rotation) {
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-  m_OpenGL->MatrixRotationY(worldMatrix, rotation);
-
-  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                projectionMatrix);
+  m_OpenGL->EnableAlphaBlending();
+  result = m_FireShader->SetShaderParameters(
+      worldMatrix, viewMatrix, projectionMatrix, frameTime, scrollSpeeds,
+      scales, distortion1, distortion2, distortion3, distortionScale,
+      distortionBias);
   if (!result) {
     return false;
   }
 
   m_Model->Render();
-  m_OpenGL->MatrixTranslation(worldMatrix, 0.0f, 0.0f, -1.5f);
 
-  result = m_GlassShader->SetShaderParameters(
-      worldMatrix, viewMatrix, projectionMatrix, refractionScale);
-  if (!result) {
-    return false;
-  }
-
-  m_WindowModel->Render();
+  m_OpenGL->DisableAlphaBlending();
 
   m_OpenGL->EndScene();
 

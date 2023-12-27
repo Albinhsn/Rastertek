@@ -34,6 +34,7 @@
 #include "translateshaderclass.h"
 #include "transparentshaderclass.h"
 #include "watershaderclass.h"
+#include "fireshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -54,7 +55,7 @@ private:
   bool RenderReflectionToTexture();
   bool RenderRefractionToTexture();
   bool RenderSceneToTexture(float);
-  bool Render(float);
+  bool Render();
   bool UpdateFps();
   bool UpdateRenderCountString(int renderCount);
   bool UpdateMouseStrings(int, int, bool);
@@ -106,6 +107,9 @@ private:
 
   // Glass and Ice
   GlassShaderClass *m_GlassShader;
+
+  // Fire
+  FireShaderClass * m_FireShader;
 
   float m_waterHeight, m_waterTranslation;
 };
