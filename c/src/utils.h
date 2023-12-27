@@ -3,6 +3,7 @@
 
 #define PI 3.14159265358979323846f
 
+#include "opengl.h"
 #include "math.h"
 
 // Read targa 32 bit file
@@ -16,5 +17,7 @@ struct TargaHeader {
 
 // read file?
 char *ReadFile(char *filename);
+void OutputShaderErrorMessage(unsigned int shaderId, char * shaderFilename);
+void OutputLinkerErrorMessage(unsigned int programId);
 
 #endif

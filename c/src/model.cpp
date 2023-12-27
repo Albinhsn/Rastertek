@@ -1,6 +1,8 @@
 #include "model.h"
+#include "opengl.h"
 #include "texture.h"
 
+#include <cstdlib>
 #include <stdio.h>
 
 void ReleaseTexture(Model *model) {
@@ -11,17 +13,17 @@ void ReleaseTexture(Model *model) {
     }
 }
 void ShutdownBuffers(Model *model) {
-    model->openGL->glDisableVertexAttribArray(0);
-    model->openGL->glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
 
-    model->openGL->glBindBuffer(GL_ARRAY_BUFFER, 0);
-    model->openGL->glDeleteBuffers(1, &model->vertexBufferId);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDeleteBuffers(1, &model->vertexBufferId);
 
-    model->openGL->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    model->openGL->glDeleteBuffers(1, &model->indexBufferId);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glDeleteBuffers(1, &model->indexBufferId);
 
-    model->openGL->glBindVertexArray(0);
-    model->openGL->glDeleteVertexArrays(1, &model->vertexArrayId);
+    glBindVertexArray(0);
+    glDeleteVertexArrays(1, &model->vertexArrayId);
 
     return;
 }
@@ -29,7 +31,6 @@ void ShutdownBuffers(Model *model) {
 void ShutdownModel(Model *model) {
     ReleaseTexture(model);
     ShutdownBuffers(model);
-    model->openGL = 0;
 }
 bool InitializeBuffers(Model *model) {
     VertexType *vertices;
@@ -72,27 +73,25 @@ bool InitializeBuffers(Model *model) {
     indices[1] = 1; // Top middle.
     indices[2] = 2; // Bottom right.
 
-    model->openGL->glGenVertexArrays(1, &model->vertexArrayId);
-    model->openGL->glBindVertexArray(model->vertexArrayId);
+    glGenVertexArrays(1, &model->vertexArrayId);
+    glBindVertexArray(model->vertexArrayId);
 
-    model->openGL->glGenBuffers(1, &model->vertexBufferId);
+    glGenBuffers(1, &model->vertexBufferId);
 
-    model->openGL->glBindBuffer(GL_ARRAY_BUFFER, model->vertexBufferId);
-    model->openGL->glBufferData(GL_ARRAY_BUFFER, model->vertexCount * sizeof(VertexType), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, model->vertexBufferId);
+    glBufferData(GL_ARRAY_BUFFER, model->vertexCount * sizeof(VertexType), vertices, GL_STATIC_DRAW);
 
-    model->openGL->glEnableVertexAttribArray(0);
-    model->openGL->glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 
-    model->openGL->glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
 
-    model->openGL->glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType),
-                                         (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
 
-    model->openGL->glGenBuffers(1, &model->indexBufferId);
+    glGenBuffers(1, &model->indexBufferId);
 
-    model->openGL->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexBufferId);
-    model->openGL->glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->indexCount * sizeof(unsigned int), indices,
-                                GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexBufferId);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->indexCount * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
     delete[] vertices;
     vertices = 0;
@@ -103,7 +102,7 @@ bool InitializeBuffers(Model *model) {
     return true;
 }
 void RenderBuffers(Model *model) {
-    model->openGL->glBindVertexArray(model->vertexArrayId);
+    glBindVertexArray(model->vertexArrayId);
 
     glDrawElements(GL_TRIANGLES, model->indexCount, GL_UNSIGNED_INT, 0);
 
@@ -111,7 +110,7 @@ void RenderBuffers(Model *model) {
 }
 
 void RenderModel(Model *model) {
-    SetTexture(model->texture, model->openGL);
+    SetTexture(model->texture);
     RenderBuffers(model);
 }
 
@@ -120,7 +119,7 @@ bool LoadTexture(Model *model, char *textureFilename, bool wrap) {
 
     model->texture = (Texture *)malloc(sizeof(Texture));
 
-    result = InitializeTexture(model->texture, model->openGL, textureFilename, 0, wrap);
+    result = InitializeTexture(model->texture, textureFilename, 0, wrap);
     if (!result) {
         printf("ERROR: Failed to initialize texture\n");
         return false;
@@ -128,10 +127,9 @@ bool LoadTexture(Model *model, char *textureFilename, bool wrap) {
 
     return true;
 }
-bool InitializeModel(Model *model, OpenGL *openGL, char *textureFilename, bool wrap) {
+bool InitializeModel(Model *model, char *textureFilename, bool wrap) {
     bool result;
 
-    model->openGL = openGL;
     model->texture = 0;
 
     result = InitializeBuffers(model);

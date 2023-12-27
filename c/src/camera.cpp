@@ -2,6 +2,7 @@
 
 void initializeCamera(Camera *camera) {
 
+
     camera->position.x = 0.0f;
     camera->position.y = 0.0f;
     camera->position.z = 0.0f;

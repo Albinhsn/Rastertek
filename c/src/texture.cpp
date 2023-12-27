@@ -1,8 +1,9 @@
 #include "texture.h"
 #include "opengl.h"
+#include "utils.h"
 #include <stdio.h>
 
-bool LoadTarga32Bit(Texture *texture, OpenGL *OpenGL, char *filename, bool wrap) {
+bool LoadTarga32Bit(Texture *texture, char *filename, bool wrap) {
 
     TargaHeader targaFileHeader;
     FILE *filePtr;
@@ -70,7 +71,7 @@ bool LoadTarga32Bit(Texture *texture, OpenGL *OpenGL, char *filename, bool wrap)
     delete[] targaImage;
     targaImage = 0;
 
-    OpenGL->glActiveTexture(GL_TEXTURE + texture->textureUnit);
+    glActiveTexture(GL_TEXTURE + texture->textureUnit);
 
     glGenTextures(1, &texture->textureId);
     glBindTexture(GL_TEXTURE_2D, texture->textureId);
@@ -88,7 +89,7 @@ bool LoadTarga32Bit(Texture *texture, OpenGL *OpenGL, char *filename, bool wrap)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-    OpenGL->glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     delete[] targaData;
     targaData = 0;
@@ -96,9 +97,9 @@ bool LoadTarga32Bit(Texture *texture, OpenGL *OpenGL, char *filename, bool wrap)
     return true;
 }
 
-bool InitializeTexture(Texture *texture, OpenGL *openGL, char *filename, unsigned int textureUnit, bool wrap) {
+bool InitializeTexture(Texture *texture, char *filename, unsigned int textureUnit, bool wrap) {
     texture->textureUnit = textureUnit;
-    bool result = LoadTarga32Bit(texture, openGL, filename, wrap);
+    bool result = LoadTarga32Bit(texture, filename, wrap);
     if (!result) {
         printf("ERROR: failed to load targa32bit\n");
         return false;
@@ -114,9 +115,9 @@ void ShutdownTexture(Texture *texture) {
     }
 }
 
-void SetTexture(Texture *texture, OpenGL *OpenGl) {
+void SetTexture(Texture *texture) {
     if (texture->loaded) {
-        OpenGl->glActiveTexture(GL_TEXTURE0 + texture->textureUnit);
+        glActiveTexture(GL_TEXTURE0 + texture->textureUnit);
 
         glBindTexture(GL_TEXTURE_2D, texture->textureId);
     }

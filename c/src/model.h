@@ -7,7 +7,6 @@
 struct Model {
         int vertexCount, indexCount;
         unsigned int vertexArrayId, vertexBufferId, indexBufferId;
-        OpenGL *openGL;
         Texture *texture;
 };
 
@@ -16,7 +15,7 @@ struct VertexType {
         float tu, tv;
 };
 
-bool InitializeModel(Model* model, OpenGL *, char *, bool);
+bool InitializeModel(Model* model, char *, bool);
 void ShutdownModel(Model *model);
 void RenderModel(Model *model);
 

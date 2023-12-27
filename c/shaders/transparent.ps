@@ -1,0 +1,21 @@
+#version 400
+
+in vec2 texCoord;
+
+out vec4 outputColor;
+
+uniform sampler2D shaderTexture;
+uniform float blendAmount;
+
+
+void main(void)
+{
+    vec4 textureColor;
+
+    textureColor = texture(shaderTexture, texCoord);
+
+    textureColor.a = blendAmount;
+
+    outputColor = textureColor;
+}
+

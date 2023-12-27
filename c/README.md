@@ -1,3 +1,3 @@
 ## ToDo
-- [ ] Move functions out of OpenGL struct or matrix stuff out
-- [ ] Do the exercises for this version 
+- [ ] Look over and create better functions for opengl stuff,
+- [ ] Create a shader file

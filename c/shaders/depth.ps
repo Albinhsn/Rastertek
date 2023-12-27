@@ -1,0 +1,26 @@
+#version 400
+
+in vec4 depthPosition;
+
+out vec4 outputColor;
+
+void main(void){
+  float depthValue;
+  vec4 color;
+
+  depthValue = depthPosition.z / depthPosition.w;
+
+  if(depthValue < 0.9f){
+    color = vec4(1.0, 0.0f, 0.0f, 1.0f);
+  }
+
+  if(depthValue > 0.9f){
+    color = vec4(0.0, 1.0f, 0.0f, 1.0f);
+  }
+
+  if(depthValue > 0.925f){
+    color = vec4(0.0, 0.0f, 1.0f, 1.0f);
+  }
+
+  outputColor = color;
+}

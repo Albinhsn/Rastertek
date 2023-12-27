@@ -2,305 +2,456 @@
 
 #include "utils.h"
 #include "vector.h"
+#include <GL/gl.h>
+#include <stdio.h>
 
-bool LoadExtensionList(OpenGL *openGL) {
-
+uint CreateShader(uint shaderType) {
     auto glCreateShader = (PFNGLCREATESHADERPROC)glXGetProcAddress((unsigned char *)"glCreateShader");
     if (!glCreateShader) {
         return false;
     }
-    openGL->glCreateShader = glCreateShader;
+    return glCreateShader(shaderType);
+}
 
+void glShaderSource(uint shader, const char *buffer) {
     auto glShaderSource = (PFNGLSHADERSOURCEPROC)glXGetProcAddress((unsigned char *)"glShaderSource");
     if (!glShaderSource) {
-        return false;
+        printf("ERROR: Unable to cast glShaderSource\n");
+        exit(2);
     }
-    openGL->glShaderSource = glShaderSource;
+    glShaderSource(shader, 1, &buffer, NULL);
+}
 
+void glCompileShader(uint shader) {
     auto glCompileShader = (PFNGLCOMPILESHADERPROC)glXGetProcAddress((unsigned char *)"glCompileShader");
     if (!glCompileShader) {
-        return false;
+        printf("ERROR: Unable to cast glCompileShader\n");
+        exit(2);
     }
-    openGL->glCompileShader = glCompileShader;
+    glCompileShader(shader);
+}
 
+void glGetShaderiv(uint shader, uint pname, int *status) {
     auto glGetShaderiv = (PFNGLGETSHADERIVPROC)glXGetProcAddress((unsigned char *)"glGetShaderiv");
     if (!glGetShaderiv) {
-        return false;
+        printf("ERROR: Unable to cast glGetShaderiv\n");
+        exit(2);
     }
-    openGL->glGetShaderiv = glGetShaderiv;
+    glGetShaderiv(shader, pname, status);
+}
+
+char *GetShaderInfoLog(uint shaderId) {
+    int logSize;
+    char *infoLog;
+
+    glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &logSize);
+    logSize++;
+
+    infoLog = new char[logSize];
+    infoLog[logSize - 1] = '\0';
 
     auto glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)glXGetProcAddress((unsigned char *)"glGetShaderInfoLog");
     if (!glGetShaderInfoLog) {
-        return false;
+        printf("ERROR: Unable to cast glGetShaderInfoLog\n");
+        exit(2);
     }
-    openGL->glGetShaderInfoLog = glGetShaderInfoLog;
+    glGetShaderInfoLog(shaderId, logSize, NULL, infoLog);
 
+    return infoLog;
+}
+
+uint CreateProgram() {
     auto glCreateProgram = (PFNGLCREATEPROGRAMPROC)glXGetProcAddress((unsigned char *)"glCreateProgram");
     if (!glCreateProgram) {
-        return false;
+        printf("ERROR: Unable to cast glCreateProgram\n");
+        exit(2);
     }
-    openGL->glCreateProgram = glCreateProgram;
+    return glCreateProgram();
+}
 
+void AttachShaders(uint shaderProgram, uint vShader, uint fShader) {
     auto glAttachShader = (PFNGLATTACHSHADERPROC)glXGetProcAddress((unsigned char *)"glAttachShader");
     if (!glAttachShader) {
-        return false;
+        printf("ERROR: Unable to cast attachShader\n");
+        exit(2);
     }
-    openGL->glAttachShader = glAttachShader;
+    glAttachShader(shaderProgram, vShader);
+    glAttachShader(shaderProgram, fShader);
+}
 
+void BindAttribLocation(uint shaderProgram, int location, const char *variableName) {
     auto glBindAttribLocation = (PFNGLBINDATTRIBLOCATIONPROC)glXGetProcAddress((unsigned char *)"glBindAttribLocation");
     if (!glBindAttribLocation) {
-        return false;
+        printf("ERROR: Unable to cast bindAttribLocation\n");
+        exit(2);
     }
-    openGL->glBindAttribLocation = glBindAttribLocation;
 
+    glBindAttribLocation(shaderProgram, location, variableName);
+}
+
+void LinkProgram(uint shaderProgram) {
     auto glLinkProgram = (PFNGLLINKPROGRAMPROC)glXGetProcAddress((unsigned char *)"glLinkProgram");
     if (!glLinkProgram) {
-        return false;
+        printf("ERROR: Unable to cast glLinkProgram\n");
+        exit(2);
     }
-    openGL->glLinkProgram = glLinkProgram;
+    glLinkProgram(shaderProgram);
+}
 
+void GetProgramiv(uint shaderProgram, uint pname, int *status) {
     auto glGetProgramiv = (PFNGLGETPROGRAMIVPROC)glXGetProcAddress((unsigned char *)"glGetProgramiv");
     if (!glGetProgramiv) {
-        return false;
+        printf("ERROR: Unable to cast glGetProgramiv\n");
+        exit(2);
     }
-    openGL->glGetProgramiv = glGetProgramiv;
+    glGetProgramiv(shaderProgram, pname, status);
+}
 
+char *GetProgramInfoLog(uint programId) {
+    int logSize;
+    char *infoLog;
+
+    GetProgramiv(programId, GL_INFO_LOG_LENGTH, &logSize);
+    logSize++;
+
+    infoLog = new char[logSize];
+    infoLog[logSize - 1] = '\0';
+
+    // Now retrieve the info log.
     auto glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)glXGetProcAddress((unsigned char *)"glGetProgramInfoLog");
     if (!glGetProgramInfoLog) {
-        return false;
+        printf("ERROR: Unable to cast GetProgramInfoLog\n");
+        exit(2);
     }
-    openGL->glGetProgramInfoLog = glGetProgramInfoLog;
+    glGetProgramInfoLog(programId, logSize, NULL, infoLog);
 
+    return infoLog;
+}
+
+void DetachShader(uint program, uint shader) {
     auto glDetachShader = (PFNGLDETACHSHADERPROC)glXGetProcAddress((unsigned char *)"glDetachShader");
     if (!glDetachShader) {
-        return false;
+        printf("ERROR: Unable to cast glDetachShader\n");
+        exit(2);
     }
-    openGL->glDetachShader = glDetachShader;
+    glDetachShader(program, shader);
+}
+
+void DeleteShader(uint shader) {
 
     auto glDeleteShader = (PFNGLDELETESHADERPROC)glXGetProcAddress((unsigned char *)"glDeleteShader");
     if (!glDeleteShader) {
-        return false;
+        printf("ERROR: Unable to cast glDeleteShader\n");
+        exit(2);
     }
-    openGL->glDeleteShader = glDeleteShader;
-
+    glDeleteShader(shader);
+}
+void DeleteProgram(uint program) {
     auto glDeleteProgram = (PFNGLDELETEPROGRAMPROC)glXGetProcAddress((unsigned char *)"glDeleteProgram");
     if (!glDeleteProgram) {
-        return false;
+        printf("ERROR: Unable to cast glDeleteShader\n");
+        exit(2);
     }
-    openGL->glDeleteProgram = glDeleteProgram;
+    glDeleteProgram(program);
+}
 
+void UseProgram(uint program) {
     auto glUseProgram = (PFNGLUSEPROGRAMPROC)glXGetProcAddress((unsigned char *)"glUseProgram");
     if (!glUseProgram) {
-        return false;
+        printf("ERROR: Unable to cast glDeleteShader\n");
+        exit(2);
     }
-    openGL->glUseProgram = glUseProgram;
+    glUseProgram(program);
+}
 
+int GetUniformLocation(uint program, char *variableName) {
     auto glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)glXGetProcAddress((unsigned char *)"glGetUniformLocation");
     if (!glGetUniformLocation) {
-        return false;
+        printf("ERROR: Unable to cast glGetUniformLocation\n");
+        exit(2);
     }
-    openGL->glGetUniformLocation = glGetUniformLocation;
+    return glGetUniformLocation(program, variableName);
+}
 
+void glUniformMatrix4fv(int location, int count, bool transpose, const float *matrix) {
     auto glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)glXGetProcAddress((unsigned char *)"glUniformMatrix4fv");
     if (!glUniformMatrix4fv) {
-        return false;
+        printf("ERROR: Unable to cast glUniformMatrix4fv\n");
+        exit(2);
     }
-    openGL->glUniformMatrix4fv = glUniformMatrix4fv;
+    glUniformMatrix4fv(location, count, transpose, matrix);
+}
 
+void glGenVertexArrays(int n, uint *buffer) {
     auto glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)glXGetProcAddress((unsigned char *)"glGenVertexArrays");
     if (!glGenVertexArrays) {
-        return false;
+        printf("ERROR: Unable to cast glGenVertexArrays\n");
+        exit(2);
     }
-    openGL->glGenVertexArrays = glGenVertexArrays;
+    glGenVertexArrays(n, buffer);
+}
+
+void glBindVertexArray(uint buffer) {
 
     auto glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)glXGetProcAddress((unsigned char *)"glBindVertexArray");
     if (!glBindVertexArray) {
-        return false;
+        printf("ERROR: Unable to cast glBindVertexArray\n");
+        exit(2);
     }
-    openGL->glBindVertexArray = glBindVertexArray;
+    glBindVertexArray(buffer);
+}
 
+void glGenBuffers(int n, uint *buffer) {
     auto glGenBuffers = (PFNGLGENBUFFERSPROC)glXGetProcAddress((unsigned char *)"glGenBuffers");
     if (!glGenBuffers) {
-        return false;
+        printf("ERROR: Unable to cast glGenBuffers\n");
+        exit(2);
     }
-    openGL->glGenBuffers = glGenBuffers;
+    glGenBuffers(n, buffer);
+}
 
+void glBindBuffer(GLenum target, GLuint buffer) {
     auto glBindBuffer = (PFNGLBINDBUFFERPROC)glXGetProcAddress((unsigned char *)"glBindBuffer");
     if (!glBindBuffer) {
-        return false;
+        printf("ERROR: Unable to cast glBindBuffer\n");
+        exit(2);
     }
-    openGL->glBindBuffer = glBindBuffer;
+    glBindBuffer(target, buffer);
+}
+void glBufferData(GLenum target, size_t size, void *data, GLenum usage) {
 
     auto glBufferData = (PFNGLBUFFERDATAPROC)glXGetProcAddress((unsigned char *)"glBufferData");
     if (!glBufferData) {
-        return false;
+        printf("ERROR: Unable to cast glBufferData\n");
+        exit(2);
     }
-    openGL->glBufferData = glBufferData;
+    glBufferData(target, size, data, usage);
+}
+
+void glEnableVertexAttribArray(uint index) {
 
     auto glEnableVertexAttribArray =
         (PFNGLENABLEVERTEXATTRIBARRAYPROC)glXGetProcAddress((unsigned char *)"glEnableVertexAttribArray");
     if (!glEnableVertexAttribArray) {
-        return false;
+        printf("ERROR: Unable to cast glEnableVertexAttribArray\n");
+        exit(2);
     }
-    openGL->glEnableVertexAttribArray = glEnableVertexAttribArray;
+    glEnableVertexAttribArray(index);
+}
 
+void glVertexAttribPointer(uint index, int size, GLenum type, bool normalized, size_t stride, void *pointer) {
     auto glVertexAttribPointer =
         (PFNGLVERTEXATTRIBPOINTERPROC)glXGetProcAddress((unsigned char *)"glVertexAttribPointer");
     if (!glVertexAttribPointer) {
-        return false;
+        printf("ERROR: Unable to cast glVertexAttribArray\n");
+        exit(2);
     }
-    openGL->glVertexAttribPointer = glVertexAttribPointer;
+    glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+}
 
+void glDisableVertexAttribArray(uint index) {
     auto glDisableVertexAttribArray =
         (PFNGLDISABLEVERTEXATTRIBARRAYPROC)glXGetProcAddress((unsigned char *)"glDisableVertexAttribArray");
     if (!glDisableVertexAttribArray) {
-        return false;
+        printf("ERROR: Unable to cast glDisableVertexAttribArray\n");
+        exit(2);
     }
-    openGL->glDisableVertexAttribArray = glDisableVertexAttribArray;
+    glDisableVertexAttribArray(index);
+}
 
+void glDeleteBuffers(int n, uint *buffers) {
     auto glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)glXGetProcAddress((unsigned char *)"glDeleteBuffers");
     if (!glDeleteBuffers) {
-        return false;
+        printf("ERROR: Unable to cast glDeleteBuffers\n");
+        exit(2);
     }
-    openGL->glDeleteBuffers = glDeleteBuffers;
+    glDeleteBuffers(n, buffers);
+}
 
+void glDeleteVertexArrays(int n, uint *arrays) {
     auto glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)glXGetProcAddress((unsigned char *)"glDeleteVertexArrays");
     if (!glDeleteVertexArrays) {
-        return false;
+        printf("ERROR: Unable to cast glDeleteVertexArrays\n");
+        exit(2);
     }
-    openGL->glDeleteVertexArrays = glDeleteVertexArrays;
+    glDeleteVertexArrays(n, arrays);
+}
 
+void glUniform1i(int location, int v0) {
     auto glUniform1i = (PFNGLUNIFORM1IPROC)glXGetProcAddress((unsigned char *)"glUniform1i");
     if (!glUniform1i) {
-        return false;
+        printf("ERROR: Unable to cast glUniform1i\n");
+        exit(2);
     }
-    openGL->glUniform1i = glUniform1i;
+    glUniform1i(location, v0);
+}
 
-    auto glActiveTexture = (PFNGLACTIVETEXTUREPROC)glXGetProcAddress((unsigned char *)"glActiveTexture");
-    if (!glActiveTexture) {
-        return false;
-    }
-    openGL->glActiveTexture = glActiveTexture;
-
+void glGenerateMipmap(GLenum target) {
     auto glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)glXGetProcAddress((unsigned char *)"glGenerateMipmap");
     if (!glGenerateMipmap) {
-        return false;
+        printf("ERROR: Unable to cast glGenerateMipmap\n");
+        exit(2);
     }
-    openGL->glGenerateMipmap = glGenerateMipmap;
-
+    glGenerateMipmap(target);
+}
+void glUniform2fv(int location, int count, float *value) {
     auto glUniform2fv = (PFNGLUNIFORM2FVPROC)glXGetProcAddress((unsigned char *)"glUniform2fv");
     if (!glUniform2fv) {
-        return false;
+        printf("ERROR: Unable to cast glUniform2fv\n");
+        exit(2);
     }
-    openGL->glUniform2fv = glUniform2fv;
-
+    glUniform2fv(location, count, value);
+}
+void glUniform3fv(int location, int count, float *value) {
     auto glUniform3fv = (PFNGLUNIFORM3FVPROC)glXGetProcAddress((unsigned char *)"glUniform3fv");
     if (!glUniform3fv) {
-        return false;
+        printf("ERROR: Unable to cast glUniform3fv\n");
+        exit(2);
     }
-    openGL->glUniform3fv = glUniform3fv;
-
+    glUniform3fv(location, count, value);
+}
+void glUniform4fv(int location, int count, float *value) {
     auto glUniform4fv = (PFNGLUNIFORM4FVPROC)glXGetProcAddress((unsigned char *)"glUniform4fv");
     if (!glUniform4fv) {
-        return false;
+        printf("ERROR: Unable to cast glUniform4fv\n");
+        exit(2);
     }
-    openGL->glUniform4fv = glUniform4fv;
+    glUniform4fv(location, count, value);
+}
 
+void *glMapBuffer(GLenum target, GLenum access) {
     auto glMapBuffer = (PFNGLMAPBUFFERPROC)glXGetProcAddress((unsigned char *)"glMapBuffer");
     if (!glMapBuffer) {
-        return false;
+        printf("ERROR: Unable to cast glMapBuffer\n");
+        exit(2);
     }
-    openGL->glMapBuffer = glMapBuffer;
-
+    return glMapBuffer(target, access);
+}
+void glUnmapBuffer(GLenum target) {
     auto glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)glXGetProcAddress((unsigned char *)"glUnmapBuffer");
     if (!glUnmapBuffer) {
-        return false;
+        printf("ERROR: Unable to cast glUnmapBuffer\n");
+        exit(2);
     }
-    openGL->glUnmapBuffer = glUnmapBuffer;
-
+    glUnmapBuffer(target);
+}
+void glXSwapIntervalEXT(Display *dpy, GLXDrawable drawable, int interval) {
     auto glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddress((unsigned char *)"glXSwapIntervalEXT");
     if (!glXSwapIntervalEXT) {
-        return false;
+        printf("ERROR: Unable to cast glXSwapIntervalEXT\n");
+        exit(2);
     }
-    openGL->glXSwapIntervalEXT = glXSwapIntervalEXT;
+    glXSwapIntervalEXT(dpy, drawable, interval);
+}
 
+void glUniform1f(GLint location, GLfloat v0) {
     auto glUniform1f = (PFNGLUNIFORM1FPROC)glXGetProcAddress((unsigned char *)"glUniform1f");
     if (!glUniform1f) {
-        return false;
+        printf("ERROR: Unable to cast glUniform1f\n");
+        exit(2);
     }
-    openGL->glUniform1f = glUniform1f;
+    glUniform1f(location, v0);
+}
 
+void glGenFramebuffers(int n, uint *framebuffers) {
     auto glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)glXGetProcAddress((unsigned char *)"glGenFramebuffers");
     if (!glGenFramebuffers) {
-        return false;
+        printf("ERROR: Unable to cast glGenFramebuffers\n");
+        exit(2);
     }
-    openGL->glGenFramebuffers = glGenFramebuffers;
+    glGenFramebuffers(n, framebuffers);
+}
 
+void glDeleteFrameBuffers(int n, uint *framebuffers) {
     auto glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)glXGetProcAddress((unsigned char *)"glDeleteFramebuffers");
     if (!glDeleteFramebuffers) {
-        return false;
+        printf("ERROR: Unable to cast glDeleteFramebuffers\n");
+        exit(2);
     }
-    openGL->glDeleteFramebuffers = glDeleteFramebuffers;
+    glDeleteFramebuffers(n, framebuffers);
+}
 
+void glBindFramebuffer(GLenum target, uint framebuffer) {
     auto glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)glXGetProcAddress((unsigned char *)"glBindFramebuffer");
     if (!glBindFramebuffer) {
-        return false;
+        printf("ERROR: Unable to cast glBindFramebuffer\n");
+        exit(2);
     }
-    openGL->glBindFramebuffer = glBindFramebuffer;
+    glBindFramebuffer(target, framebuffer);
+}
 
+void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, uint texture, int level) {
     auto glFramebufferTexture2D =
         (PFNGLFRAMEBUFFERTEXTURE2DPROC)glXGetProcAddress((unsigned char *)"glFramebufferTexture2D");
     if (!glFramebufferTexture2D) {
-        return false;
+        printf("ERROR: Unable to cast glFramebufferTexture2D\n");
+        exit(2);
     }
-    openGL->glFramebufferTexture2D = glFramebufferTexture2D;
+    glFramebufferTexture2D(target, attachment, textarget, texture, level);
+}
 
+void glGenRenderbuffers(int n, uint *renderbuffers) {
     auto glGenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC)glXGetProcAddress((unsigned char *)"glGenRenderbuffers");
     if (!glGenRenderbuffers) {
-        return false;
+        printf("ERROR: Unable to cast glGenRenderbuffer\n");
+        exit(2);
     }
-    openGL->glGenRenderbuffers = glGenRenderbuffers;
+    glGenRenderbuffers(n, renderbuffers);
+}
 
+void glBindRenderBuffer(GLenum target, uint framebuffer) {
     auto glBindRenderbuffer = (PFNGLBINDRENDERBUFFERPROC)glXGetProcAddress((unsigned char *)"glBindRenderbuffer");
     if (!glBindRenderbuffer) {
-        return false;
+        printf("ERROR: Unable to cast glBindRenderBuffer\n");
+        exit(2);
     }
-    openGL->glBindRenderbuffer = glBindRenderbuffer;
+    glBindRenderbuffer(target, framebuffer);
+}
 
+void glRenderbufferStorage(GLenum target, GLenum internalformat, int width, int height) {
     auto glRenderbufferStorage =
         (PFNGLRENDERBUFFERSTORAGEPROC)glXGetProcAddress((unsigned char *)"glRenderbufferStorage");
     if (!glRenderbufferStorage) {
-        return false;
+        printf("ERROR: Unable to cast glBindRenderbufferStorage\n");
+        exit(2);
     }
-    openGL->glRenderbufferStorage = glRenderbufferStorage;
+    glRenderbufferStorage(target, internalformat, width, height);
+}
 
+void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, uint renderbuffer) {
     auto glFramebufferRenderbuffer =
         (PFNGLFRAMEBUFFERRENDERBUFFERPROC)glXGetProcAddress((unsigned char *)"glFramebufferRenderbuffer");
     if (!glFramebufferRenderbuffer) {
-        return false;
+        printf("ERROR: Unable to cast glFramebufferRenderbuffer\n");
+        exit(2);
     }
-    openGL->glFramebufferRenderbuffer = glFramebufferRenderbuffer;
+    glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
+}
 
+void glDrawBuffers(int n, const GLenum *bufs) {
     auto glDrawBuffers = (PFNGLDRAWBUFFERSARBPROC)glXGetProcAddress((unsigned char *)"glDrawBuffers");
     if (!glDrawBuffers) {
-        return false;
+        printf("ERROR: Unable to cast glDrawBuffers\n");
+        exit(2);
     }
-    openGL->glDrawBuffers = glDrawBuffers;
-
+    glDrawBuffers(n, bufs);
+}
+void glDeleteRenderbuffers(int n, uint *renderbuffers) {
     auto glDeleteRenderbuffers =
         (PFNGLDELETERENDERBUFFERSPROC)glXGetProcAddress((unsigned char *)"glDeleteRenderbuffers");
     if (!glDeleteRenderbuffers) {
-        return false;
+        printf("ERROR: Unable to cast glDeleteRenderbuffers\n");
+        exit(2);
     }
-    openGL->glDeleteRenderbuffers = glDeleteRenderbuffers;
-
+    glDeleteRenderbuffers(n, renderbuffers);
+}
+void glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha) {
     auto glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEPROC)glXGetProcAddress((unsigned char *)"glBlendFuncSeparate");
     if (!glBlendFuncSeparate) {
-        return false;
+        printf("ERROR: Unable to cast glBlendFuncSeparate\n");
+        exit(2);
     }
-    openGL->glBlendFuncSeparate = glBlendFuncSeparate;
-
-    return true;
+    glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 }
 
 bool InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWidth, int screenHeight, float screenNear,
@@ -310,10 +461,6 @@ bool InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWi
     openGL->display = display;
     openGL->hwnd = win;
 
-    if (!LoadExtensionList(openGL)) {
-        return false;
-    }
-
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
     glFrontFace(GL_CW);
@@ -322,9 +469,9 @@ bool InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWi
 
     GLXDrawable drawable = glXGetCurrentDrawable();
     if (vsync) {
-        openGL->glXSwapIntervalEXT(openGL->display, drawable, 1);
+        glXSwapIntervalEXT(openGL->display, drawable, 1);
     } else {
-        openGL->glXSwapIntervalEXT(openGL->display, drawable, 0);
+        glXSwapIntervalEXT(openGL->display, drawable, 0);
     }
     BuildIdentityMatrix(openGL->worldMatrix);
 
@@ -358,7 +505,7 @@ void EnableAlphaBlending(OpenGL *openGL) {
     glEnable(GL_BLEND);
 
     // Set the blending equation.
-    openGL->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 }
 void DisableAlphaBlending() {
     // Disable alpha blending.
@@ -366,7 +513,7 @@ void DisableAlphaBlending() {
 }
 
 void SetBackBufferRenderTarget(OpenGL *openGL) {
-    openGL->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return;
 }
 void ResetViewport(int screenWidth, int screenHeight) { glViewport(0, 0, screenWidth, screenHeight); }

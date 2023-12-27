@@ -1,36 +1,25 @@
+CC := g++
+CFLAGS := -O2
+TARGET := client
 
-client: opengl.o application.o camera.o main.o  model.o  vector.o  system.o texture.o textureshader.o utils.o input.o
-	g++ -o client textureshader.o main.o camera.o opengl.o vector.o application.o model.o system.o texture.o utils.o input.o -l GL -l X11
+# $(wildcard *.cpp /xxx/xxx/*.cpp): get all .cpp files from the current directory and dir "/xxx/xxx/"
+SRCS := $(wildcard ./src/*.cpp)
+# $(patsubst %.cpp,%.o,$(SRCS)): substitute all ".cpp" file name strings to ".o" file name strings
+OBJS := $(patsubst ./src/%.cpp,./obj/%.o,$(SRCS))
 
-input.o: ./src/input.cpp
-	g++ -c ./src/input.cpp
+all: $(TARGET)
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ -l GL -l X11 
+./obj/%.o: ./src/%.cpp
+	$(CC) $(CFLAGS) -l GL -l X11  -c $<  && mv *.o ./obj/
+clean:
+	rm -rf $(TARGET) *.o
+conv:
+	$(CC) ./convert/convert.cpp -o ./convert_blender && ./convert_blender
 
-utils.o: ./src/utils.cpp
-	g++ -c ./src/utils.cpp
+len:
+	find . -name '*.cpp' | xargs wc -l
 
-application.o: ./src/application.cpp
-	g++ -c ./src/application.cpp
 
-camera.o: ./src/camera.cpp
-	g++ -c ./src/camera.cpp
+.PHONY: all clean
 
-model.o: ./src/model.cpp
-	g++ -c ./src/model.cpp
-
-system.o: ./src/system.cpp
-	g++ -c ./src/system.cpp
-
-texture.o: ./src/texture.cpp
-	g++ -c ./src/texture.cpp
-
-textureshader.o: ./src/textureshader.cpp
-	g++ -c ./src/textureshader.cpp
-
-main.o: ./src/main.cpp
-	g++ -c ./src/main.cpp
-
-opengl.o: ./src/opengl.cpp
-	g++ -c ./src/opengl.cpp
-
-vector.o: ./src/vector.cpp
-	g++ -c ./src/vector.cpp

@@ -3,7 +3,6 @@
 
 #include "GL/gl.h"
 #include "GL/glx.h"
-#include "utils.h"
 
 // TYPE DEFINITIONS
 typedef GLuint(APIENTRY *PFNGLCREATESHADERPROC)(GLenum type);
@@ -60,54 +59,6 @@ typedef void(APIENTRY *PFNGLDELETERENDERBUFFERSPROC)(GLsizei n, const GLuint *re
 typedef void(APIENTRYP PFNGLBLENDFUNCSEPARATEPROC)(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha,
                                                    GLenum dfactorAlpha);
 struct OpenGL {
-    PFNGLCREATESHADERPROC glCreateShader;
-    PFNGLSHADERSOURCEPROC glShaderSource;
-    PFNGLCOMPILESHADERPROC glCompileShader;
-    PFNGLGETSHADERIVPROC glGetShaderiv;
-    PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
-    PFNGLCREATEPROGRAMPROC glCreateProgram;
-    PFNGLATTACHSHADERPROC glAttachShader;
-    PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation;
-    PFNGLLINKPROGRAMPROC glLinkProgram;
-    PFNGLGETPROGRAMIVPROC glGetProgramiv;
-    PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
-    PFNGLDETACHSHADERPROC glDetachShader;
-    PFNGLDELETESHADERPROC glDeleteShader;
-    PFNGLDELETEPROGRAMPROC glDeleteProgram;
-    PFNGLUSEPROGRAMPROC glUseProgram;
-    PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
-    PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
-    PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
-    PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
-    PFNGLGENBUFFERSPROC glGenBuffers;
-    PFNGLBINDBUFFERPROC glBindBuffer;
-    PFNGLBUFFERDATAPROC glBufferData;
-    PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
-    PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
-    PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
-    PFNGLDELETEBUFFERSPROC glDeleteBuffers;
-    PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays;
-    PFNGLUNIFORM1IPROC glUniform1i;
-    PFNGLACTIVETEXTUREPROC glActiveTexture;
-    PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
-    PFNGLUNIFORM2FVPROC glUniform2fv;
-    PFNGLUNIFORM3FVPROC glUniform3fv;
-    PFNGLUNIFORM4FVPROC glUniform4fv;
-    PFNGLMAPBUFFERPROC glMapBuffer;
-    PFNGLUNMAPBUFFERPROC glUnmapBuffer;
-    PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT;
-    PFNGLUNIFORM1FPROC glUniform1f;
-    PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
-    PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
-    PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
-    PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
-    PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
-    PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer;
-    PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage;
-    PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer;
-    PFNGLDRAWBUFFERSARBPROC glDrawBuffers;
-    PFNGLDELETERENDERBUFFERSPROC glDeleteRenderbuffers;
-    PFNGLBLENDFUNCSEPARATEPROC glBlendFuncSeparate;
     Display *display;
     Window hwnd;
     float worldMatrix[16];
@@ -135,5 +86,52 @@ void ResetViewport();
 void EnableClipping();
 void DisableClipping();
 bool LoadExtensionList();
+uint CreateShader(uint shaderType);
+void glShaderSource(uint shader, const char *buffer);
+void glCompileShader(uint shader);
+void glGetShaderiv(uint shader, uint pname, int *status);
+char *GetShaderInfoLog(uint shaderId);
+uint CreateProgram();
+void AttachShaders(uint shaderProgram, uint vShader, uint fShader);
+void BindAttribLocation(uint shaderProgram, int location, const char *variableName);
+void LinkProgram(uint shaderProgram);
+void GetProgramiv(uint shaderProgram, uint pname, int *status);
+char *GetProgramInfoLog(uint programId);
+void DetachShader(uint program, uint shader);
+void DeleteShader(uint shader);
+void DeleteProgram(uint program);
+void UseProgram(uint program);
+int GetUniformLocation(uint program, char *variableName);
+void glUniformMatrix4fv(int location, int count, bool transpose, const float *matrix);
+void glGenVertexArrays(int n, uint *buffer);
+void glBindVertexArray(uint buffer);
+void glGenBuffers(int n, uint *buffer);
+void glBindBuffer(GLenum target, GLuint buffer);
+void glBufferData(GLenum target, size_t size, void *data, GLenum usage);
+void glEnableVertexAttribArray(uint index);
+void glVertexAttribPointer(uint index, int size, GLenum type, bool normalized, size_t stride, void *pointer);
+void glDisableVertexAttribArray(uint index);
+void glDeleteBuffers(int n, uint *buffers);
+void glDeleteVertexArrays(int n, uint *arrays);
+void glUniform1i(int location, int v0);
+void glGenerateMipmap(GLenum target);
+void glUniform2fv(int location, int count, float *value);
+void glUniform3fv(int location, int count, float *value);
+void glUniform4fv(int location, int count, float *value);
+void *glMapBuffer(GLenum target, GLenum access);
+void glUnmapBuffer(GLenum target);
+void glXSwapIntervalEXT(Display *dpy, GLXDrawable drawable, int interval);
+void glUniform1f(GLint location, GLfloat v0);
+void glGenFramebuffers(int n, uint *framebuffers);
+void glDeleteFrameBuffers(int n, uint *framebuffers);
+void glBindFramebuffer(GLenum target, uint framebuffer);
+void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, uint texture, int level);
+void glGenRenderbuffers(int n, uint *renderbuffers);
+void glBindRenderBuffer(GLenum target, uint framebuffer);
+void glRenderbufferStorage(GLenum target, GLenum internalformat, int width, int height);
+void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, uint renderbuffer);
+void glDrawBuffers(int n, const GLenum *bufs);
+void glDeleteRenderbuffers(int n, uint *renderbuffers);
+void glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 
 #endif

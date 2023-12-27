@@ -46,11 +46,11 @@ bool InitializeApplication(Application *application, Display *display, Window wi
 
     Render(application->camera);
 
-    strcpy(textureFilename, "./stone01.tga");
+    strcpy(textureFilename, "./data/stone01.tga");
 
     application->model = (Model *)malloc(sizeof(Model));
 
-    result = InitializeModel(application->model, application->openGL, textureFilename, false);
+    result = InitializeModel(application->model, textureFilename, false);
     if (!result) {
         printf("ERROR: Failed to initialize model\n");
         return false;
@@ -58,7 +58,7 @@ bool InitializeApplication(Application *application, Display *display, Window wi
 
     application->textureShader = (TextureShader *)malloc(sizeof(TextureShader));
 
-    result = InitializeTextureShader(application->textureShader, application->openGL);
+    result = InitializeTextureShader(application->textureShader);
     if (!result) {
         printf("ERROR: Failed to initialize texture shader\n");
         return false;
@@ -79,18 +79,15 @@ void ShutdownApplication(Application *application) {
     if (application->model) {
         ShutdownModel(application->model);
         free(application->model);
-        application->model = 0;
     }
 
     // Release the camera object.
     if (application->camera) {
         free(application->camera);
-        application->camera = 0;
     }
 
     if (application->openGL) {
         free(application->openGL);
-        application->openGL = 0;
     }
 }
 bool Frame(Application *application, Input *input) {
