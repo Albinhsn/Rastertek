@@ -44,6 +44,9 @@ ApplicationClass::ApplicationClass() {
   m_FireShader = 0;
   m_BillboardModel = 0;
   m_DepthShader = 0;
+  m_Blur = 0;
+  m_FullScreenWindow = 0;
+  m_BlurShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -52,7 +55,8 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename[128];
+  char modelFilename[128], textureFilename[128];
+  int downSampleWidth, downSampleHeight;
   bool result;
 
   // Create and initialize the OpenGL object.
@@ -66,30 +70,77 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 
   // Create and initialize the camera object.
   m_Camera = new CameraClass;
-  m_Camera->SetPosition(0.0f, 2.0f, -10.0f);
+  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
   m_Camera->Render();
 
-  m_DepthShader = new DepthShaderClass;
+  m_TextureShader = new TextureShaderClass;
 
-  result = m_DepthShader->Initialize(m_OpenGL);
+  result = m_TextureShader->Initialize(m_OpenGL);
   if (!result) {
     printf("Failed to initialize depth shader\n");
     return false;
   }
 
-  strcpy(modelFilename, "./data/floor.txt");
+  strcpy(modelFilename, "./data/cube.txt");
+  strcpy(textureFilename, "./data/stone01.tga");
 
   m_Model = new ModelClass;
 
-  result = m_Model->Initialize(m_OpenGL, modelFilename, false);
+  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, false);
   if (!result) {
     printf("Failed to initialize model\n");
+    return false;
+  }
+
+  m_RenderTexture = new RenderTextureClass;
+  result = m_RenderTexture->Initialize(m_OpenGL, screenWidth, screenHeight,
+                                       SCREEN_NEAR, SCREEN_DEPTH, 0, 0);
+  if (!result) {
+    return false;
+  }
+
+  m_FullScreenWindow = new OrthoWindowClass;
+  result = m_FullScreenWindow->Initialize(m_OpenGL, screenWidth, screenHeight);
+  if (!result) {
+    return false;
+  }
+
+  downSampleWidth = screenWidth / 2;
+  downSampleHeight = screenHeight / 2;
+
+  m_Blur = new BlurClass;
+
+  result =
+      m_Blur->Initialize(m_OpenGL, downSampleWidth, downSampleHeight,
+                         SCREEN_NEAR, SCREEN_DEPTH, screenWidth, screenHeight);
+  if (!result) {
+    return false;
+  }
+
+  m_BlurShader = new BlurShaderClass;
+  result = m_BlurShader->Initialize(m_OpenGL);
+  if (!result) {
     return false;
   }
 
   return true;
 }
 void ApplicationClass::Shutdown() {
+  if (m_BlurShader) {
+    m_BlurShader->Shutdown();
+    delete m_BlurShader;
+    m_BlurShader = 0;
+  }
+  if (m_Blur) {
+    m_Blur->Shutdown();
+    delete m_Blur;
+    m_Blur = 0;
+  }
+  if (m_FullScreenWindow) {
+    m_FullScreenWindow->Shutdown();
+    delete m_FullScreenWindow;
+    m_FullScreenWindow = 0;
+  }
   if (m_DepthShader) {
     m_DepthShader->Shutdown();
     delete m_DepthShader;
@@ -347,16 +398,39 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
+  static float rotation = 360.0f;
   bool result;
 
+  // Check if the escape key has been pressed, if so quit.
   if (Input->IsEscapePressed() == true) {
     return false;
   }
 
+  // Update the rotation variable each frame.
+  rotation -= 0.0174532925f * 1.0f;
+  if (rotation <= 0.0f) {
+    rotation += 360.0f;
+  }
+
+  // Render the scene to a render texture.
+  result = RenderSceneToTexture(rotation);
+  if (!result) {
+    return false;
+  }
+
+  // Blur the texture using the BlurClass object.
+  result = m_Blur->BlurTexture(m_RenderTexture, m_OpenGL, m_Camera,
+                               m_TextureShader, m_BlurShader);
+  if (!result) {
+    return true;
+  }
+
+  // Render the graphics scene.
   result = Render();
   if (!result) {
     return false;
   }
+
   return true;
 }
 bool ApplicationClass::RenderRefractionToTexture() {
@@ -466,23 +540,24 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
 }
 
 bool ApplicationClass::Render() {
-  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
+  float worldMatrix[16], viewMatrix[16], orthoMatrix[16];
   bool result;
 
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
-  m_OpenGL->GetProjectionMatrix(projectionMatrix);
+  m_OpenGL->GetOrthoMatrix(orthoMatrix);
 
-  result = m_DepthShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                              projectionMatrix);
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                orthoMatrix);
   if (!result) {
     return false;
   }
 
-  // Render the floor model using the texture shader.
-  m_Model->Render();
+  m_RenderTexture->SetTexture();
+
+  m_FullScreenWindow->Render();
 
   m_OpenGL->EndScene();
 

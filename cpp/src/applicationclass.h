@@ -3,8 +3,11 @@
 
 #include "alphamapshaderclass.h"
 #include "bitmapclass.h"
+#include "blurclass.h"
+#include "blurshaderclass.h"
 #include "cameraclass.h"
 #include "clipplaneshaderclass.h"
+#include "depthshaderclass.h"
 #include "displayplaneclass.h"
 #include "fireshaderclass.h"
 #include "fogshaderclass.h"
@@ -22,6 +25,7 @@
 #include "multitextureshaderclass.h"
 #include "normalmapshaderclass.h"
 #include "openglclass.h"
+#include "orthowindowclass.h"
 #include "positionclass.h"
 #include "reflectionshaderclass.h"
 #include "refractionshaderclass.h"
@@ -35,12 +39,11 @@
 #include "translateshaderclass.h"
 #include "transparentshaderclass.h"
 #include "watershaderclass.h"
-#include "depthshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
-const float SCREEN_NEAR = 1.0f;
-const float SCREEN_DEPTH = 100.0f;
+const float SCREEN_NEAR = 0.3f;
+const float SCREEN_DEPTH = 1000.0f;
 
 class ApplicationClass {
 public:
@@ -116,7 +119,12 @@ private:
   ModelClass *m_BillboardModel;
 
   // Depth Buffer
-  DepthShaderClass * m_DepthShader;
+  DepthShaderClass *m_DepthShader;
+
+  // Blur
+  OrthoWindowClass *m_FullScreenWindow;
+  BlurClass *m_Blur;
+  BlurShaderClass *m_BlurShader;
 
   float m_waterHeight, m_waterTranslation;
 };
