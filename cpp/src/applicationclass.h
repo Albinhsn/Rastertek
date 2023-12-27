@@ -9,6 +9,7 @@
 #include "clipplaneshaderclass.h"
 #include "depthshaderclass.h"
 #include "displayplaneclass.h"
+#include "fadeshaderclass.h"
 #include "fireshaderclass.h"
 #include "fogshaderclass.h"
 #include "fontclass.h"
@@ -26,6 +27,8 @@
 #include "normalmapshaderclass.h"
 #include "openglclass.h"
 #include "orthowindowclass.h"
+#include "particleshaderclass.h"
+#include "particlesystemclass.h"
 #include "positionclass.h"
 #include "reflectionshaderclass.h"
 #include "refractionshaderclass.h"
@@ -39,7 +42,6 @@
 #include "translateshaderclass.h"
 #include "transparentshaderclass.h"
 #include "watershaderclass.h"
-#include "fadeshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -60,7 +62,7 @@ private:
   bool RenderReflectionToTexture();
   bool RenderRefractionToTexture();
   bool RenderSceneToTexture(float);
-  bool Render(float);
+  bool Render();
   bool UpdateFps();
   bool UpdateRenderCountString(int renderCount);
   bool UpdateMouseStrings(int, int, bool);
@@ -129,9 +131,12 @@ private:
   BlurShaderClass *m_BlurShader;
 
   // Screen Fade
-  FadeShaderClass * m_FadeShader;
+  FadeShaderClass *m_FadeShader;
   int m_accumulatedTime, m_fadeInTime;
 
+  // ParticleSystem
+  ParticleSystemClass *m_ParticleSystem;
+  ParticleShaderClass *m_ParticleShader;
 };
 
 #endif

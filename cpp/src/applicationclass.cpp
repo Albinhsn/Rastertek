@@ -48,7 +48,10 @@ ApplicationClass::ApplicationClass() {
   m_FullScreenWindow = 0;
   m_BlurShader = 0;
   m_FadeShader = 0;
-  m_Timer = 0;
+
+  // Particle System
+  m_ParticleSystem = 0;
+  m_ParticleShader = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -57,7 +60,7 @@ ApplicationClass::~ApplicationClass() {}
 
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
-  char modelFilename[128], textureFilename[128];
+  char textureFilename[128];
   bool result;
 
   // Create and initialize the OpenGL object.
@@ -71,58 +74,41 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 
   // Create and initialize the camera object.
   m_Camera = new CameraClass;
-  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+  m_Camera->SetPosition(0.0f, -1.0f, -10.0f);
   m_Camera->Render();
-
-  m_TextureShader = new TextureShaderClass;
-
-  result = m_TextureShader->Initialize(m_OpenGL);
-  if (!result) {
-    printf("Failed to initialize depth shader\n");
-    return false;
-  }
-
-  strcpy(modelFilename, "./data/cube.txt");
-  strcpy(textureFilename, "./data/stone01.tga");
-
-  m_Model = new ModelClass;
-
-  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename, false);
-  if (!result) {
-    printf("Failed to initialize model\n");
-    return false;
-  }
-
-  m_RenderTexture = new RenderTextureClass;
-  result = m_RenderTexture->Initialize(m_OpenGL, screenWidth, screenHeight,
-                                       SCREEN_NEAR, SCREEN_DEPTH, 0, 0);
-  if (!result) {
-    return false;
-  }
-
-  m_FullScreenWindow = new OrthoWindowClass;
-  result = m_FullScreenWindow->Initialize(m_OpenGL, screenWidth, screenHeight);
-  if (!result) {
-    return false;
-  }
-
-  m_FadeShader = new FadeShaderClass;
-
-  result = m_FadeShader->Initialize(m_OpenGL);
-  if(!result){
-    return false;
-  }
 
   m_Timer = new TimerClass;
   m_Timer->Initialize();
 
-  m_accumulatedTime = 0;
-  m_fadeInTime = 5000;
+  strcpy(textureFilename, "./data/star01.tga");
+
+  m_ParticleSystem = new ParticleSystemClass;
+
+  result = m_ParticleSystem->Initialize(m_OpenGL, textureFilename);
+  if (!result) {
+    return false;
+  }
+
+  m_ParticleShader = new ParticleShaderClass;
+  result = m_ParticleShader->Initialize(m_OpenGL);
+  if (!result) {
+    return false;
+  }
 
   return true;
 }
 void ApplicationClass::Shutdown() {
-  if(m_FadeShader){
+  if (m_ParticleShader) {
+    m_ParticleShader->Shutdown();
+    delete m_ParticleShader;
+    m_ParticleShader = 0;
+  }
+  if (m_ParticleSystem) {
+    m_ParticleSystem->Shutdown();
+    delete m_ParticleSystem;
+    m_ParticleSystem = 0;
+  }
+  if (m_FadeShader) {
     m_FadeShader->Shutdown();
     delete m_FadeShader;
     m_FadeShader = 0;
@@ -399,9 +385,6 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  static float rotation = 360.0f;
-  int frameTime;
-  float fadePercentage;
   bool result;
 
   m_Timer->Frame();
@@ -411,28 +394,10 @@ bool ApplicationClass::Frame(InputClass *Input) {
     return false;
   }
 
-  // Update the rotation variable each frame.
-  rotation -= 0.0174532925f * 1.0f;
-  if (rotation <= 0.0f) {
-    rotation += 360.0f;
-  }
-
-  frameTime = m_Timer->GetTime();
-  m_accumulatedTime += frameTime;
-  if(m_accumulatedTime < m_fadeInTime){
-    fadePercentage = (float) m_accumulatedTime / (float)m_fadeInTime;
-  }else{
-    fadePercentage = 1.0f;
-  }
-    
-  // Render the scene to a render texture.
-  result = RenderSceneToTexture(rotation);
-  if (!result) {
-    return false;
-  }
+  m_ParticleSystem->Frame(m_Timer->GetTime());
 
   // Render the graphics scene.
-  result = Render(fadePercentage);
+  result = Render();
   if (!result) {
     return false;
   }
@@ -545,25 +510,27 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
   return true;
 }
 
-bool ApplicationClass::Render(float fadeAmount) {
-  float worldMatrix[16], viewMatrix[16], orthoMatrix[16];
+bool ApplicationClass::Render() {
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
   bool result;
 
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
-  m_OpenGL->GetOrthoMatrix(orthoMatrix);
+  m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-  result = m_FadeShader->SetShaderParameters(worldMatrix, viewMatrix,
-                                                orthoMatrix, fadeAmount);
+  m_OpenGL->EnableAlphaBlending();
+
+  result = m_ParticleShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                 projectionMatrix);
   if (!result) {
     return false;
   }
 
-  m_RenderTexture->SetTexture();
+  m_ParticleSystem->Render();
 
-  m_FullScreenWindow->Render();
+  m_OpenGL->DisableAlphaBlending();
 
   m_OpenGL->EndScene();
 
