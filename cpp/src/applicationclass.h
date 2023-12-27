@@ -6,6 +6,7 @@
 #include "cameraclass.h"
 #include "clipplaneshaderclass.h"
 #include "displayplaneclass.h"
+#include "fireshaderclass.h"
 #include "fogshaderclass.h"
 #include "fontclass.h"
 #include "fontshaderclass.h"
@@ -34,7 +35,6 @@
 #include "translateshaderclass.h"
 #include "transparentshaderclass.h"
 #include "watershaderclass.h"
-#include "fireshaderclass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -109,7 +109,10 @@ private:
   GlassShaderClass *m_GlassShader;
 
   // Fire
-  FireShaderClass * m_FireShader;
+  FireShaderClass *m_FireShader;
+
+  // Billboarding
+  ModelClass *m_BillboardModel;
 
   float m_waterHeight, m_waterTranslation;
 };

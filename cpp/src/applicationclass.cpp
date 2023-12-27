@@ -42,6 +42,7 @@ ApplicationClass::ApplicationClass() {
   m_WaterShader = 0;
   m_GlassShader = 0;
   m_FireShader = 0;
+  m_BillboardModel = 0;
 }
 
 ApplicationClass::ApplicationClass(const ApplicationClass &other) {}
@@ -51,7 +52,7 @@ ApplicationClass::~ApplicationClass() {}
 bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
                                   int screenHeight) {
   char modelFilename[128];
-  char textureFilename1[128], textureFilename2[128], textureFilename3[128];
+  char textureFilename[128];
   bool result;
 
   // Create and initialize the OpenGL object.
@@ -65,32 +66,52 @@ bool ApplicationClass::Initialize(Display *display, Window win, int screenWidth,
 
   // Create and initialize the camera object.
   m_Camera = new CameraClass;
-  m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
+  m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
   m_Camera->Render();
 
-  strcpy(modelFilename, "./data/square.txt");
+  m_TextureShader = new TextureShaderClass;
 
-  strcpy(textureFilename1, "./data/fire01.tga");
-  strcpy(textureFilename2, "./data/noise01.tga");
-  strcpy(textureFilename3, "./data/alpha01.tga");
+  result = m_TextureShader->Initialize(m_OpenGL);
+  if (!result) {
+    return false;
+  }
 
-  m_Model = new ModelClass;
-  result = m_Model->Initialize(m_OpenGL, modelFilename, textureFilename1, false,
-                               textureFilename2, true, textureFilename3, false);
+  strcpy(modelFilename, "./data/floor.txt");
+  strcpy(textureFilename, "./data/grid01.tga");
+
+  m_FloorModel = new ModelClass;
+
+  result =
+      m_FloorModel->Initialize(m_OpenGL, modelFilename, textureFilename, false);
   if (!result) {
     printf("Failed to initialize model\n");
     return false;
   }
 
-  m_FireShader = new FireShaderClass;
-  result = m_FireShader->Initialize(m_OpenGL);
+  strcpy(modelFilename, "./data/square.txt");
+  strcpy(textureFilename, "./data/stone01.tga");
+
+  m_BillboardModel = new ModelClass;
+  result = m_BillboardModel->Initialize(m_OpenGL, modelFilename,
+                                        textureFilename, false);
   if (!result) {
     return false;
   }
 
+  m_Position = new PositionClass;
+  m_Position->SetPosition(0.0f, 1.5f, -11.0f);
+
+  m_Timer = new TimerClass;
+  m_Timer->Initialize();
+
   return true;
 }
 void ApplicationClass::Shutdown() {
+  if (m_BillboardModel) {
+    m_BillboardModel->Shutdown();
+    delete m_BillboardModel;
+    m_BillboardModel = 0;
+  }
   if (m_FireShader) {
     m_FireShader->Shutdown();
     delete m_FireShader;
@@ -338,12 +359,27 @@ void ApplicationClass::Shutdown() {
 }
 
 bool ApplicationClass::Frame(InputClass *Input) {
-  bool result;
+  float positionX, positionY, positionZ;
+  bool result, keyDown;
 
+  m_Timer->Frame();
   // Check if the escape key has been pressed, if so quit.
   if (Input->IsEscapePressed() == true) {
     return false;
   }
+
+  m_Position->SetFrameTime(m_Timer->GetTime());
+
+  keyDown = Input->IsLeftArrowPressed();
+  m_Position->MoveLeft(keyDown);
+
+  keyDown = Input->IsRightArrowPressed();
+  m_Position->MoveRight(keyDown);
+
+  m_Position->GetPosition(positionX, positionY, positionZ);
+
+  m_Camera->SetPosition(positionX, positionY, positionZ);
+  m_Camera->Render();
 
   result = Render();
   if (!result) {
@@ -458,58 +494,74 @@ bool ApplicationClass::RenderSceneToTexture(float rotation) {
 }
 
 bool ApplicationClass::Render() {
-  float worldMatrix[16], viewMatrix[16], projectionMatrix[16];
-  float scrollSpeeds[3], scales[3], distortion1[2], distortion2[2],
-      distortion3[2];
-  float distortionScale, distortionBias;
+  float worldMatrix[16], viewMatrix[16], projectionMatrix[16], rotateMatrix[16],
+      translateMatrix[16];
+  float cameraPosition[3], modelPosition[3];
+  double angle;
+  float pi, rotation;
   bool result;
 
-  static float frameTime = 0.0f;
-
-  frameTime += 0.01f;
-  if (frameTime > 1000.0f) {
-    frameTime = 0.0f;
-  }
-
-  scrollSpeeds[0] = 1.3f;
-  scrollSpeeds[1] = 2.1f;
-  scrollSpeeds[2] = 2.3f;
-
-  scales[0] = 1.0f;
-  scales[1] = 2.0f;
-  scales[2] = 3.0f;
-
-  distortion1[0] = 0.1f;
-  distortion1[1] = 0.2f;
-
-  distortion2[0] = 0.1f;
-  distortion2[1] = 0.3f;
-
-  distortion3[0] = 0.1f;
-  distortion3[1] = 0.1f;
-
-  distortionScale = 0.8f;
-  distortionBias = 0.5f;
-
+  // Clear the buffers to begin the scene.
   m_OpenGL->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
+  // Get the world, view, and projection matrices from the opengl and camera
+  // objects.
   m_OpenGL->GetWorldMatrix(worldMatrix);
   m_Camera->GetViewMatrix(viewMatrix);
   m_OpenGL->GetProjectionMatrix(projectionMatrix);
 
-  m_OpenGL->EnableAlphaBlending();
-  result = m_FireShader->SetShaderParameters(
-      worldMatrix, viewMatrix, projectionMatrix, frameTime, scrollSpeeds,
-      scales, distortion1, distortion2, distortion3, distortionScale,
-      distortionBias);
+  // Set the texture shader as the current shader program and set the parameters
+  // that it will use for rendering.
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                projectionMatrix);
   if (!result) {
     return false;
   }
 
-  m_Model->Render();
+  // Render the floor model using the texture shader.
+  m_FloorModel->Render();
 
-  m_OpenGL->DisableAlphaBlending();
+  // Get the position of the camera.
+  m_Camera->GetPosition(cameraPosition);
 
+  // Set the position of the billboard model.
+  modelPosition[0] = 0.0f;
+  modelPosition[1] = 1.5f;
+  modelPosition[2] = 0.0f;
+
+  // Calculate the rotation angle that needs to be applied to the billboard
+  // model to face the current camera position using the arc tangent function.
+  pi = 3.14159265358979323846f;
+  angle = atan2(modelPosition[0] - cameraPosition[0],
+                modelPosition[2] - cameraPosition[2]) *
+          (180.0f / pi);
+
+  // Convert rotation angle into radians.
+  rotation = (float)angle * 0.0174532925f;
+
+  // Setup the rotation matrix for the billboard model.
+  m_OpenGL->MatrixRotationY(rotateMatrix, rotation);
+
+  // Setup the translation matrix for the billboard model.
+  m_OpenGL->MatrixTranslation(translateMatrix, modelPosition[0],
+                              modelPosition[1], modelPosition[2]);
+
+  // Finally combine the rotation and translation matrices to create the final
+  // world matrix for the billboard model.
+  m_OpenGL->MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+
+  // Set the texture shader as the current shader program and set the parameters
+  // that it will use for rendering.
+  result = m_TextureShader->SetShaderParameters(worldMatrix, viewMatrix,
+                                                projectionMatrix);
+  if (!result) {
+    return false;
+  }
+
+  // Render the bilboard model using the texture shader.
+  m_BillboardModel->Render();
+
+  // Present the rendered scene to the screen.
   m_OpenGL->EndScene();
 
   return true;
