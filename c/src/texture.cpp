@@ -3,7 +3,6 @@
 #include "utils.h"
 #include <stdio.h>
 
-
 bool LoadTarga(Texture *texture, char *filename, bool wrap) {
 
     TargaHeader targaFileHeader;
@@ -53,35 +52,36 @@ bool LoadTarga(Texture *texture, char *filename, bool wrap) {
     if (error != 0) {
         return false;
     }
-    if (bpp == 24) {
-        imageSize += texture->width * texture->height;
-    }
 
     targaData = new unsigned char[imageSize];
     index = 0;
+    bool bit32 = bpp == 32;
     for (j = 0; j < texture->height; j++) {
         for (i = 0; i < texture->width; i++) {
             targaData[index] = targaImage[index + 2];     // Red
             targaData[index + 1] = targaImage[index + 1]; // Green
             targaData[index + 2] = targaImage[index];     // Blue
-            if (bpp == 32) {
+            if (bit32) {
                 targaData[index + 3] = targaImage[index + 3]; // Alpha
+                index += 4;
             } else {
-                targaData[index + 3] = 255;
+                index += 3;
             }
-            index += 4;
         }
     }
 
     delete[] targaImage;
-    targaImage = 0;
 
     glActiveTexture(GL_TEXTURE + texture->textureUnit);
 
     glGenTextures(1, &texture->textureId);
     glBindTexture(GL_TEXTURE_2D, texture->textureId);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, targaData);
+    if (bit32) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     targaData);
+    } else {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, targaData);
+    }
 
     if (wrap) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

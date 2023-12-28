@@ -36,8 +36,8 @@ bool InitializeBuffers(Model *model) {
     VertexType *vertices;
     unsigned int *indices;
 
-    model->vertexCount = 3;
-    model->indexCount = 3;
+    model->vertexCount = 6;
+    model->indexCount = 6;
     model->vertexBufferId = 0;
     model->vertexArrayId = 0;
     model->indexBufferId = 0;
@@ -47,6 +47,7 @@ bool InitializeBuffers(Model *model) {
 
     // Load the vertex array with data.
 
+    // Left Triangle
     // Bottom left.
     vertices[0].x = -1.0f; // Position.
     vertices[0].y = -1.0f;
@@ -54,24 +55,49 @@ bool InitializeBuffers(Model *model) {
     vertices[0].tu = 0.0f; // Texture
     vertices[0].tv = 0.0f;
 
-    // Top middle.
-    vertices[1].x = 0.0f; // Position.
+    // Top
+    vertices[1].x = -1.0f; // Position.
     vertices[1].y = 1.0f;
     vertices[1].z = 0.0f;
     vertices[1].tu = 0.5f; // Texture
     vertices[1].tv = 1.0f;
 
     // Bottom right.
-    vertices[2].x = 1.0f; // Position.
+    vertices[2].x = 0.5f; // Position.
     vertices[2].y = -1.0f;
     vertices[2].z = 0.0f;
     vertices[2].tu = 1.0f; // Texture
     vertices[2].tv = 0.0f;
 
+    // Right Triangle
+    // Top left.
+    vertices[3].x = -1.0f; // Position.
+    vertices[3].y = -1.0f;
+    vertices[3].z = 0.0f;
+    vertices[3].tu = 0.0f; // Texture
+    vertices[3].tv = 0.0f;
+
+    // Bottom.
+    vertices[4].x = 0.5f; // Position.
+    vertices[4].y = -1.0f;
+    vertices[4].z = 0.0f;
+    vertices[4].tu = 1.0f; // Texture
+    vertices[4].tv = 0.0f;
+
+    // Top right.
+    vertices[5].x = 1.0f; // Position.
+    vertices[5].y = 1.0f;
+    vertices[5].z = 0.0f;
+    vertices[5].tu = 0.5f; // Texture
+    vertices[5].tv = 1.0f;
+
     // Load the index array with data.
     indices[0] = 0; // Bottom left.
     indices[1] = 1; // Top middle.
     indices[2] = 2; // Bottom right.
+    indices[3] = 3; // Bottom left.
+    indices[4] = 4; // Top middle.
+    indices[5] = 5; // Bottom right.
 
     glGenVertexArrays(1, &model->vertexArrayId);
     glBindVertexArray(model->vertexArrayId);
