@@ -9,7 +9,7 @@ struct Texture {
         bool loaded;
 };
 
-bool LoadTarga32Bit(Texture *texture, char *filename, bool wrap);
+bool LoadTarga(Texture *texture, char *filename, bool wrap);
 bool InitializeTexture(Texture *texture, char *filename, unsigned int textureUnit, bool wrap);
 void ShutdownTexture(Texture *texture);
 void SetTexture(Texture *texture);

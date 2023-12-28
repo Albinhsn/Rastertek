@@ -16,7 +16,6 @@ bool RenderApplication(Application *application) {
         return false;
     }
 
-    // Render the model.
     RenderModel(application->model);
 
     EndScene(application->openGL->display, application->openGL->hwnd);
@@ -42,7 +41,7 @@ bool InitializeApplication(Application *application, Display *display, Window wi
 
     Render(application->camera);
 
-    strcpy(textureFilename, "./data/stone01.tga");
+    strcpy(textureFilename, "./data/blizzard01.tga");
 
     application->model = (Model *)malloc(sizeof(Model));
 
@@ -53,9 +52,7 @@ bool InitializeApplication(Application *application, Display *display, Window wi
     }
 
     application->shader = (Shader *)malloc(sizeof(Shader));
-    const char *variables[2];
-    variables[0] = "inputPosition";
-    variables[1] = "inputTexCoord";
+    const char *variables[2] = {"inputPosition", "inputTexCoord"};
     result = InitializeShader(*application->shader, "./shaders/texture.vs", "./shaders/texture.ps", variables, 2);
     if (!result) {
         printf("ERROR: Failed to initialize texture shader\n");

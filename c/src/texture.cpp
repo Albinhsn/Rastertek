@@ -3,7 +3,8 @@
 #include "utils.h"
 #include <stdio.h>
 
-bool LoadTarga32Bit(Texture *texture, char *filename, bool wrap) {
+
+bool LoadTarga(Texture *texture, char *filename, bool wrap) {
 
     TargaHeader targaFileHeader;
     FILE *filePtr;
@@ -32,7 +33,11 @@ bool LoadTarga32Bit(Texture *texture, char *filename, bool wrap) {
     bpp = (int)targaFileHeader.bpp;
 
     // Calculate the size of the 32 bit image data.
-    imageSize = texture->width * texture->height * 4;
+    if (bpp == 32) {
+        imageSize = texture->width * texture->height * 4;
+    } else if (bpp == 24) {
+        imageSize = texture->width * texture->height * 3;
+    }
 
     // Allocate memory for the targa image data.
     targaImage = new unsigned char[imageSize];
@@ -48,21 +53,22 @@ bool LoadTarga32Bit(Texture *texture, char *filename, bool wrap) {
     if (error != 0) {
         return false;
     }
+    if (bpp == 24) {
+        imageSize += texture->width * texture->height;
+    }
 
     targaData = new unsigned char[imageSize];
-    bool _32bit = bpp == 32;
     index = 0;
     for (j = 0; j < texture->height; j++) {
         for (i = 0; i < texture->width; i++) {
             targaData[index] = targaImage[index + 2];     // Red
             targaData[index + 1] = targaImage[index + 1]; // Green
             targaData[index + 2] = targaImage[index];     // Blue
-            if (_32bit) {
+            if (bpp == 32) {
                 targaData[index + 3] = targaImage[index + 3]; // Alpha
             } else {
-                targaData[index + 3] = 0;
+                targaData[index + 3] = 255;
             }
-
             index += 4;
         }
     }
@@ -98,7 +104,7 @@ bool LoadTarga32Bit(Texture *texture, char *filename, bool wrap) {
 
 bool InitializeTexture(Texture *texture, char *filename, unsigned int textureUnit, bool wrap) {
     texture->textureUnit = textureUnit;
-    bool result = LoadTarga32Bit(texture, filename, wrap);
+    bool result = LoadTarga(texture, filename, wrap);
     if (!result) {
         printf("ERROR: failed to load targa32bit\n");
         return false;
