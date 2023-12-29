@@ -533,6 +533,14 @@ bool MoveMatrix4fvToShader(const char *variableName, uint program, float *matrix
     glUniformMatrix4fv(location, 1, false, matrix);
     return true;
 }
+bool Move1fToShader(const char *variableName, uint program, float value) {
+    int location = glGetUniformLocation(program, variableName);
+    if (location == -1) {
+        return false;
+    }
+    glUniform1f(location, value);
+    return true;
+}
 
 bool Move1iToShader(const char *variableName, uint program, int value) {
     int location = glGetUniformLocation(program, variableName);

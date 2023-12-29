@@ -43,6 +43,50 @@ void ShutdownShaders(uint shaderProgram, uint *shaders, int length) {
     }
     glDeleteProgram(shaderProgram);
 }
+// Specular Lighting
+bool SetShaderParameters10(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                           float *lightDirection, float *diffuseLightColor, float *ambientLight, float *cameraPosition,
+                           float *specularColor, float specularPower) {
+
+    float tpWorldMatrix[16], tpViewMatrix[16], tpProjectionMatrix[16];
+
+    MatrixTranspose(tpWorldMatrix, worldMatrix);
+    MatrixTranspose(tpViewMatrix, viewMatrix);
+    MatrixTranspose(tpProjectionMatrix, projectionMatrix);
+    glUseProgram(shader.shaderProgram);
+    if (!MoveMatrix4fvToShader("worldMatrix", shader.shaderProgram, tpWorldMatrix)) {
+        return false;
+    }
+    if (!MoveMatrix4fvToShader("viewMatrix", shader.shaderProgram, tpViewMatrix)) {
+        return false;
+    }
+    if (!MoveMatrix4fvToShader("projectionMatrix", shader.shaderProgram, tpProjectionMatrix)) {
+        return false;
+    }
+    if (!Move3fvToShader("cameraPosition", shader.shaderProgram, cameraPosition, 1)) {
+        return false;
+    }
+    if (!Move1iToShader("shaderTexture", shader.shaderProgram, 0)) {
+        return false;
+    }
+    if (!Move3fvToShader("lightDirection", shader.shaderProgram, lightDirection, 1)) {
+        return false;
+    }
+    if (!Move4fvToShader("diffuseLightColor", shader.shaderProgram, diffuseLightColor, 1)) {
+        return false;
+    }
+    if (!Move4fvToShader("ambientLight", shader.shaderProgram, ambientLight, 1)) {
+        return false;
+    }
+    if (!Move1fToShader("specularPower", shader.shaderProgram, specularPower)) {
+        return false;
+    }
+    if (!Move4fvToShader("specularColor", shader.shaderProgram, specularColor, 1)) {
+        return false;
+    }
+
+    return true;
+}
 // Ambient lighting
 bool SetShaderParameters9(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
                           float *lightDirection, float *diffuseLightColor, float *ambientLight) {

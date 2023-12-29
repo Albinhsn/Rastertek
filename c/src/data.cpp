@@ -34,6 +34,62 @@ static void enableAttribPtr8() {
     glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
     glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
 }
+static void enableAttribPtr10() {
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
+}
+
+static bool renderApplicationPtr10(Application *application, float rotation) {
+
+    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+    float worldMatrix[16], rotateMatrix[16], translateMatrix[16], scaleMatrix[16], srMatrix[16];
+    Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
+
+    float diffuseLightColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float lightDirection[3] = {0.0f, 1.0f, 0.0f};
+    float ambientLight[4] = {0.15f, 0.15f, 0.15f, 1.0f};
+    float specularColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float cameraPosition[3] = {application->camera->position.x, application->camera->position.y,
+                               application->camera->position.z};
+    float specularPower = 32.0f;
+
+    MatrixRotationY(rotateMatrix, rotation);
+    MatrixTranslation(translateMatrix, 2.5f, 0.0f, -2.0f);
+    MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+
+    bool result = SetShaderParameters10(*application->shader, worldMatrix, application->camera->viewMatrix,
+                                        application->openGL->projectionMatrix, lightDirection, diffuseLightColor,
+                                        ambientLight, cameraPosition, specularColor, specularPower);
+    if (!result) {
+        printf("ERROR: Failed to set shader params\n");
+        return false;
+    }
+    RenderModel(application->model);
+
+    MatrixScale(scaleMatrix, 0.5f, 0.5f, 0.5f);
+    MatrixRotationY(rotateMatrix, rotation);
+    MatrixTranslation(translateMatrix, -2.5f, 0.0f, -2.0f);
+
+    MatrixMultiply(srMatrix, scaleMatrix, rotateMatrix);
+    MatrixMultiply(worldMatrix, srMatrix, translateMatrix);
+    result = SetShaderParameters10(*application->shader, worldMatrix, application->camera->viewMatrix,
+                                   application->openGL->projectionMatrix, lightDirection, diffuseLightColor,
+                                   ambientLight, cameraPosition, specularColor, specularPower);
+    if (!result) {
+        printf("ERROR: Failed to set shader params\n");
+        return false;
+    }
+    RenderModel(application->model);
+
+    EndScene(application->openGL->display, application->openGL->hwnd);
+
+    return true;
+}
 static bool renderApplicationPtr9(Application *application, float rotation) {
 
     BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -48,8 +104,9 @@ static bool renderApplicationPtr9(Application *application, float rotation) {
     MatrixTranslation(translateMatrix, 2.5f, 0.0f, -2.0f);
     MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
 
-    bool result = SetShaderParameters9(*application->shader, worldMatrix, application->camera->viewMatrix,
-                                       application->openGL->projectionMatrix, lightDirection, diffuseColor, ambientLight);
+    bool result =
+        SetShaderParameters9(*application->shader, worldMatrix, application->camera->viewMatrix,
+                             application->openGL->projectionMatrix, lightDirection, diffuseColor, ambientLight);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
@@ -63,7 +120,7 @@ static bool renderApplicationPtr9(Application *application, float rotation) {
     MatrixMultiply(srMatrix, scaleMatrix, rotateMatrix);
     MatrixMultiply(worldMatrix, srMatrix, translateMatrix);
     result = SetShaderParameters9(*application->shader, worldMatrix, application->camera->viewMatrix,
-                                       application->openGL->projectionMatrix, lightDirection, diffuseColor, ambientLight);
+                                  application->openGL->projectionMatrix, lightDirection, diffuseColor, ambientLight);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
@@ -290,6 +347,38 @@ TutorialData *Tutorial8() {
     tutorial->renderApplicationPtr = &renderApplicationPtr8;
 
     tutorial->wrap = false;
+    tutorial->rotationSpeed = 0.0174532925f;
+
+    return tutorial;
+}
+TutorialData *Tutorial10() {
+    TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
+
+    tutorial->modelLen = 1;
+    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
+    tutorial->models[0] = "./data/sphere.txt";
+
+    tutorial->textureLen = 1;
+    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
+    tutorial->textures[0] = "./data/stone01.tga";
+
+    tutorial->vertexShaderName = "./shaders/light2.vs";
+    tutorial->fragmentShaderName = "./shaders/light2.ps";
+
+    tutorial->variablesLen = 3;
+    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
+    tutorial->variables[0] = "inputPosition";
+    tutorial->variables[1] = "inputTexCoord";
+    tutorial->variables[2] = "inputNormal";
+
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraZ = -10.0f;
+
+    tutorial->enableAttribPtr = &enableAttribPtr10;
+    tutorial->renderApplicationPtr = &renderApplicationPtr10;
+
+    tutorial->wrap = true;
     tutorial->rotationSpeed = 0.0174532925f;
 
     return tutorial;
