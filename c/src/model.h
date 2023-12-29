@@ -6,6 +6,10 @@
 struct VertexType {
     float x, y, z;
     float tu, tv;
+};
+struct VertexTypeN {
+    float x, y, z;
+    float tu, tv;
     float nx, ny, nz;
 };
 
@@ -14,7 +18,7 @@ struct Model {
     int vertexCount, indexCount;
     unsigned int vertexArrayId, vertexBufferId, indexBufferId;
     Texture *texture;
-    VertexType *model;
+    VertexTypeN *model;
 };
 
 bool InitializeModel(Model *model, const char **models, int modelLen, const char **textures, int textureLen, bool wrap,

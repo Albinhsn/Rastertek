@@ -1,4 +1,5 @@
 #include "data.h"
+#include "opengl.h"
 
 static void enableAttribPtr5() {
     glEnableVertexAttribArray(0);
@@ -51,6 +52,24 @@ static void enableAttribPtr11() {
     glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
     glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
     glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
+}
+static bool renderApplicationPtr12(Application *application, float rotation) {
+
+    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+    TurnZBufferOff();
+
+    bool result = SetShaderParameters12(*application->shader, application->openGL->worldMatrix,
+                                        application->camera->viewMatrix, application->openGL->orthoMatrix);
+    if (!result) {
+        return false;
+    }
+    RenderBitmap(*application->bitmap);
+
+    TurnZBufferOn();
+
+    EndScene(application->openGL->display, application->openGL->hwnd);
+
+    return true;
 }
 static bool renderApplicationPtr11(Application *application, float rotation) {
 
@@ -473,6 +492,33 @@ TutorialData *Tutorial9() {
 
     tutorial->enableAttribPtr = &enableAttribPtr8;
     tutorial->renderApplicationPtr = &renderApplicationPtr9;
+
+    tutorial->wrap = false;
+    tutorial->rotationSpeed = 0.0174532925f;
+
+    return tutorial;
+}
+TutorialData *Tutorial12() {
+    TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
+
+    tutorial->modelLen = 0;
+
+    tutorial->bitmapFilename = "./data/blizzard01.tga";
+    tutorial->vertexShaderName = "./shaders/texture.vs";
+    tutorial->fragmentShaderName = "./shaders/texture.ps";
+
+    tutorial->variablesLen = 3;
+    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
+    tutorial->variables[0] = "inputPosition";
+    tutorial->variables[1] = "inputTexCoord";
+    tutorial->variables[2] = "inputNormal";
+
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraY = 0.0f;
+    tutorial->cameraZ = -10.0f;
+
+    tutorial->enableAttribPtr = &enableAttribPtr5;
+    tutorial->renderApplicationPtr = &renderApplicationPtr12;
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;

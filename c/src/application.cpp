@@ -1,5 +1,6 @@
 
 #include "application.h"
+#include "bitmap.h"
 #include "model.h"
 #include "opengl.h"
 #include "vector.h"
@@ -19,14 +20,26 @@ bool InitializeApplication(Application *application, Display *display, Window wi
     SetPosition(application->camera, tutorial->cameraX, tutorial->cameraY, tutorial->cameraZ);
 
     Render(application->camera);
+    // Model
+    if (tutorial->modelLen) {
+        application->model = (Model *)malloc(sizeof(Model));
 
-    application->model = (Model *)malloc(sizeof(Model));
-
-    result = InitializeModel(application->model, tutorial->models, tutorial->modelLen, tutorial->textures,
-                             tutorial->textureLen, tutorial->wrap, tutorial->enableAttribPtr, tutorial->variablesLen);
-    if (!result) {
-        printf("ERROR: Failed to initialize model\n");
-        return false;
+        result =
+            InitializeModel(application->model, tutorial->models, tutorial->modelLen, tutorial->textures,
+                            tutorial->textureLen, tutorial->wrap, tutorial->enableAttribPtr, tutorial->variablesLen);
+        if (!result) {
+            printf("ERROR: Failed to initialize model\n");
+            return false;
+        }
+        // Bitmap
+    } else {
+        Bitmap *bitmap = (Bitmap *)malloc(sizeof(Bitmap));
+        result = InitializeBitmap(*bitmap, screenWidth, screenHeight, tutorial->bitmapFilename, 150, 150);
+        application->bitmap = bitmap;
+        if (!result) {
+            printf("ERROR: Failed to initialize bitmap\n");
+            return false;
+        }
     }
 
     application->shader = (Shader *)malloc(sizeof(Shader));
@@ -42,9 +55,12 @@ bool InitializeApplication(Application *application, Display *display, Window wi
 
 void ShutdownApplication(Application *application) {
     printf("Shutting down application\n");
-    ;
     if (application->shader) {
         free(application->shader);
+    }
+    if (application->bitmap) {
+        ShutdownBitmap(application->bitmap);
+        free(application->bitmap);
     }
     if (application->model) {
         ShutdownModel(application->model);

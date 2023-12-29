@@ -22,3 +22,4 @@ bool SetShaderParameters10(Shader shader, float *worldMatrix, float *viewMatrix,
                            float *specularColor, float specularPower);
 bool SetShaderParameters11(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
                            float * diffuseColorArray, float * lightPositionArray, int numLights);
+bool SetShaderParameters12(Shader shader, float *worldMatrix, float *viewMatrix, float *orthoMatrix);

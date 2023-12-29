@@ -232,3 +232,27 @@ bool SetShaderParameters5(Shader shader, float *worldMatrix, float *viewMatrix, 
 
     return true;
 }
+bool SetShaderParameters12(Shader shader, float *worldMatrix, float *viewMatrix, float *orthoMatrix) {
+    float tpWorldMatrix[16], tpViewMatrix[16], tpOrthoMatrix[16];
+
+    MatrixTranspose(tpWorldMatrix, worldMatrix);
+    MatrixTranspose(tpViewMatrix, viewMatrix);
+    MatrixTranspose(tpOrthoMatrix, orthoMatrix);
+
+    glUseProgram(shader.shaderProgram);
+    if (!MoveMatrix4fvToShader("worldMatrix", shader.shaderProgram, tpWorldMatrix)) {
+        return false;
+    }
+    if (!MoveMatrix4fvToShader("viewMatrix", shader.shaderProgram, tpViewMatrix)) {
+        return false;
+    }
+    if (!MoveMatrix4fvToShader("projectionMatrix", shader.shaderProgram, tpOrthoMatrix)) {
+        return false;
+    }
+
+    if (!Move1iToShader("shaderTexture", shader.shaderProgram, 0)) {
+        return false;
+    }
+
+    return true;
+}

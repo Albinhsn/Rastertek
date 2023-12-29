@@ -1,6 +1,7 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include "bitmap.h"
 #include "camera.h"
 #include "input.h"
 #include "model.h"
@@ -15,6 +16,7 @@ const float SCREEN_DEPTH = 1000.0f;
 struct Application;
 
 struct TutorialData {
+    // Model 
     const char **models;
     int modelLen;
     const char **textures;
@@ -28,6 +30,10 @@ struct TutorialData {
     bool (*renderApplicationPtr)(Application *application, float rotation);
     float rotationSpeed;
     bool wrap;
+
+    // Bitmap
+    Bitmap * bitmap;
+    const char * bitmapFilename;
 };
 
 struct Application {
@@ -35,6 +41,7 @@ struct Application {
     Camera *camera;
     Shader *shader;
     Model *model;
+    Bitmap *bitmap;
 };
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth, int screenHeight,
                            TutorialData *tutorial);
