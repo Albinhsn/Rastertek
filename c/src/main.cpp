@@ -2,9 +2,11 @@
 #include "system.h"
 #include <cstdlib>
 
+#define APP 6
+
 int main() {
     System *system = (System *)malloc(sizeof(System));
-    bool result = InitializeSystem(system);
+    bool result = InitializeSystem(system, APP);
 
     if (!result) {
         printf("ERROR: Couldn't initialize system\n");

@@ -247,24 +247,24 @@ void BuildOrthoMatrix(float *matrix, float screenWidth, float screenHeight, floa
     matrix[15] = 1.0f;
 }
 
-void Get4x4Matrix(float *m1, float *m2) {
-    m1[0] = m2[0];
-    m1[1] = m2[1];
-    m1[2] = m2[2];
-    m1[3] = m2[3];
+void Get4x4Matrix(float *dest, float *source) {
+    dest[0] = source[0];
+    dest[1] = source[1];
+    dest[2] = source[2];
+    dest[3] = source[3];
 
-    m1[4] = m2[4];
-    m1[5] = m2[5];
-    m1[6] = m2[6];
-    m1[7] = m2[7];
+    dest[4] = source[4];
+    dest[5] = source[5];
+    dest[6] = source[6];
+    dest[7] = source[7];
 
-    m1[8] = m2[8];
-    m1[9] = m2[9];
-    m1[10] = m2[10];
-    m1[11] = m2[11];
+    dest[8] = source[8];
+    dest[9] = source[9];
+    dest[10] = source[10];
+    dest[11] = source[11];
 
-    m1[12] = m2[12];
-    m1[13] = m2[13];
-    m1[14] = m2[14];
-    m1[15] = m2[15];
+    dest[12] = source[12];
+    dest[13] = source[13];
+    dest[14] = source[14];
+    dest[15] = source[15];
 }

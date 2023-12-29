@@ -43,8 +43,70 @@ void ShutdownShaders(uint shaderProgram, uint *shaders, int length) {
     }
     glDeleteProgram(shaderProgram);
 }
+bool SetShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                         float *lightDirection, float *diffuseLightColor) {
 
-bool SetShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix) {
+    float tpWorldMatrix[16], tpViewMatrix[16], tpProjectionMatrix[16];
+
+    MatrixTranspose(tpWorldMatrix, worldMatrix);
+    MatrixTranspose(tpViewMatrix, viewMatrix);
+    MatrixTranspose(tpProjectionMatrix, projectionMatrix);
+    glUseProgram(shader.shaderProgram);
+    if (!MoveMatrix4fvToShader("worldMatrix", shader.shaderProgram, tpWorldMatrix)) {
+        return false;
+    }
+    if (!MoveMatrix4fvToShader("viewMatrix", shader.shaderProgram, tpViewMatrix)) {
+        return false;
+    }
+    if (!MoveMatrix4fvToShader("projectionMatrix", shader.shaderProgram, tpProjectionMatrix)) {
+        return false;
+    }
+    if (!Move1iToShader("shaderTexture", shader.shaderProgram, 0)) {
+        return false;
+    }
+    if (!Move3fvToShader("lightDirection", shader.shaderProgram, lightDirection, 1)) {
+        return false;
+    }
+    if (!Move4fvToShader("diffuseLightColor", shader.shaderProgram, diffuseLightColor, 1)) {
+        return false;
+    }
+
+    return true;
+}
+// LightShader
+bool SetShaderParameters6(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                          float *lightDirection, float *diffuseLightColor) {
+
+    float tpWorldMatrix[16], tpViewMatrix[16], tpProjectionMatrix[16];
+
+    MatrixTranspose(tpWorldMatrix, worldMatrix);
+    MatrixTranspose(tpViewMatrix, viewMatrix);
+    MatrixTranspose(tpProjectionMatrix, projectionMatrix);
+    glUseProgram(shader.shaderProgram);
+    if (!MoveMatrix4fvToShader("worldMatrix", shader.shaderProgram, tpWorldMatrix)) {
+        return false;
+    }
+    if (!MoveMatrix4fvToShader("viewMatrix", shader.shaderProgram, tpViewMatrix)) {
+        return false;
+    }
+    if (!MoveMatrix4fvToShader("projectionMatrix", shader.shaderProgram, tpProjectionMatrix)) {
+        return false;
+    }
+    if (!Move1iToShader("shaderTexture", shader.shaderProgram, 0)) {
+        return false;
+    }
+    if (!Move3fvToShader("lightDirection", shader.shaderProgram, lightDirection, 1)) {
+        return false;
+    }
+    if (!Move4fvToShader("diffuseLightColor", shader.shaderProgram, diffuseLightColor, 1)) {
+        return false;
+    }
+
+    return true;
+}
+
+// Texture shader?
+bool SetShaderParameters5(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix) {
 
     float tpWorldMatrix[16], tpViewMatrix[16], tpProjectionMatrix[16];
 
@@ -53,7 +115,6 @@ bool SetShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, f
     MatrixTranspose(tpProjectionMatrix, projectionMatrix);
 
     glUseProgram(shader.shaderProgram);
-    // ToDo This should also be done by funcPointer and name or smth?
     if (!MoveMatrix4fvToShader("worldMatrix", shader.shaderProgram, tpWorldMatrix)) {
         return false;
     }

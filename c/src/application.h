@@ -13,6 +13,7 @@ const float SCREEN_NEAR = 0.3f;
 const float SCREEN_DEPTH = 1000.0f;
 
 struct Application {
+    int app;
     OpenGL *openGL;
     Camera *camera;
     Shader *shader;
@@ -21,6 +22,7 @@ struct Application {
 bool RenderApplication(Application *application);
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth,
                            int screenHeight);
+bool InitializeTutorial5(Application *application, Display *display, Window window, int screenWidth, int screenHeight);
 void ShutdownApplication(Application *application);
 bool Frame(Application *application, Input *);
 

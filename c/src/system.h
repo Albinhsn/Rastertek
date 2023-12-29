@@ -12,7 +12,7 @@ struct System {
     GLXContext renderingContext;
 };
 
-bool InitializeSystem(System *system);
+bool InitializeSystem(System *system, int app);
 void ShutdownSystem(System *system);
 void Frame(System *system);
 bool InitializeWindow(System *system, int & screenWidth, int & screenHeight);

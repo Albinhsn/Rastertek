@@ -1,2 +1,9 @@
 ## ToDo
-- [ ] Look over and create better functions for opengl stuff,
+- [ ] Maybe actually remove openGL move functions
+- [ ] Look over and fix better way to render a "generic" scene
+- [ ] Generic initialize buffers
+
+## When creating new scene
+* Init application difference
+* Set shader parameters difference
+* Init initialize buffers

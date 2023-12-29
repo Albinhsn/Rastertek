@@ -3,26 +3,36 @@
 #include <stdio.h>
 #include <string.h>
 
-bool InitializeSystem(System *system) {
-    int screenWidth, screenHeight;
+bool InitializeSystem(System *system, int app) {
+    int screenWidth = 0, screenHeight = 0;
     bool result;
 
     system->input = (Input *)malloc(sizeof(Input));
     InitializeInput(system->input);
-
-    screenWidth = 0;
-    screenHeight = 0;
 
     result = InitializeWindow(system, screenWidth, screenHeight);
     if (!result) {
         printf("ERROR: Failed to initialize window\n");
         return false;
     }
-
     system->application = (Application *)malloc(sizeof(Application));
-
-    result = InitializeApplication(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
-
+    system->application->app = app;
+    switch (app) {
+    case 5: {
+        result =
+            InitializeTutorial5(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
+        break;
+    }
+    case 6: {
+        result =
+            InitializeApplication(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
+        break;
+    }
+    default: {
+        break;
+    }
+    }
+    printf("INFO: Initialized Application\n");
     if (!result) {
         printf("ERROR: Failed to initialize application\n");
         return false;

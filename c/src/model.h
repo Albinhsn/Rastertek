@@ -13,6 +13,7 @@ struct Model {
 struct VertexType {
         float x, y, z;
         float tu, tv;
+        float nx, ny, nz;
 };
 
 bool InitializeModel(Model* model, char *, bool);

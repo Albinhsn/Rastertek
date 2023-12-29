@@ -38,58 +38,41 @@ bool InitializeBuffers(Model *model) {
 
     model->vertexCount = 6;
     model->indexCount = 6;
-    model->vertexBufferId = 0;
-    model->vertexArrayId = 0;
-    model->indexBufferId = 0;
 
     vertices = new VertexType[model->vertexCount];
     indices = new unsigned int[model->indexCount];
 
     // Load the vertex array with data.
 
-    // Left Triangle
-    // Top left
+    // Bottom left.
     vertices[0].x = -1.0f; // Position.
-    vertices[0].y = 1.0f;
-    vertices[0].z = -1.0f;
+    vertices[0].y = -1.0f;
+    vertices[0].z = 0.0f;
     vertices[0].tu = 0.0f; // Texture
-    vertices[0].tv = 1.0f;
+    vertices[0].tv = 0.0f;
+    vertices[0].nx = 0.0f; // Normal.
+    vertices[0].ny = 0.0f;
+    vertices[0].nz = -1.0f;
 
-    // Top right
-    vertices[1].x = 1.0f; // Position.
+    // Top middle.
+    vertices[1].x = 0.0f; // Position.
     vertices[1].y = 1.0f;
-    vertices[1].z = -1.0f;
-    vertices[1].tu = 1.0f; // Texture
+    vertices[1].z = 0.0f;
+    vertices[1].tu = 0.5f; // Texture
     vertices[1].tv = 1.0f;
+    vertices[1].nx = 0.0f; // Normal.
+    vertices[1].ny = 0.0f;
+    vertices[1].nz = -1.0f;
 
-    // Bottom Left.
-    vertices[2].x = -1.0f; // Position.
+    // Bottom right.
+    vertices[2].x = 1.0f; // Position.
     vertices[2].y = -1.0f;
-    vertices[2].z = -1.0f;
-    vertices[2].tu = 0.0f; // Texture
+    vertices[2].z = 0.0f;
+    vertices[2].tu = 1.0f; // Texture
     vertices[2].tv = 0.0f;
-
-    // Right Triangle
-    // Bot left.
-    vertices[3].x = -1.0f; // Position.
-    vertices[3].y = -1.0f;
-    vertices[3].z = -1.0f;
-    vertices[3].tu = 0.0f; // Texture
-    vertices[3].tv = 0.0f;
-
-    // Top right.
-    vertices[4].x = 1.0f; // Position.
-    vertices[4].y = 1.0f;
-    vertices[4].z = -1.0f;
-    vertices[4].tu = 1.0f; // Texture
-    vertices[4].tv = 1.0f;
-
-    // Bot right.
-    vertices[5].x = 1.0f; // Position.
-    vertices[5].y = -1.0f;
-    vertices[5].z = -1.0f;
-    vertices[5].tu = 1.0f; // Texture
-    vertices[5].tv = 0.0f;
+    vertices[2].nx = 0.0f; // Normal.
+    vertices[2].ny = 0.0f;
+    vertices[2].nz = -1.0f;
 
     // Load the index array with data.
     indices[0] = 0; // Bottom left.
@@ -109,9 +92,11 @@ bool InitializeBuffers(Model *model) {
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
     glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
 
     glGenBuffers(1, &model->indexBufferId);
 
@@ -129,7 +114,6 @@ bool InitializeBuffers(Model *model) {
 void RenderBuffers(Model *model) {
     glBindVertexArray(model->vertexArrayId);
     glDrawElements(GL_TRIANGLES, model->indexCount, GL_UNSIGNED_INT, 0);
-    return;
 }
 
 void RenderModel(Model *model) {

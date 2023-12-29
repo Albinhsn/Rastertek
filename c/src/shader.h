@@ -10,4 +10,6 @@ struct Shader {
 bool InitializeShader(Shader &shader, const char *vsFilename, const char *fsFilename, const char **variables,
                       int variableLength);
 void ShutdownShader(uint shaderProgram, uint *shaders, int length);
-bool SetShaderParameters(Shader shader, float *, float *, float *);
+bool SetShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                         float *lightDirection, float * diffuseLightColor);
+bool SetShaderParameters5(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix);

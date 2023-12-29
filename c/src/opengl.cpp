@@ -561,3 +561,19 @@ uint CreateAndCompileShader(const char *fileName, GLenum shaderType) {
     }
     return shader;
 }
+bool Move3fvToShader(const char *variableName, uint program, float *value, int count) {
+    int location = glGetUniformLocation(program, variableName);
+    if (location == -1) {
+        return false;
+    }
+    glUniform3fv(location, count, value);
+    return true;
+}
+bool Move4fvToShader(const char *variableName, uint program, float *value, int count) {
+    int location = glGetUniformLocation(program, variableName);
+    if (location == -1) {
+        return false;
+    }
+    glUniform4fv(location, count, value);
+    return true;
+}
