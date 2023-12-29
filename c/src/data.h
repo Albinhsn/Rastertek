@@ -16,5 +16,6 @@ TutorialData *Tutorial7();
 TutorialData *Tutorial8();
 TutorialData *Tutorial9();
 TutorialData *Tutorial10();
+TutorialData *Tutorial11();
 
 #endif

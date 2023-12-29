@@ -43,6 +43,60 @@ void ShutdownShaders(uint shaderProgram, uint *shaders, int length) {
     }
     glDeleteProgram(shaderProgram);
 }
+// Multiple point lights
+bool SetShaderParameters11(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                           float *diffuseColorArray, float *lightPositionArray, int numLights) {
+
+    float tpWorldMatrix[16], tpViewMatrix[16], tpProjectionMatrix[16];
+
+    MatrixTranspose(tpWorldMatrix, worldMatrix);
+    MatrixTranspose(tpViewMatrix, viewMatrix);
+    MatrixTranspose(tpProjectionMatrix, projectionMatrix);
+    glUseProgram(shader.shaderProgram);
+    int location = glGetUniformLocation(shader.shaderProgram, "worldMatrix");
+    if (location == -1) {
+        return false;
+    }
+    glUniformMatrix4fv(location, 1, false, tpWorldMatrix);
+
+    // Set the view matrix in the vertex shader.
+    location = glGetUniformLocation(shader.shaderProgram, "viewMatrix");
+    if (location == -1) {
+        return false;
+    }
+    glUniformMatrix4fv(location, 1, false, tpViewMatrix);
+
+    // Set the projection matrix in the vertex shader.
+    location = glGetUniformLocation(shader.shaderProgram, "projectionMatrix");
+    if (location == -1) {
+        return false;
+    }
+    glUniformMatrix4fv(location, 1, false, tpProjectionMatrix);
+
+    // Set the light position array in the vertex shader.
+    location = glGetUniformLocation(shader.shaderProgram, "lightPosition");
+    if (location == -1) {
+        return false;
+    }
+    glUniform3fv(location, numLights, lightPositionArray);
+
+    // Set the texture in the pixel shader to use the data from the first texture
+    // unit.
+    location = glGetUniformLocation(shader.shaderProgram, "shaderTexture");
+    if (location == -1) {
+        return false;
+    }
+    glUniform1i(location, 0);
+
+    // Set the diffuse light color array in the pixel shader.
+    location = glGetUniformLocation(shader.shaderProgram, "diffuseColor");
+    if (location == -1) {
+        return false;
+    }
+    glUniform4fv(location, numLights, diffuseColorArray);
+
+    return true;
+}
 // Specular Lighting
 bool SetShaderParameters10(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
                            float *lightDirection, float *diffuseLightColor, float *ambientLight, float *cameraPosition,

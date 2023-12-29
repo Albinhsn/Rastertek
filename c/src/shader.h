@@ -20,3 +20,5 @@ bool SetShaderParameters6(Shader shader, float *worldMatrix, float *viewMatrix, 
 bool SetShaderParameters10(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
                            float *lightDirection, float *diffuseLightColor, float *ambientLight, float *cameraPosition,
                            float *specularColor, float specularPower);
+bool SetShaderParameters11(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                           float * diffuseColorArray, float * lightPositionArray, int numLights);

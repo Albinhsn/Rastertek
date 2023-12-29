@@ -42,8 +42,6 @@ bool InitializeBuffers(Model *model, void (*enableAttribPtr)(void)) {
     vertices = new VertexType[model->vertexCount];
     indices = new unsigned int[model->indexCount];
 
-    // Load the vertex array with data.
-
     for (int i = 0; i < model->vertexCount; i++) {
         vertices[i].x = model->model[i].x;
         vertices[i].y = model->model[i].y;

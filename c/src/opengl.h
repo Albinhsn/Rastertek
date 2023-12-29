@@ -131,10 +131,11 @@ void glDrawBuffers(int n, const GLenum *bufs);
 void glDeleteRenderbuffers(int n, uint *renderbuffers);
 void glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 bool MoveMatrix4fvToShader(const char *variableName, uint program, float *matrix);
+bool MoveMatrix4fvToShader(const char *variableName, uint program, float *matrix, int count);
 bool Move1fToShader(const char *variableName, uint program, float value);
-bool Move1iToShader(const char * variableName, uint program, int value);
-bool Move3fvToShader(const char * variableName, uint program, float *value, int count);
-bool Move4fvToShader(const char * variableName, uint program, float * value, int count);
+bool Move1iToShader(const char *variableName, uint program, int value);
+bool Move3fvToShader(const char *variableName, uint program, float *value, int count);
+bool Move4fvToShader(const char *variableName, uint program, float *value, int count);
 uint CreateAndCompileShader(const char *fileName, GLenum shaderType);
 
 #endif

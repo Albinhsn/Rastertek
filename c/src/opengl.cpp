@@ -525,6 +525,14 @@ void DisableClipping() {
     glDisable(GL_CLIP_DISTANCE0);
 }
 
+bool MoveMatrix4fvToShader(const char *variableName, uint program, float *matrix, int count) {
+    int location = glGetUniformLocation(program, variableName);
+    if (location == -1) {
+        return false;
+    }
+    glUniformMatrix4fv(location, count, false, matrix);
+    return true;
+}
 bool MoveMatrix4fvToShader(const char *variableName, uint program, float *matrix) {
     int location = glGetUniformLocation(program, variableName);
     if (location == -1) {
