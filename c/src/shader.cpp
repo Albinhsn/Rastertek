@@ -43,8 +43,9 @@ void ShutdownShaders(uint shaderProgram, uint *shaders, int length) {
     }
     glDeleteProgram(shaderProgram);
 }
-bool SetShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
-                         float *lightDirection, float *diffuseLightColor) {
+// Ambient lighting
+bool SetShaderParameters9(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                          float *lightDirection, float *diffuseLightColor, float *ambientLight) {
 
     float tpWorldMatrix[16], tpViewMatrix[16], tpProjectionMatrix[16];
 
@@ -68,6 +69,9 @@ bool SetShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, f
         return false;
     }
     if (!Move4fvToShader("diffuseLightColor", shader.shaderProgram, diffuseLightColor, 1)) {
+        return false;
+    }
+    if (!Move4fvToShader("ambientLight", shader.shaderProgram, ambientLight, 1)) {
         return false;
     }
 
