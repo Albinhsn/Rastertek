@@ -8,15 +8,15 @@
 using namespace std;
 
 void ReleaseTexture(Model *model) {
-    if (model->texture) {
-        ShutdownTexture(model->texture);
-        free(model->texture);
-        model->texture = 0;
-    }
+    printf("Releasing texture\n");
+    ShutdownTexture(model->texture);
+    free(model->texture);
+    printf("Released texture\n");
 }
 void ShutdownBuffers(Model *model) {
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    for (int i = 0; i < model->attribLen; i++) {
+        glDisableVertexAttribArray(i);
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glDeleteBuffers(1, &model->vertexBufferId);
@@ -34,8 +34,8 @@ void ShutdownModel(Model *model) {
     ReleaseTexture(model);
     ShutdownBuffers(model);
 }
-// ToDo Should take pointer to bindAttribFunc?
-bool InitializeBuffers(Model *model) {
+
+bool InitializeBuffers(Model *model, void (*enableAttribPtr)(void)) {
     VertexType *vertices;
     unsigned int *indices;
 
@@ -65,13 +65,7 @@ bool InitializeBuffers(Model *model) {
     glBindBuffer(GL_ARRAY_BUFFER, model->vertexBufferId);
     glBufferData(GL_ARRAY_BUFFER, model->vertexCount * sizeof(VertexType), vertices, GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
+    enableAttribPtr();
 
     glGenBuffers(1, &model->indexBufferId);
 
@@ -96,7 +90,7 @@ void RenderModel(Model *model) {
     RenderBuffers(model);
 }
 
-bool LoadTexture(Model *model, char *textureFilename, bool wrap) {
+bool LoadTexture(Model *model, const char *textureFilename, bool wrap) {
     bool result;
 
     model->texture = (Texture *)malloc(sizeof(Texture));
@@ -109,7 +103,7 @@ bool LoadTexture(Model *model, char *textureFilename, bool wrap) {
 
     return true;
 }
-bool LoadModel(Model &model, char *filename) {
+bool LoadModel(Model &model, const char *filename) {
     ifstream fin;
     char input;
     int i;
@@ -160,26 +154,31 @@ bool LoadModel(Model &model, char *filename) {
 
     return true;
 }
-bool InitializeModel(Model *model, char *modelFilename, char *textureFilename, bool wrap) {
+bool InitializeModel(Model *model, const char **models, int modelLen, const char **textures, int textureLen, bool wrap,
+                     void (*enableAttribPtr)(void), int attribLen) {
     bool result;
-
-    result = LoadModel(*model, modelFilename);
-    if (!result) {
-        return false;
+    model->attribLen = attribLen;
+    for (int i = 0; i < modelLen; i++) {
+        result = LoadModel(*model, models[i]);
+        if (!result) {
+            printf("ERROR: Failed to load model '%s'\n", models[i]);
+            return false;
+        }
     }
 
-    result = InitializeBuffers(model);
+    result = InitializeBuffers(model, enableAttribPtr);
 
     if (!result) {
         printf("ERROR: Failed to initialize buffers\n");
         return false;
     }
 
-    result = LoadTexture(model, textureFilename, wrap);
-
-    if (!result) {
-        printf("ERROR: Failed to load texture\n");
-        return false;
+    for (int i = 0; i < textureLen; i++) {
+        result = LoadTexture(model, textures[i], wrap);
+        if (!result) {
+            printf("Failed to load textures '%s'\n", textures[i]);
+            return false;
+        }
     }
 
     return true;

@@ -1,8 +1,6 @@
 #include "camera.h"
 
 void initializeCamera(Camera *camera) {
-
-
     camera->position.x = 0.0f;
     camera->position.y = 0.0f;
     camera->position.z = 0.0f;
@@ -13,7 +11,6 @@ void initializeCamera(Camera *camera) {
 }
 
 void SetPosition(Camera *camera, float x, float y, float z) {
-
     camera->position.x = x;
     camera->position.y = y;
     camera->position.z = z;

@@ -69,8 +69,6 @@ struct OpenGL {
 
 void InitializeOpenGL(OpenGL *openGL, Display *display, Window win, int screenWidth, int screenHeight, float screenNear,
                       float screenDepth, bool vsync);
-void ShutdownOpenGL();
-
 void BeginScene(float, float, float, float);
 void EndScene(Display *, Window hwnd);
 

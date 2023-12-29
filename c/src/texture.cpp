@@ -3,7 +3,7 @@
 #include "utils.h"
 #include <stdio.h>
 
-bool LoadTarga(Texture *texture, char *filename, bool wrap) {
+bool LoadTarga(Texture *texture, const char *filename, bool wrap) {
 
     TargaHeader targaFileHeader;
     FILE *filePtr;
@@ -102,7 +102,7 @@ bool LoadTarga(Texture *texture, char *filename, bool wrap) {
     return true;
 }
 
-bool InitializeTexture(Texture *texture, char *filename, unsigned int textureUnit, bool wrap) {
+bool InitializeTexture(Texture *texture, const char *filename, unsigned int textureUnit, bool wrap) {
     texture->textureUnit = textureUnit;
     bool result = LoadTarga(texture, filename, wrap);
     if (!result) {

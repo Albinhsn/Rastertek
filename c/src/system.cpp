@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-bool InitializeSystem(System *system, int app) {
+bool InitializeSystem(System *system, TutorialData *tutorial) {
     int screenWidth = 0, screenHeight = 0;
     bool result;
 
@@ -16,29 +16,9 @@ bool InitializeSystem(System *system, int app) {
         return false;
     }
     system->application = (Application *)malloc(sizeof(Application));
-    system->application->app = app;
-    switch (app) {
-    case 5: {
-        result =
-            InitializeApplication5(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
-        break;
-    }
-    case 6: {
-        result =
-            InitializeApplication6(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
-        break;
-    }
-    case 7: {
-        result =
-            InitializeApplication7(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
-        break;
-    }
-    default: {
-        result =
-            InitializeApplication(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
-        break;
-    }
-    }
+
+    result = InitializeApplication(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight,
+                                   tutorial);
     printf("INFO: Initialized Application\n");
     if (!result) {
         printf("ERROR: Failed to initialize application\n");
@@ -59,19 +39,19 @@ void ShutdownSystem(System *system) {
     if (system->application) {
         ShutdownApplication(system->application);
         free(system->application);
-        system->application = 0;
+        printf("Shutdown Application\n");
     }
-
     ShutdownWindow(system);
+    printf("Shutdown Window\n");
 }
-void Frame(System *system) {
+void Frame(System *system, TutorialData *tutorial) {
     bool done, result;
 
     done = false;
     while (!done) {
         ReadInput(system);
 
-        result = Frame(system->application, system->input);
+        result = Frame(system->application, system->input, tutorial->renderApplicationPtr, tutorial->rotationSpeed);
         if (!result) {
             done = true;
         }

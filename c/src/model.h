@@ -10,21 +10,23 @@ struct VertexType {
 };
 
 struct Model {
+    int attribLen;
     int vertexCount, indexCount;
     unsigned int vertexArrayId, vertexBufferId, indexBufferId;
     Texture *texture;
     VertexType *model;
 };
 
-bool InitializeModel(Model *model, char *, char *, bool);
+bool InitializeModel(Model *model, const char **models, int modelLen, const char **textures, int textureLen, bool wrap,
+                     void (*enableAttribPtr)(void), int attribLen);
 void ShutdownModel(Model *model);
 void RenderModel(Model *model);
 
-bool InitializeBuffers(Model *model);
+bool InitializeBuffers(Model *model, void (*enableAttribPtr)(void));
 void ShutdownBuffers();
 void RenderBuffers();
 
-bool LoadTexture(char *, bool);
+bool LoadTexture(Model *model, const char *textureFilename, bool wrap);
 void ReleaseTexture();
 
 #endif
