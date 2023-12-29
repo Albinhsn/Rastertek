@@ -22,7 +22,12 @@ struct Application {
 bool RenderApplication(Application *application);
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth,
                            int screenHeight);
-bool InitializeTutorial5(Application *application, Display *display, Window window, int screenWidth, int screenHeight);
+bool InitializeApplication5(Application *application, Display *display, Window window, int screenWidth,
+                            int screenHeight);
+bool InitializeApplication6(Application *application, Display *display, Window window, int screenWidth,
+                            int screenHeight);
+bool InitializeApplication7(Application *application, Display *display, Window window, int screenWidth,
+                            int screenHeight);
 void ShutdownApplication(Application *application);
 bool Frame(Application *application, Input *);
 

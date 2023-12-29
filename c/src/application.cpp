@@ -23,11 +23,18 @@ bool RenderApplication(Application *application, float rotation) {
         MatrixRotationY(worldMatrix, rotation);
         float diffuseColor[4] = {0.0f, 1.0f, 0.0f, 1.0f};
         float lightDirection[3] = {1.0f, 0.0f, 0.0f};
-        result = SetShaderParameters(*application->shader, worldMatrix, application->camera->viewMatrix,
-                                     application->openGL->projectionMatrix, lightDirection, diffuseColor);
+        result = SetShaderParameters6(*application->shader, worldMatrix, application->camera->viewMatrix,
+                                      application->openGL->projectionMatrix, lightDirection, diffuseColor);
         break;
     }
     default: {
+        float worldMatrix[16];
+        Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
+        MatrixRotationY(worldMatrix, rotation);
+        float diffuseColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+        float lightDirection[3] = {0.0f, 0.0f, 1.0f};
+        result = SetShaderParameters6(*application->shader, worldMatrix, application->camera->viewMatrix,
+                                      application->openGL->projectionMatrix, lightDirection, diffuseColor);
         break;
     }
     }
@@ -43,7 +50,7 @@ bool RenderApplication(Application *application, float rotation) {
     return true;
 }
 
-bool InitializeTutorial5(Application *application, Display *display, Window window, int screenWidth, int screenHeight) {
+bool InitializeApplication5(Application *application, Display *display, Window window, int screenWidth, int screenHeight) {
 
     application->openGL = (OpenGL *)malloc(sizeof(OpenGL));
     application->shader = 0;
@@ -51,6 +58,7 @@ bool InitializeTutorial5(Application *application, Display *display, Window wind
     application->camera = 0;
 
     char textureFilename[128];
+    char modelFilename[128];
     bool result;
 
     InitializeOpenGL(application->openGL, display, window, screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH,
@@ -61,11 +69,12 @@ bool InitializeTutorial5(Application *application, Display *display, Window wind
 
     Render(application->camera);
 
+    strcpy(modelFilename, "./data/rect.txt");
     strcpy(textureFilename, "./data/blizzard01.tga");
 
     application->model = (Model *)malloc(sizeof(Model));
 
-    result = InitializeModel(application->model, textureFilename, false);
+    result = InitializeModel(application->model, modelFilename, textureFilename, false);
     if (!result) {
         printf("ERROR: Failed to initialize model\n");
         return false;
@@ -81,14 +90,14 @@ bool InitializeTutorial5(Application *application, Display *display, Window wind
 
     return true;
 }
-
-bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth,
+bool InitializeApplication7(Application *application, Display *display, Window window, int screenWidth,
                            int screenHeight) {
     application->openGL = (OpenGL *)malloc(sizeof(OpenGL));
     application->shader = 0;
     application->model = 0;
     application->camera = 0;
 
+    char modelFilename[128];
     char textureFilename[128];
     bool result;
 
@@ -100,11 +109,95 @@ bool InitializeApplication(Application *application, Display *display, Window wi
 
     Render(application->camera);
 
+    strcpy(modelFilename, "./data/cube.txt");
     strcpy(textureFilename, "./data/blizzard01.tga");
 
     application->model = (Model *)malloc(sizeof(Model));
 
-    result = InitializeModel(application->model, textureFilename, false);
+    result = InitializeModel(application->model, modelFilename, textureFilename, false);
+    if (!result) {
+        printf("ERROR: Failed to initialize model\n");
+        return false;
+    }
+
+    application->shader = (Shader *)malloc(sizeof(Shader));
+    const int len = 3;
+    const char *variables[len] = {"inputPosition", "inputTexCoord", "inputNormal"};
+    result = InitializeShader(*application->shader, "./shaders/light3.vs", "./shaders/light3.ps", variables, len);
+    if (!result) {
+        printf("ERROR: Failed to initialize texture shader\n");
+        return false;
+    }
+
+    return true;
+}
+bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth,
+                           int screenHeight) {
+    application->openGL = (OpenGL *)malloc(sizeof(OpenGL));
+    application->shader = 0;
+    application->model = 0;
+    application->camera = 0;
+
+    char modelFilename[128];
+    char textureFilename[128];
+    bool result;
+
+    InitializeOpenGL(application->openGL, display, window, screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH,
+                     VSYNC_ENABLED);
+
+    application->camera = (Camera *)malloc(sizeof(Camera));
+    SetPosition(application->camera, 0.0f, 0.0f, -5.0f);
+
+    Render(application->camera);
+
+    strcpy(modelFilename, "./data/cube.txt");
+    strcpy(textureFilename, "./data/blizzard01.tga");
+
+    application->model = (Model *)malloc(sizeof(Model));
+
+    result = InitializeModel(application->model, modelFilename, textureFilename, false);
+    if (!result) {
+        printf("ERROR: Failed to initialize model\n");
+        return false;
+    }
+
+    application->shader = (Shader *)malloc(sizeof(Shader));
+    const int len = 3;
+    const char *variables[len] = {"inputPosition", "inputTexCoord", "inputNormal"};
+    result = InitializeShader(*application->shader, "./shaders/light3.vs", "./shaders/light3.ps", variables, len);
+    if (!result) {
+        printf("ERROR: Failed to initialize texture shader\n");
+        return false;
+    }
+
+    return true;
+}
+
+bool InitializeApplication6(Application *application, Display *display, Window window, int screenWidth,
+                            int screenHeight) {
+    application->openGL = (OpenGL *)malloc(sizeof(OpenGL));
+    application->shader = 0;
+    application->model = 0;
+    application->camera = 0;
+
+    char modelFilename[128];
+    char textureFilename[128];
+    bool result;
+
+    InitializeOpenGL(application->openGL, display, window, screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH,
+                     VSYNC_ENABLED);
+
+    application->camera = (Camera *)malloc(sizeof(Camera));
+    SetPosition(application->camera, 0.0f, 0.0f, -5.0f);
+
+    Render(application->camera);
+
+    strcpy(modelFilename, "./data/rect.txt");
+    strcpy(textureFilename, "./data/blizzard01.tga");
+
+    application->model = (Model *)malloc(sizeof(Model));
+
+    result = InitializeModel(application->model, modelFilename, textureFilename, false);
     if (!result) {
         printf("ERROR: Failed to initialize model\n");
         return false;

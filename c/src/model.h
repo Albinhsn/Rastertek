@@ -3,20 +3,20 @@
 
 #include "opengl.h"
 #include "texture.h"
+struct VertexType {
+    float x, y, z;
+    float tu, tv;
+    float nx, ny, nz;
+};
 
 struct Model {
-        int vertexCount, indexCount;
-        unsigned int vertexArrayId, vertexBufferId, indexBufferId;
-        Texture *texture;
+    int vertexCount, indexCount;
+    unsigned int vertexArrayId, vertexBufferId, indexBufferId;
+    Texture *texture;
+    VertexType *model;
 };
 
-struct VertexType {
-        float x, y, z;
-        float tu, tv;
-        float nx, ny, nz;
-};
-
-bool InitializeModel(Model* model, char *, bool);
+bool InitializeModel(Model *model, char *, char *, bool);
 void ShutdownModel(Model *model);
 void RenderModel(Model *model);
 

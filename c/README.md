@@ -1,3 +1,6 @@
+Fix seg fault
+Fix 5
+
 ## ToDo
 - [ ] Maybe actually remove openGL move functions
 - [ ] Look over and fix better way to render a "generic" scene

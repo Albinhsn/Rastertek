@@ -13,3 +13,5 @@ void ShutdownShader(uint shaderProgram, uint *shaders, int length);
 bool SetShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
                          float *lightDirection, float * diffuseLightColor);
 bool SetShaderParameters5(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix);
+bool SetShaderParameters6(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                         float *lightDirection, float *diffuseLightColor);

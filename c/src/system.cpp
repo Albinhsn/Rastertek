@@ -20,15 +20,22 @@ bool InitializeSystem(System *system, int app) {
     switch (app) {
     case 5: {
         result =
-            InitializeTutorial5(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
+            InitializeApplication5(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
         break;
     }
     case 6: {
         result =
-            InitializeApplication(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
+            InitializeApplication6(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
+        break;
+    }
+    case 7: {
+        result =
+            InitializeApplication7(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
         break;
     }
     default: {
+        result =
+            InitializeApplication(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight);
         break;
     }
     }
