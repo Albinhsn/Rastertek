@@ -21,7 +21,7 @@ bool InitializeApplication(Application *application, Display *display, Window wi
 
     Render(application->camera);
     // Model
-    if (tutorial->modelLen) {
+    if (tutorial->modelBool) {
         application->model = (Model *)malloc(sizeof(Model));
 
         result =
@@ -32,12 +32,20 @@ bool InitializeApplication(Application *application, Display *display, Window wi
             return false;
         }
         // Bitmap
-    } else {
+    } else if (tutorial->bitmapBool) {
         Bitmap *bitmap = (Bitmap *)malloc(sizeof(Bitmap));
         result = InitializeBitmap(*bitmap, screenWidth, screenHeight, tutorial->bitmapFilename, 150, 150);
         application->bitmap = bitmap;
         if (!result) {
             printf("ERROR: Failed to initialize bitmap\n");
+            return false;
+        }
+    } else {
+        Sprite *sprite = (Sprite *)malloc(sizeof(Sprite));
+        result = InitializeSprite(*sprite, screenWidth, screenHeight, 150, 150, tutorial->spriteFilename);
+        application->sprite = sprite;
+        if (!result) {
+            printf("ERROR: Failed to initialize sprite\n");
             return false;
         }
     }
@@ -87,7 +95,6 @@ bool Frame(Application *application, Input *input,
     if (rotation <= 0.0f) {
         rotation += 360.0f;
     }
-
     result = renderApplicationPtr(application, rotation);
     if (!result) {
         return false;

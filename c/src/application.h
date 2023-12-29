@@ -7,6 +7,8 @@
 #include "model.h"
 #include "opengl.h"
 #include "shader.h"
+#include "sprite.h"
+#include "timer.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -16,7 +18,8 @@ const float SCREEN_DEPTH = 1000.0f;
 struct Application;
 
 struct TutorialData {
-    // Model 
+    bool modelBool, bitmapBool, spriteBool;
+    // Model
     const char **models;
     int modelLen;
     const char **textures;
@@ -32,8 +35,13 @@ struct TutorialData {
     bool wrap;
 
     // Bitmap
-    Bitmap * bitmap;
-    const char * bitmapFilename;
+    Bitmap *bitmap;
+    const char *bitmapFilename;
+
+    // Sprite
+    Sprite *sprite;
+    Timer *timer;
+    const char *spriteFilename;
 };
 
 struct Application {
@@ -42,6 +50,8 @@ struct Application {
     Shader *shader;
     Model *model;
     Bitmap *bitmap;
+    Sprite *sprite;
+    Timer *timer;
 };
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth, int screenHeight,
                            TutorialData *tutorial);

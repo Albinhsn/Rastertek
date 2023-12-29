@@ -45,15 +45,11 @@ void ShutdownSystem(System *system) {
     printf("Shutdown Window\n");
 }
 void Frame(System *system, TutorialData *tutorial) {
-    bool done, result;
-
-    done = false;
-    while (!done) {
+    while (true) {
         ReadInput(system);
 
-        result = Frame(system->application, system->input, tutorial->renderApplicationPtr, tutorial->rotationSpeed);
-        if (!result) {
-            done = true;
+        if (!Frame(system->application, system->input, tutorial->renderApplicationPtr, tutorial->rotationSpeed)) {
+            break;
         }
     }
 }

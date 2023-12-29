@@ -11,7 +11,7 @@ void resizeBitmap(Bitmap &bitmap, int height, int width) {
 }
 
 void UpdateBitmapBuffer(Bitmap &bitmap) {
-  resizeBitmap(bitmap, 200, 200);
+    resizeBitmap(bitmap, 150, 150);
     if (bitmap.prevPosX == bitmap.renderX && bitmap.prevPosY == bitmap.renderY) {
         return;
     }

@@ -3,7 +3,7 @@
 #include "system.h"
 #include <cstdlib>
 
-#define APP 12
+#define APP 13
 
 int main() {
     System *system = (System *)malloc(sizeof(System));
@@ -41,13 +41,17 @@ int main() {
         tutorial = Tutorial12();
         break;
     }
+    case 13: {
+        tutorial = Tutorial13();
+        break;
+    }
     default: {
         printf("Unknown tutorial \n");
         exit(1);
     }
     }
     bool result = InitializeSystem(system, tutorial);
-
+    printf("INFO: Initialized system\n");
     if (!result) {
         printf("ERROR: Couldn't initialize system\n");
         return -1;
