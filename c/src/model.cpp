@@ -48,56 +48,56 @@ bool InitializeBuffers(Model *model) {
     // Load the vertex array with data.
 
     // Left Triangle
-    // Bottom left.
+    // Top left
     vertices[0].x = -1.0f; // Position.
-    vertices[0].y = -1.0f;
-    vertices[0].z = 0.0f;
+    vertices[0].y = 1.0f;
+    vertices[0].z = -1.0f;
     vertices[0].tu = 0.0f; // Texture
-    vertices[0].tv = 0.0f;
+    vertices[0].tv = 1.0f;
 
-    // Top
-    vertices[1].x = -1.0f; // Position.
+    // Top right
+    vertices[1].x = 1.0f; // Position.
     vertices[1].y = 1.0f;
-    vertices[1].z = 0.0f;
-    vertices[1].tu = 0.5f; // Texture
+    vertices[1].z = -1.0f;
+    vertices[1].tu = 1.0f; // Texture
     vertices[1].tv = 1.0f;
 
-    // Bottom right.
-    vertices[2].x = 0.5f; // Position.
+    // Bottom Left.
+    vertices[2].x = -1.0f; // Position.
     vertices[2].y = -1.0f;
-    vertices[2].z = 0.0f;
-    vertices[2].tu = 1.0f; // Texture
+    vertices[2].z = -1.0f;
+    vertices[2].tu = 0.0f; // Texture
     vertices[2].tv = 0.0f;
 
     // Right Triangle
-    // Top left.
+    // Bot left.
     vertices[3].x = -1.0f; // Position.
     vertices[3].y = -1.0f;
-    vertices[3].z = 0.0f;
+    vertices[3].z = -1.0f;
     vertices[3].tu = 0.0f; // Texture
     vertices[3].tv = 0.0f;
 
-    // Bottom.
-    vertices[4].x = 0.5f; // Position.
-    vertices[4].y = -1.0f;
-    vertices[4].z = 0.0f;
-    vertices[4].tu = 1.0f; // Texture
-    vertices[4].tv = 0.0f;
-
     // Top right.
+    vertices[4].x = 1.0f; // Position.
+    vertices[4].y = 1.0f;
+    vertices[4].z = -1.0f;
+    vertices[4].tu = 1.0f; // Texture
+    vertices[4].tv = 1.0f;
+
+    // Bot right.
     vertices[5].x = 1.0f; // Position.
-    vertices[5].y = 1.0f;
-    vertices[5].z = 0.0f;
-    vertices[5].tu = 0.5f; // Texture
-    vertices[5].tv = 1.0f;
+    vertices[5].y = -1.0f;
+    vertices[5].z = -1.0f;
+    vertices[5].tu = 1.0f; // Texture
+    vertices[5].tv = 0.0f;
 
     // Load the index array with data.
     indices[0] = 0; // Bottom left.
     indices[1] = 1; // Top middle.
     indices[2] = 2; // Bottom right.
     indices[3] = 3; // Bottom left.
-    indices[4] = 4; // Top middle.
-    indices[5] = 5; // Bottom right.
+    indices[4] = 4; // Bottom left.
+    indices[5] = 5; // Bottom left.
 
     glGenVertexArrays(1, &model->vertexArrayId);
     glBindVertexArray(model->vertexArrayId);
@@ -111,7 +111,6 @@ bool InitializeBuffers(Model *model) {
     glEnableVertexAttribArray(1);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
-
     glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
 
     glGenBuffers(1, &model->indexBufferId);
@@ -153,8 +152,6 @@ bool LoadTexture(Model *model, char *textureFilename, bool wrap) {
 }
 bool InitializeModel(Model *model, char *textureFilename, bool wrap) {
     bool result;
-
-    model->texture = 0;
 
     result = InitializeBuffers(model);
 

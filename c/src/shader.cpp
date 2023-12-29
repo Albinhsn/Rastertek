@@ -53,7 +53,7 @@ bool SetShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, f
     MatrixTranspose(tpProjectionMatrix, projectionMatrix);
 
     glUseProgram(shader.shaderProgram);
-    // This should also be done by funcPointer and name or smth?
+    // ToDo This should also be done by funcPointer and name or smth?
     if (!MoveMatrix4fvToShader("worldMatrix", shader.shaderProgram, tpWorldMatrix)) {
         return false;
     }
