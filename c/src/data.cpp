@@ -1,58 +1,83 @@
 #include "data.h"
 #include "opengl.h"
 #include "sprite.h"
+#include "texture.h"
 
 static void enableAttribPtr5() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
 }
 static void enableAttribPtr6() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
 }
 static void enableAttribPtr7() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
 }
 static void enableAttribPtr8() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
 }
 static void enableAttribPtr10() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
 }
 static void enableAttribPtr11() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexType), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexType), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
+}
+static bool renderApplicationPtr14(Application *application, float rotation) {
+
+    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+    TurnZBufferOff();
+    EnableAlphaBlending();
+    for (int i = 0; i < application->textLen; i++) {
+        bool result = SetShaderParameters14(*application->shader, application->openGL->worldMatrix,
+                                            application->camera->viewMatrix, application->openGL->orthoMatrix,
+                                            application->text[i].pixelColor);
+        if (!result) {
+            printf("Failed to set shader params\n");
+            return false;
+        }
+        SetTexture(application->font->texture);
+        RenderText(application->text[i]);
+    }
+
+    TurnZBufferOn();
+    DisableAlphaBlending();
+
+    EndScene(application->openGL->display, application->openGL->hwnd);
+
+    return true;
 }
 static bool renderApplicationPtr13(Application *application, float rotation) {
 
@@ -266,7 +291,7 @@ static bool renderApplicationPtr6(Application *application, float rotation) {
     float worldMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
     MatrixRotationY(worldMatrix, rotation);
-    float diffuseColor[4] = {0.0f, 1.0f, 0.0f, 1.0f};
+    float diffuseColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     float lightDirection[3] = {1.0f, 0.0f, 0.0f};
     bool result = SetShaderParameters6(*application->shader, worldMatrix, application->camera->viewMatrix,
                                        application->openGL->projectionMatrix, lightDirection, diffuseColor);
@@ -299,6 +324,8 @@ static bool renderApplicationPtr5(Application *application, float rotation) {
 TutorialData *Tutorial5() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
+    tutorial->tutorial = MODEL;
+
     tutorial->modelLen = 1;
     tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
     tutorial->models[0] = "./data/rect.txt";
@@ -323,6 +350,7 @@ TutorialData *Tutorial5() {
     tutorial->renderApplicationPtr = &renderApplicationPtr5;
 
     tutorial->wrap = false;
+    tutorial->rotationSpeed = 0.0174532925f;
 
     return tutorial;
 }
@@ -330,9 +358,10 @@ TutorialData *Tutorial5() {
 TutorialData *Tutorial6() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
+    tutorial->tutorial = MODEL;
     tutorial->modelLen = 1;
     tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/rect.txt";
+    tutorial->models[0] = "./data/cube.txt";
 
     tutorial->textureLen = 1;
     tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
@@ -355,12 +384,14 @@ TutorialData *Tutorial6() {
     tutorial->renderApplicationPtr = &renderApplicationPtr6;
 
     tutorial->wrap = false;
+    tutorial->rotationSpeed = 0.0174532925f;
 
     return tutorial;
 }
 TutorialData *Tutorial7() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
+    tutorial->tutorial = MODEL;
     tutorial->modelLen = 1;
     tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
     tutorial->models[0] = "./data/cube.txt";
@@ -393,6 +424,7 @@ TutorialData *Tutorial7() {
 TutorialData *Tutorial8() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
+    tutorial->tutorial = MODEL;
     tutorial->modelLen = 1;
     tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
     tutorial->models[0] = "./data/cube.txt";
@@ -425,6 +457,7 @@ TutorialData *Tutorial8() {
 TutorialData *Tutorial10() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
+    tutorial->tutorial = MODEL;
     tutorial->modelLen = 1;
     tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
     tutorial->models[0] = "./data/sphere.txt";
@@ -457,6 +490,7 @@ TutorialData *Tutorial10() {
 TutorialData *Tutorial11() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
+    tutorial->tutorial = MODEL;
     tutorial->modelLen = 1;
     tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
     tutorial->models[0] = "./data/plane.txt";
@@ -489,9 +523,7 @@ TutorialData *Tutorial11() {
 TutorialData *Tutorial9() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
-    tutorial->bitmapBool = false;
-    tutorial->modelBool = true;
-    tutorial->spriteBool = false;
+    tutorial->tutorial = MODEL;
 
     tutorial->modelLen = 1;
     tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
@@ -525,9 +557,7 @@ TutorialData *Tutorial9() {
 TutorialData *Tutorial12() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
-    tutorial->bitmapBool = true;
-    tutorial->modelBool = false;
-    tutorial->spriteBool = false;
+    tutorial->tutorial = BITMAP;
 
     tutorial->bitmapFilename = "./data/blizzard01.tga";
     tutorial->vertexShaderName = "./shaders/texture.vs";
@@ -555,9 +585,7 @@ TutorialData *Tutorial12() {
 TutorialData *Tutorial13() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
-    tutorial->bitmapBool = false;
-    tutorial->modelBool = false;
-    tutorial->spriteBool = true;
+    tutorial->tutorial = SPRITE;
 
     tutorial->spriteFilename = "./data/sprite_data_01.txt";
 
@@ -576,6 +604,37 @@ TutorialData *Tutorial13() {
 
     tutorial->enableAttribPtr = &enableAttribPtr5;
     tutorial->renderApplicationPtr = &renderApplicationPtr13;
+
+    tutorial->wrap = false;
+    tutorial->rotationSpeed = 0.0174532925f;
+
+    return tutorial;
+}
+TutorialData *Tutorial14() {
+    TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
+
+    tutorial->tutorial = FONT;
+
+    tutorial->textLen = 3;
+    tutorial->textStrings = (TutorialText *)malloc(sizeof(TutorialText) * tutorial->textLen);
+    tutorial->textStrings[0] = (TutorialText){"Hello", {0.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 10};
+    tutorial->textStrings[1] = (TutorialText){"Goodbye", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 50};
+    tutorial->textStrings[2] = (TutorialText){"Cya", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 100};
+
+    tutorial->vertexShaderName = "./shaders/font.vs";
+    tutorial->fragmentShaderName = "./shaders/font.ps";
+
+    tutorial->variablesLen = 2;
+    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
+    tutorial->variables[0] = "inputPosition";
+    tutorial->variables[1] = "inputTexCoord";
+
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraY = 0.0f;
+    tutorial->cameraZ = -5.0f;
+
+    tutorial->enableAttribPtr = &enableAttribPtr5;
+    tutorial->renderApplicationPtr = &renderApplicationPtr14;
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;

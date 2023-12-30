@@ -593,3 +593,4 @@ bool Move4fvToShader(const char *variableName, uint program, float *value, int c
     glUniform4fv(location, count, value);
     return true;
 }
+void EnableAlphaBlending() { glEnable(GL_BLEND); }

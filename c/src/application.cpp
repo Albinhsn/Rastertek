@@ -20,8 +20,9 @@ bool InitializeApplication(Application *application, Display *display, Window wi
     SetPosition(application->camera, tutorial->cameraX, tutorial->cameraY, tutorial->cameraZ);
 
     Render(application->camera);
-    // Model
-    if (tutorial->modelBool) {
+
+    switch (tutorial->tutorial) {
+    case MODEL: {
         application->model = (Model *)malloc(sizeof(Model));
 
         result =
@@ -31,16 +32,9 @@ bool InitializeApplication(Application *application, Display *display, Window wi
             printf("ERROR: Failed to initialize model\n");
             return false;
         }
-        // Bitmap
-    } else if (tutorial->bitmapBool) {
-        Bitmap *bitmap = (Bitmap *)malloc(sizeof(Bitmap));
-        result = InitializeBitmap(*bitmap, screenWidth, screenHeight, tutorial->bitmapFilename, 150, 150);
-        application->bitmap = bitmap;
-        if (!result) {
-            printf("ERROR: Failed to initialize bitmap\n");
-            return false;
-        }
-    } else {
+        break;
+    }
+    case SPRITE: {
         Sprite *sprite = (Sprite *)malloc(sizeof(Sprite));
         result = InitializeSprite(*sprite, screenWidth, screenHeight, 150, 150, tutorial->spriteFilename);
         application->sprite = sprite;
@@ -48,6 +42,44 @@ bool InitializeApplication(Application *application, Display *display, Window wi
             printf("ERROR: Failed to initialize sprite\n");
             return false;
         }
+        break;
+    }
+    case BITMAP: {
+        Bitmap *bitmap = (Bitmap *)malloc(sizeof(Bitmap));
+        result = InitializeBitmap(*bitmap, screenWidth, screenHeight, tutorial->bitmapFilename, 150, 150);
+        application->bitmap = bitmap;
+        if (!result) {
+            printf("ERROR: Failed to initialize bitmap\n");
+            return false;
+        }
+        break;
+    }
+    case FONT: {
+        m_Font *font = (m_Font *)malloc(sizeof(m_Font));
+        result = InitializeFont(*font, 0);
+        application->font = font;
+        if (!result) {
+            printf("Failed to initiazle font\n");
+            return false;
+        }
+        application->text = (Text *)malloc(sizeof(Text) * tutorial->textLen);
+        application->textLen = tutorial->textLen;
+        for (int i = 0; i < application->textLen; i++) {
+            TutorialText text = tutorial->textStrings[i];
+            result = InitializeText(application->text[i], screenWidth, screenHeight, text.fontSize, font, text.text,
+                                    text.posX, text.posY, text.color[0], text.color[1], text.color[2]);
+            if (!result) {
+                printf("Failed to initialize text1\n");
+                return false;
+            }
+        }
+
+        break;
+    }
+    default: {
+        printf("Unknown tutorial type?\n");
+        return false;
+    }
     }
 
     application->shader = (Shader *)malloc(sizeof(Shader));

@@ -3,6 +3,8 @@
 
 #include "model.h"
 #include "texture.h"
+#include "text.h"
+#include "font.h"
 #include "application.h"
 #include <stdlib.h>
 #include <string.h>
@@ -19,5 +21,6 @@ TutorialData *Tutorial10();
 TutorialData *Tutorial11();
 TutorialData *Tutorial12();
 TutorialData *Tutorial13();
+TutorialData *Tutorial14();
 
 #endif

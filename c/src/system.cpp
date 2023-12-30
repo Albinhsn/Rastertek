@@ -19,11 +19,11 @@ bool InitializeSystem(System *system, TutorialData *tutorial) {
 
     result = InitializeApplication(system->application, system->videoDisplay, system->hwnd, screenWidth, screenHeight,
                                    tutorial);
-    printf("INFO: Initialized Application\n");
     if (!result) {
         printf("ERROR: Failed to initialize application\n");
         return false;
     }
+    printf("INFO: Initialized Application\n");
     return true;
 }
 void ShutdownWindow(System *system) {

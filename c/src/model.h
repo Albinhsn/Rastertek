@@ -31,6 +31,5 @@ void ShutdownBuffers();
 void RenderBuffers();
 
 bool LoadTexture(Model *model, const char *textureFilename, bool wrap);
-void ReleaseTexture();
 
 #endif

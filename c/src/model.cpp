@@ -36,10 +36,10 @@ void ShutdownModel(Model *model) {
 }
 
 bool InitializeBuffers(Model *model, void (*enableAttribPtr)(void)) {
-    VertexType *vertices;
+    VertexTypeN *vertices;
     unsigned int *indices;
 
-    vertices = new VertexType[model->vertexCount];
+    vertices = new VertexTypeN[model->vertexCount];
     indices = new unsigned int[model->indexCount];
 
     for (int i = 0; i < model->vertexCount; i++) {
@@ -61,7 +61,7 @@ bool InitializeBuffers(Model *model, void (*enableAttribPtr)(void)) {
     glGenBuffers(1, &model->vertexBufferId);
 
     glBindBuffer(GL_ARRAY_BUFFER, model->vertexBufferId);
-    glBufferData(GL_ARRAY_BUFFER, model->vertexCount * sizeof(VertexType), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, model->vertexCount * sizeof(VertexTypeN), vertices, GL_STATIC_DRAW);
 
     enableAttribPtr();
 
@@ -127,7 +127,7 @@ bool LoadModel(Model &model, const char *filename) {
     model.indexCount = model.vertexCount;
 
     // Create the model using the vertex count that was read in.
-    model.model = new VertexType[model.vertexCount];
+    model.model = new VertexTypeN[model.vertexCount];
 
     // Read up to the beginning of the data.
     fin.get(input);

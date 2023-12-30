@@ -3,11 +3,13 @@
 
 #include "bitmap.h"
 #include "camera.h"
+#include "font.h"
 #include "input.h"
 #include "model.h"
 #include "opengl.h"
 #include "shader.h"
 #include "sprite.h"
+#include "text.h"
 #include "timer.h"
 
 const bool FULL_SCREEN = false;
@@ -17,8 +19,18 @@ const float SCREEN_DEPTH = 1000.0f;
 
 struct Application;
 
+enum TutorialEnum { MODEL, SPRITE, BITMAP, FONT };
+struct TutorialText {
+    const char *text;
+    float color[4];
+    int fontSize;
+    int posX, posY;
+};
+
 struct TutorialData {
-    bool modelBool, bitmapBool, spriteBool;
+    TutorialText *textStrings;
+    int textLen;
+    TutorialEnum tutorial;
     // Model
     const char **models;
     int modelLen;
@@ -35,12 +47,9 @@ struct TutorialData {
     bool wrap;
 
     // Bitmap
-    Bitmap *bitmap;
     const char *bitmapFilename;
 
     // Sprite
-    Sprite *sprite;
-    Timer *timer;
     const char *spriteFilename;
 };
 
@@ -52,6 +61,9 @@ struct Application {
     Bitmap *bitmap;
     Sprite *sprite;
     Timer *timer;
+    m_Font *font;
+    int textLen;
+    Text *text;
 };
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth, int screenHeight,
                            TutorialData *tutorial);

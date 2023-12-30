@@ -15,17 +15,17 @@ struct Sprite {
     int textureCount, currentTexture, cycleTime, frameTime;
 };
 bool InitializeSpriteBuffers(Sprite &sprite);
-void ShutdownSpriteBuffers(Sprite &sprite);
-bool LoadSpriteTexture(Sprite &sprite, char *filename);
-
 bool InitializeSprite(Sprite &sprite, int screenWidth, int screenHeight, int renderX, int renderY,
                       const char *spriteFilename);
+bool LoadSpriteTexture(Sprite &sprite, char *filename);
+
 void ShutdownSprite(Sprite &sprite);
+void ShutdownSpriteBuffers(Sprite &sprite);
 
 void UpdateSprite(Sprite &sprite, int frameTime);
 void UpdateSpriteBuffers(Sprite &sprite);
-void RenderSpriteBuffers(Sprite &sprite);
 
+void RenderSpriteBuffers(Sprite &sprite);
 void RenderSprite(Sprite &sprite);
 
 #endif

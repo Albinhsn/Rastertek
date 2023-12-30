@@ -3,7 +3,7 @@
 #include "system.h"
 #include <cstdlib>
 
-#define APP 13
+#define APP 14
 
 int main() {
     System *system = (System *)malloc(sizeof(System));
@@ -43,6 +43,10 @@ int main() {
     }
     case 13: {
         tutorial = Tutorial13();
+        break;
+    }
+    case 14: {
+        tutorial = Tutorial14();
         break;
     }
     default: {
