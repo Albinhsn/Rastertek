@@ -11,6 +11,7 @@
 #include "sprite.h"
 #include "text.h"
 #include "timer.h"
+#include "fps.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -64,6 +65,8 @@ struct Application {
     m_Font *font;
     int textLen;
     Text *text;
+    FPS * fps;
+    int previousFPS;
 };
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth, int screenHeight,
                            TutorialData *tutorial);

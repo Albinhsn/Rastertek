@@ -1,6 +1,7 @@
 
 #include "application.h"
 #include "bitmap.h"
+#include "fps.h"
 #include "model.h"
 #include "opengl.h"
 #include "vector.h"
@@ -20,6 +21,11 @@ bool InitializeApplication(Application *application, Display *display, Window wi
     SetPosition(application->camera, tutorial->cameraX, tutorial->cameraY, tutorial->cameraZ);
 
     Render(application->camera);
+
+    // FPS
+    application->fps = (FPS *)malloc(sizeof(FPS));
+    InitializeFPS(*application->fps);
+    application->previousFPS = -1;
 
     switch (tutorial->tutorial) {
     case MODEL: {
@@ -115,6 +121,68 @@ void ShutdownApplication(Application *application) {
     }
 }
 
+bool UpdateFPS(Application *application) {
+    int fps;
+    char tempString[16], finalString[16];
+    float red, green, blue;
+    bool result;
+
+    // Update the fps each frame.
+    UpdateFPSPerFrame(application->fps);
+
+    // Get the current fps.
+    fps = application->fps->fps;
+
+    // Check if the fps from the previous frame was the same, if so don't need to update the text string.
+    if (application->fps->previousFps == fps) {
+        return true;
+    }
+
+    // Store the fps for checking next frame.
+    application->previousFps = fps;
+
+    // Truncate the fps to below 100,000.
+    if (fps > 99999) {
+        fps = 99999;
+    }
+
+    // Convert the fps integer to string format.
+    sprintf(tempString, "%d", fps);
+
+    // Setup the fps string.
+    strcpy(finalString, "Fps: ");
+    strcat(finalString, tempString);
+
+    // If fps is 60 or above set the fps color to green.
+    if (fps >= 60) {
+        red = 0.0f;
+        green = 1.0f;
+        blue = 0.0f;
+    }
+
+    // If fps is below 60 set the fps color to yellow.
+    if (fps < 60) {
+        red = 1.0f;
+        green = 1.0f;
+        blue = 0.0f;
+    }
+
+    // If fps is below 30 set the fps color to red.
+    if (fps < 30) {
+        red = 1.0f;
+        green = 0.0f;
+        blue = 0.0f;
+    }
+
+    // Update the sentence vertex buffer with the new string information.
+    result = m_FpsString->UpdateText(m_Font, finalString, 10, 10, red, green, blue);
+    if (!result) {
+        return false;
+    }
+
+    return true;
+}
+
 bool Frame(Application *application, Input *input,
            bool (*renderApplicationPtr)(Application *application, float rotation), float rotationSpeed) {
     static float rotation = 360.0f;
@@ -127,6 +195,8 @@ bool Frame(Application *application, Input *input,
     if (rotation <= 0.0f) {
         rotation += 360.0f;
     }
+    UpdateFPSPerFrame(*application->fps);
+
     result = renderApplicationPtr(application, rotation);
     if (!result) {
         return false;

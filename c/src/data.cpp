@@ -328,7 +328,7 @@ TutorialData *Tutorial5() {
 
     tutorial->modelLen = 1;
     tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/rect.txt";
+    tutorial->models[0] = "./data/triangle.txt";
 
     tutorial->textureLen = 1;
     tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
@@ -616,6 +616,37 @@ TutorialData *Tutorial14() {
     tutorial->tutorial = FONT;
 
     tutorial->textLen = 3;
+    tutorial->textStrings = (TutorialText *)malloc(sizeof(TutorialText) * tutorial->textLen);
+    tutorial->textStrings[0] = (TutorialText){"Hello", {0.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 10};
+    tutorial->textStrings[1] = (TutorialText){"Goodbye", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 50};
+    tutorial->textStrings[2] = (TutorialText){"Cya", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 100};
+
+    tutorial->vertexShaderName = "./shaders/font.vs";
+    tutorial->fragmentShaderName = "./shaders/font.ps";
+
+    tutorial->variablesLen = 2;
+    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
+    tutorial->variables[0] = "inputPosition";
+    tutorial->variables[1] = "inputTexCoord";
+
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraY = 0.0f;
+    tutorial->cameraZ = -5.0f;
+
+    tutorial->enableAttribPtr = &enableAttribPtr5;
+    tutorial->renderApplicationPtr = &renderApplicationPtr14;
+
+    tutorial->wrap = false;
+    tutorial->rotationSpeed = 0.0174532925f;
+
+    return tutorial;
+}
+TutorialData *Tutorial15() {
+    TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
+
+    tutorial->tutorial = FONT;
+
+    tutorial->textLen = 1;
     tutorial->textStrings = (TutorialText *)malloc(sizeof(TutorialText) * tutorial->textLen);
     tutorial->textStrings[0] = (TutorialText){"Hello", {0.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 10};
     tutorial->textStrings[1] = (TutorialText){"Goodbye", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 50};
