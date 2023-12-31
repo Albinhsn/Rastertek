@@ -13,8 +13,8 @@
 #include "timer.h"
 #include "fps.h"
 
-const bool FULL_SCREEN = false;
-const bool VSYNC_ENABLED = true;
+const bool FULL_SCREEN = true;
+const bool VSYNC_ENABLED = false;
 const float SCREEN_NEAR = 0.3f;
 const float SCREEN_DEPTH = 1000.0f;
 
@@ -55,6 +55,7 @@ struct TutorialData {
 };
 
 struct Application {
+    Shader * fpsShader;
     OpenGL *openGL;
     Camera *camera;
     Shader *shader;
@@ -65,6 +66,7 @@ struct Application {
     m_Font *font;
     int textLen;
     Text *text;
+    Text * fpsText;
     FPS * fps;
     int previousFPS;
 };
@@ -74,4 +76,5 @@ void ShutdownApplication(Application *application);
 bool Frame(Application *application, Input *input,
            bool (*renderApplicationPtr)(Application *application, float rotation), float rotationSpeed);
 
+bool RenderFpsString(Application *application);
 #endif

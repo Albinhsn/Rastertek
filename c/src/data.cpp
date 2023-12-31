@@ -55,9 +55,8 @@ static void enableAttribPtr11() {
     glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
     glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
 }
+static bool renderApplicationPtr15(Application *application, float rotation) { return true; }
 static bool renderApplicationPtr14(Application *application, float rotation) {
-
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     TurnZBufferOff();
     EnableAlphaBlending();
     for (int i = 0; i < application->textLen; i++) {
@@ -75,13 +74,9 @@ static bool renderApplicationPtr14(Application *application, float rotation) {
     TurnZBufferOn();
     DisableAlphaBlending();
 
-    EndScene(application->openGL->display, application->openGL->hwnd);
-
     return true;
 }
 static bool renderApplicationPtr13(Application *application, float rotation) {
-
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     TurnZBufferOff();
 
     bool result = SetShaderParameters12(*application->shader, application->openGL->worldMatrix,
@@ -94,13 +89,9 @@ static bool renderApplicationPtr13(Application *application, float rotation) {
 
     TurnZBufferOn();
 
-    EndScene(application->openGL->display, application->openGL->hwnd);
-
     return true;
 }
 static bool renderApplicationPtr12(Application *application, float rotation) {
-
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     TurnZBufferOff();
 
     bool result = SetShaderParameters12(*application->shader, application->openGL->worldMatrix,
@@ -112,13 +103,9 @@ static bool renderApplicationPtr12(Application *application, float rotation) {
 
     TurnZBufferOn();
 
-    EndScene(application->openGL->display, application->openGL->hwnd);
-
     return true;
 }
 static bool renderApplicationPtr11(Application *application, float rotation) {
-
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     // float diffuseColorArray[20] = {1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
     //                                1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.753f, 0.796f};
     float diffuseColorArray[4] = {1.0f, 0.753f, 0.796f, 1.0f};
@@ -135,14 +122,10 @@ static bool renderApplicationPtr11(Application *application, float rotation) {
     }
     RenderModel(application->model);
 
-    EndScene(application->openGL->display, application->openGL->hwnd);
-
     return true;
 }
 
 static bool renderApplicationPtr10(Application *application, float rotation) {
-
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     float worldMatrix[16], rotateMatrix[16], translateMatrix[16], scaleMatrix[16], srMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
 
@@ -182,13 +165,9 @@ static bool renderApplicationPtr10(Application *application, float rotation) {
     }
     RenderModel(application->model);
 
-    EndScene(application->openGL->display, application->openGL->hwnd);
-
     return true;
 }
 static bool renderApplicationPtr9(Application *application, float rotation) {
-
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     float worldMatrix[16], rotateMatrix[16], translateMatrix[16], scaleMatrix[16], srMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
 
@@ -222,13 +201,10 @@ static bool renderApplicationPtr9(Application *application, float rotation) {
         return false;
     }
     RenderModel(application->model);
-
-    EndScene(application->openGL->display, application->openGL->hwnd);
-
     return true;
 }
 static bool renderApplicationPtr8(Application *application, float rotation) {
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
     float worldMatrix[16], rotateMatrix[16], translateMatrix[16], scaleMatrix[16], srMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
 
@@ -263,12 +239,9 @@ static bool renderApplicationPtr8(Application *application, float rotation) {
     }
     RenderModel(application->model);
 
-    EndScene(application->openGL->display, application->openGL->hwnd);
-
     return true;
 }
 static bool renderApplicationPtr7(Application *application, float rotation) {
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     float worldMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
     MatrixRotationY(worldMatrix, rotation);
@@ -281,13 +254,10 @@ static bool renderApplicationPtr7(Application *application, float rotation) {
         return false;
     }
     RenderModel(application->model);
-
-    EndScene(application->openGL->display, application->openGL->hwnd);
 
     return true;
 }
 static bool renderApplicationPtr6(Application *application, float rotation) {
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     float worldMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
     MatrixRotationY(worldMatrix, rotation);
@@ -300,14 +270,11 @@ static bool renderApplicationPtr6(Application *application, float rotation) {
         return false;
     }
     RenderModel(application->model);
-
-    EndScene(application->openGL->display, application->openGL->hwnd);
 
     return true;
 }
 
 static bool renderApplicationPtr5(Application *application, float rotation) {
-    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     bool result = SetShaderParameters5(*application->shader, application->openGL->worldMatrix,
                                        application->camera->viewMatrix, application->openGL->projectionMatrix);
     if (!result) {
@@ -315,8 +282,6 @@ static bool renderApplicationPtr5(Application *application, float rotation) {
         return false;
     }
     RenderModel(application->model);
-
-    EndScene(application->openGL->display, application->openGL->hwnd);
 
     return true;
 }
@@ -617,9 +582,9 @@ TutorialData *Tutorial14() {
 
     tutorial->textLen = 3;
     tutorial->textStrings = (TutorialText *)malloc(sizeof(TutorialText) * tutorial->textLen);
-    tutorial->textStrings[0] = (TutorialText){"Hello", {0.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 10};
-    tutorial->textStrings[1] = (TutorialText){"Goodbye", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 50};
-    tutorial->textStrings[2] = (TutorialText){"Cya", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 100};
+    tutorial->textStrings[0] = (TutorialText){"Hello", {0.0f, 1.0f, 0.0f, 1.0f}, 32, 100, 10};
+    tutorial->textStrings[1] = (TutorialText){"Goodbye", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 100, 50};
+    tutorial->textStrings[2] = (TutorialText){"Cya", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 100, 100};
 
     tutorial->vertexShaderName = "./shaders/font.vs";
     tutorial->fragmentShaderName = "./shaders/font.ps";
@@ -642,30 +607,20 @@ TutorialData *Tutorial14() {
     return tutorial;
 }
 TutorialData *Tutorial15() {
+
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
     tutorial->tutorial = FONT;
 
-    tutorial->textLen = 1;
-    tutorial->textStrings = (TutorialText *)malloc(sizeof(TutorialText) * tutorial->textLen);
-    tutorial->textStrings[0] = (TutorialText){"Hello", {0.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 10};
-    tutorial->textStrings[1] = (TutorialText){"Goodbye", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 50};
-    tutorial->textStrings[2] = (TutorialText){"Cya", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 100};
-
     tutorial->vertexShaderName = "./shaders/font.vs";
     tutorial->fragmentShaderName = "./shaders/font.ps";
-
-    tutorial->variablesLen = 2;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraY = 0.0f;
     tutorial->cameraZ = -5.0f;
 
     tutorial->enableAttribPtr = &enableAttribPtr5;
-    tutorial->renderApplicationPtr = &renderApplicationPtr14;
+    tutorial->renderApplicationPtr = &renderApplicationPtr15;
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;

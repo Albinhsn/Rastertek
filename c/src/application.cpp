@@ -4,17 +4,40 @@
 #include "fps.h"
 #include "model.h"
 #include "opengl.h"
-#include "vector.h"
 #include <cstdio>
 #include <string.h>
+
+static bool InitializeFpsString(Application *application, int screenWidth, int screenHeight) {
+    application->fps = (FPS *)malloc(sizeof(FPS));
+    InitializeFPS(*application->fps);
+    application->previousFPS = -1;
+    application->fpsText = (Text *)malloc(sizeof(Text));
+
+    bool result = InitializeText(*application->fpsText, screenWidth, screenHeight, 32, application->font, "FPS: 0", 10,
+                                 10, 1.0f, 1.0f, 0.0f);
+    if (!result) {
+        printf("ERROR: Failed to initialize fps text\n");
+        return false;
+    }
+    const char *fontVertexShaderName = "./shaders/font.vs";
+    const char *fontFragmentShaderName = "./shaders/font.ps";
+    const char *fontVariables[2] = {"inputPosition", "inputTexCoord"};
+
+    application->fpsShader = (Shader *)malloc(sizeof(Shader));
+    result = InitializeShader(*application->fpsShader, fontVertexShaderName, fontFragmentShaderName, fontVariables, 2);
+    if (!result) {
+        printf("ERROR: Failed to initialize texture shader\n");
+        return false;
+    }
+    return true;
+}
 
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth, int screenHeight,
                            TutorialData *tutorial) {
     application->openGL = (OpenGL *)malloc(sizeof(OpenGL));
 
-    bool result;
-
     InitializeOpenGL(application->openGL, display, window, screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH,
+
                      VSYNC_ENABLED);
 
     application->camera = (Camera *)malloc(sizeof(Camera));
@@ -22,10 +45,13 @@ bool InitializeApplication(Application *application, Display *display, Window wi
 
     Render(application->camera);
 
-    // FPS
-    application->fps = (FPS *)malloc(sizeof(FPS));
-    InitializeFPS(*application->fps);
-    application->previousFPS = -1;
+    m_Font *font = (m_Font *)malloc(sizeof(m_Font));
+    bool result = InitializeFont(*font, 0);
+    application->font = font;
+
+    if (!InitializeFpsString(application, screenWidth, screenHeight)) {
+        return false;
+    }
 
     switch (tutorial->tutorial) {
     case MODEL: {
@@ -61,9 +87,6 @@ bool InitializeApplication(Application *application, Display *display, Window wi
         break;
     }
     case FONT: {
-        m_Font *font = (m_Font *)malloc(sizeof(m_Font));
-        result = InitializeFont(*font, 0);
-        application->font = font;
         if (!result) {
             printf("Failed to initiazle font\n");
             return false;
@@ -128,18 +151,18 @@ bool UpdateFPS(Application *application) {
     bool result;
 
     // Update the fps each frame.
-    UpdateFPSPerFrame(application->fps);
+    UpdateFPSPerFrame(*application->fps);
 
     // Get the current fps.
     fps = application->fps->fps;
 
     // Check if the fps from the previous frame was the same, if so don't need to update the text string.
-    if (application->fps->previousFps == fps) {
+    if (application->previousFPS == fps) {
         return true;
     }
 
     // Store the fps for checking next frame.
-    application->previousFps = fps;
+    application->previousFPS = fps;
 
     // Truncate the fps to below 100,000.
     if (fps > 99999) {
@@ -175,7 +198,7 @@ bool UpdateFPS(Application *application) {
     }
 
     // Update the sentence vertex buffer with the new string information.
-    result = m_FpsString->UpdateText(m_Font, finalString, 10, 10, red, green, blue);
+    result = UpdateText(*application->font, *application->fpsText, finalString, 10, 10, red, green, blue);
     if (!result) {
         return false;
     }
@@ -195,12 +218,39 @@ bool Frame(Application *application, Input *input,
     if (rotation <= 0.0f) {
         rotation += 360.0f;
     }
-    UpdateFPSPerFrame(*application->fps);
 
-    result = renderApplicationPtr(application, rotation);
-    if (!result) {
+    if (!UpdateFPS(application)) {
         return false;
     }
 
+    BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+    if (!RenderFpsString(application)) {
+        return false;
+    }
+
+    if (!renderApplicationPtr(application, rotation)) {
+        return false;
+    }
+
+    EndScene(application->openGL->display, application->openGL->hwnd);
+
+    return true;
+}
+
+bool RenderFpsString(Application *application) {
+    TurnZBufferOff();
+    EnableAlphaBlending();
+    bool result = SetTextShaderParameters(*application->fpsShader, application->openGL->worldMatrix,
+                                          application->camera->viewMatrix, application->openGL->orthoMatrix,
+                                          application->fpsText->pixelColor);
+    if (!result) {
+        printf("ERROR: Failed to set text shader params\n");
+        return false;
+    }
+    SetTexture(application->font->texture);
+    RenderText(*application->fpsText);
+
+    TurnZBufferOn();
+    DisableAlphaBlending();
     return true;
 }

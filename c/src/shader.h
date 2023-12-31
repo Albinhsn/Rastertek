@@ -25,3 +25,5 @@ bool SetShaderParameters11(Shader shader, float *worldMatrix, float *viewMatrix,
 bool SetShaderParameters12(Shader shader, float *worldMatrix, float *viewMatrix, float *orthoMatrix);
 bool SetShaderParameters14(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
                            float *pixelColor);
+bool SetTextShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                             float *pixelColor);
