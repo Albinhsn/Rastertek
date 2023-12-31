@@ -55,6 +55,18 @@ static void enableAttribPtr11() {
     glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
     glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
 }
+static bool renderApplicationPtr19(Application *application, float rotation) {
+
+    bool result = SetShaderParameters19(*application->shader, application->openGL->worldMatrix,
+                                        application->camera->viewMatrix, application->openGL->projectionMatrix);
+    if (!result) {
+        printf("ERROR: Failed to set shader params\n");
+        return false;
+    }
+    RenderModel(application->model);
+
+    return true;
+}
 static bool renderApplicationPtr18(Application *application, float rotation) {
 
     bool result = SetShaderParameters17(*application->shader, application->openGL->worldMatrix,
@@ -783,6 +795,43 @@ TutorialData *Tutorial18() {
 
     tutorial->enableAttribPtr = &enableAttribPtr7;
     tutorial->renderApplicationPtr = &renderApplicationPtr18;
+
+    tutorial->wrap = false;
+    tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
+
+    return tutorial;
+}
+TutorialData *Tutorial19() {
+
+    TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
+
+    tutorial->tutorial = MODEL;
+    tutorial->modelLen = 1;
+    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
+    tutorial->models[0] = "./data/square.txt";
+
+    tutorial->textureLen = 3;
+    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
+    tutorial->textures[0] = "./data/stone01.tga";
+    tutorial->textures[1] = "./data/dirt01.tga";
+    tutorial->textures[2] = "./data/alpha01.tga";
+
+    tutorial->vertexShaderName = "./shaders/alphamap.vs";
+    tutorial->fragmentShaderName = "./shaders/alphamap.ps";
+
+    tutorial->variablesLen = 3;
+    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
+    tutorial->variables[0] = "inputPosition";
+    tutorial->variables[1] = "inputTexCoord";
+    tutorial->variables[2] = "inputNormal";
+
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraZ = -5.0f;
+
+    tutorial->enableAttribPtr = &enableAttribPtr7;
+    tutorial->renderApplicationPtr = &renderApplicationPtr19;
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
