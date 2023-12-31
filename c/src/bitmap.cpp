@@ -135,7 +135,7 @@ bool InitializeBitmapBuffers(Bitmap &bitmap) {
 }
 bool LoadBitmapTexture(Bitmap &bitmap, const char *textureFilename) {
     bitmap.texture = (Texture *)malloc(sizeof(Texture));
-    bool result = InitializeTexture(bitmap.texture, textureFilename, 0, false);
+    bool result = InitializeTexture(*bitmap.texture, textureFilename, 0, false);
     if (!result) {
         return false;
     }
@@ -168,7 +168,7 @@ void RenderBitmapBuffers(Bitmap bitmap) {
 void RenderBitmap(Bitmap &bitmap) {
     UpdateBitmapBuffer(bitmap);
 
-    SetTexture(bitmap.texture);
+    SetTexture(*bitmap.texture);
 
     RenderBitmapBuffers(bitmap);
 }

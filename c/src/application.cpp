@@ -15,6 +15,7 @@ static bool InitializeFpsString(Application *application, int screenWidth, int s
     application->fpsText = (Text *)malloc(sizeof(Text));
 
     bool result = InitializeText(*application->fpsText, screenWidth, screenHeight, 32, application->font, "FPS: 0", 10,
+
                                  10, 1.0f, 1.0f, 0.0f);
     if (!result) {
         printf("ERROR: Failed to initialize fps text\n");
@@ -49,6 +50,7 @@ bool InitializeApplication(Application *application, Display *display, Window wi
     m_Font *font = (m_Font *)malloc(sizeof(m_Font));
     bool result = InitializeFont(*font, 0);
     application->font = font;
+    application->mouse = tutorial->mouse;
 
     if (!InitializeFpsString(application, screenWidth, screenHeight)) {
         return false;
@@ -276,7 +278,6 @@ bool Frame(Application *application, Input *input,
         return false;
     }
 
-
     if (application->mouse) {
         if (!UpdateMouseStrings(application, input->mouseX, input->mouseY, input->mousePressed)) {
             return false;
@@ -307,7 +308,7 @@ bool RenderFpsString(Application *application) {
         printf("ERROR: Failed to set text shader params\n");
         return false;
     }
-    SetTexture(application->font->texture);
+    SetTexture(*application->font->texture);
     RenderText(*application->fpsText);
 
     TurnZBufferOn();

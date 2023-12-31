@@ -27,3 +27,4 @@ bool SetShaderParameters14(Shader shader, float *worldMatrix, float *viewMatrix,
                            float *pixelColor);
 bool SetTextShaderParameters(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
                              float *pixelColor);
+bool SetShaderParameters17(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix);

@@ -9,9 +9,9 @@ struct Texture {
         bool loaded;
 };
 
-bool LoadTarga(Texture *texture, const char *filename, bool wrap);
-bool InitializeTexture(Texture *texture, const char *filename, unsigned int textureUnit, bool wrap);
+bool LoadTarga(Texture &texture, const char *filename, bool wrap);
+bool InitializeTexture(Texture &texture, const char *filename, unsigned int textureUnit, bool wrap);
 void ShutdownTexture(Texture *texture);
-void SetTexture(Texture *texture);
+void SetTexture(Texture &texture);
 
 #endif

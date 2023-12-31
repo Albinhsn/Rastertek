@@ -114,7 +114,7 @@ bool LoadSpriteTexture(Sprite &sprite, const char *filename) {
         textureFilename[j] = '\0';
 
         // Once you have the filename then load the texture in the texture array.
-        result = InitializeTexture(&sprite.textures[i], textureFilename, 0, false);
+        result = InitializeTexture(sprite.textures[i], textureFilename, 0, false);
         if (!result) {
             printf("Failed to initialize texture '%s'\n", textureFilename);
             return false;
@@ -279,6 +279,6 @@ void RenderSpriteBuffers(Sprite &sprite) {
 
 void RenderSprite(Sprite &sprite) {
     UpdateSpriteBuffers(sprite);
-    SetTexture(&sprite.textures[sprite.currentTexture]);
+    SetTexture(sprite.textures[sprite.currentTexture]);
     RenderSpriteBuffers(sprite);
 }

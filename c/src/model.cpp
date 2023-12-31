@@ -84,23 +84,12 @@ void RenderBuffers(Model *model) {
 }
 
 void RenderModel(Model *model) {
-    SetTexture(model->texture);
+    for (int i = 0; i < model->textureLen; i++) {
+        SetTexture(model->texture[i]);
+    }
     RenderBuffers(model);
 }
 
-bool LoadTexture(Model *model, const char *textureFilename, bool wrap) {
-    bool result;
-
-    model->texture = (Texture *)malloc(sizeof(Texture));
-
-    result = InitializeTexture(model->texture, textureFilename, 0, wrap);
-    if (!result) {
-        printf("ERROR: Failed to initialize texture\n");
-        return false;
-    }
-
-    return true;
-}
 bool LoadModel(Model &model, const char *filename) {
     ifstream fin;
     char input;
@@ -171,10 +160,13 @@ bool InitializeModel(Model *model, const char **models, int modelLen, const char
         return false;
     }
 
+    model->texture = (Texture *)malloc(sizeof(Texture) * textureLen);
+    model->textureLen = textureLen;
+
     for (int i = 0; i < textureLen; i++) {
-        result = LoadTexture(model, textures[i], wrap);
+        result = InitializeTexture(model->texture[i], textures[i], i, wrap);
         if (!result) {
-            printf("Failed to load textures '%s'\n", textures[i]);
+            printf("ERROR: Failed to initialize texture\n");
             return false;
         }
     }

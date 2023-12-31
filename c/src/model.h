@@ -18,6 +18,7 @@ struct Model {
     int vertexCount, indexCount;
     unsigned int vertexArrayId, vertexBufferId, indexBufferId;
     Texture *texture;
+    int textureLen;
     VertexTypeN *model;
 };
 
@@ -30,6 +31,6 @@ bool InitializeBuffers(Model *model, void (*enableAttribPtr)(void));
 void ShutdownBuffers();
 void RenderBuffers();
 
-bool LoadTexture(Model *model, const char *textureFilename, bool wrap);
+bool LoadTextures(Model *model, const char *textureFilenames, int textureLen, bool wrap);
 
 #endif

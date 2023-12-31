@@ -3,7 +3,7 @@
 #include "utils.h"
 #include <stdio.h>
 
-bool LoadTarga(Texture *texture, const char *filename, bool wrap) {
+bool LoadTarga(Texture &texture, const char *filename, bool wrap) {
 
     TargaHeader targaFileHeader;
     FILE *filePtr;
@@ -27,15 +27,15 @@ bool LoadTarga(Texture *texture, const char *filename, bool wrap) {
     }
 
     // Get the important information from the header.
-    texture->width = (int)targaFileHeader.width;
-    texture->height = (int)targaFileHeader.height;
+    texture.width = (int)targaFileHeader.width;
+    texture.height = (int)targaFileHeader.height;
     bpp = (int)targaFileHeader.bpp;
 
     // Calculate the size of the 32 bit image data.
     if (bpp == 32) {
-        imageSize = texture->width * texture->height * 4;
+        imageSize = texture.width * texture.height * 4;
     } else if (bpp == 24) {
-        imageSize = texture->width * texture->height * 3;
+        imageSize = texture.width * texture.height * 3;
     }
 
     // Allocate memory for the targa image data.
@@ -56,8 +56,8 @@ bool LoadTarga(Texture *texture, const char *filename, bool wrap) {
     targaData = new unsigned char[imageSize];
     index = 0;
     bool bit32 = bpp == 32;
-    for (j = 0; j < texture->height; j++) {
-        for (i = 0; i < texture->width; i++) {
+    for (j = 0; j < texture.height; j++) {
+        for (i = 0; i < texture.width; i++) {
             targaData[index] = targaImage[index + 2];     // Red
             targaData[index + 1] = targaImage[index + 1]; // Green
             targaData[index + 2] = targaImage[index];     // Blue
@@ -72,15 +72,14 @@ bool LoadTarga(Texture *texture, const char *filename, bool wrap) {
 
     delete[] targaImage;
 
-    glActiveTexture(GL_TEXTURE + texture->textureUnit);
+    glActiveTexture(GL_TEXTURE + texture.textureUnit);
 
-    glGenTextures(1, &texture->textureId);
-    glBindTexture(GL_TEXTURE_2D, texture->textureId);
+    glGenTextures(1, &texture.textureId);
+    glBindTexture(GL_TEXTURE_2D, texture.textureId);
     if (bit32) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                     targaData);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, targaData);
     } else {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, targaData);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width, texture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, targaData);
     }
 
     if (wrap) {
@@ -102,14 +101,14 @@ bool LoadTarga(Texture *texture, const char *filename, bool wrap) {
     return true;
 }
 
-bool InitializeTexture(Texture *texture, const char *filename, unsigned int textureUnit, bool wrap) {
-    texture->textureUnit = textureUnit;
+bool InitializeTexture(Texture &texture, const char *filename, unsigned int textureUnit, bool wrap) {
+    texture.textureUnit = textureUnit;
     bool result = LoadTarga(texture, filename, wrap);
     if (!result) {
         printf("ERROR: failed to load targa32bit\n");
         return false;
     }
-    texture->loaded = true;
+    texture.loaded = true;
     return true;
 }
 
@@ -120,10 +119,7 @@ void ShutdownTexture(Texture *texture) {
     }
 }
 
-void SetTexture(Texture *texture) {
-    if (texture->loaded) {
-        glActiveTexture(GL_TEXTURE0 + texture->textureUnit);
-
-        glBindTexture(GL_TEXTURE_2D, texture->textureId);
-    }
+void SetTexture(Texture &texture) {
+    glActiveTexture(GL_TEXTURE0 + texture.textureUnit);
+    glBindTexture(GL_TEXTURE_2D, texture.textureId);
 }

@@ -131,7 +131,7 @@ bool LoadTexture(m_Font &font, const char *fileName) {
     // Create and initialize the font texture object.
     font.texture = (Texture *)malloc(sizeof(Texture));
 
-    result = InitializeTexture(font.texture, fileName, 0, false);
+    result = InitializeTexture(*font.texture, fileName, 0, false);
     if (!result) {
         return false;
     }
