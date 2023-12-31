@@ -30,4 +30,7 @@ bool SetTextShaderParameters(Shader shader, float *worldMatrix, float *viewMatri
 bool SetShaderParameters17(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix);
 bool SetShaderParameters19(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix);
 bool SetShaderParameters20(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
-                          float *lightDirection, float *diffuseLightColor);
+                           float *lightDirection, float *diffuseLightColor);
+bool SetShaderParameters21(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                           float *lightDirection, float *diffuseLightColor, float *cameraPosition, float *specularColor,
+                           float specularPower);
