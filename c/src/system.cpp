@@ -100,7 +100,7 @@ bool InitializeWindow(System *system, int &screenWidth, int &screenHeight) {
     colorMap = XCreateColormap(system->videoDisplay, rootWindow, visualInfo->visual, AllocNone);
 
     setWindowAttributes.colormap = colorMap;
-    setWindowAttributes.event_mask = KeyPressMask | KeyReleaseMask;
+    setWindowAttributes.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
 
     if (FULL_SCREEN) {
         defaultScreen = XDefaultScreenOfDisplay(system->videoDisplay);
@@ -174,11 +174,14 @@ bool InitializeWindow(System *system, int &screenWidth, int &screenHeight) {
 void ReadInput(System *system) {
     XEvent event;
     long eventMask;
-    bool foundEvent;
+    bool foundEvent, mouseResult;
     char keyBuffer[32];
     KeySym keySymbol;
+    Window rootWindow, childWindow;
+    int rootX, rootY, mouseX, mouseY, windowPositionX, windowPositionY;
+    uint mask;
 
-    eventMask = KeyPressMask | KeyReleaseMask;
+    eventMask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
 
     foundEvent = XCheckWindowEvent(system->videoDisplay, system->hwnd, eventMask, &event);
     if (foundEvent) {
@@ -191,6 +194,33 @@ void ReadInput(System *system) {
             XLookupString(&event.xkey, keyBuffer, sizeof(keyBuffer), &keySymbol, NULL);
             KeyUp(system->input, (int)keySymbol);
         }
+        if (event.type == ButtonPress) {
+            system->input->mousePressed = true;
+        }
+        if (event.type == ButtonRelease) {
+            system->input->mousePressed = false;
+        }
+    }
+    mouseResult = XQueryPointer(system->videoDisplay, DefaultRootWindow(system->videoDisplay), &rootWindow,
+                                &childWindow, &rootX, &rootY, &mouseX, &mouseY, &mask);
+    if (mouseResult) {
+        if (!FULL_SCREEN) {
+            XTranslateCoordinates(system->videoDisplay, system->hwnd, DefaultRootWindow(system->videoDisplay), 0, 0,
+                                  &windowPositionX, &windowPositionY, &childWindow);
+
+            mouseX = mouseX - windowPositionX;
+            mouseY = mouseY - windowPositionY;
+
+            if (mouseX < 0) {
+                mouseX = 0;
+            }
+            if (mouseY < 0) {
+                mouseY = 0;
+            }
+        }
+
+        system->input->mouseX = mouseX;
+        system->input->mouseY = mouseY;
     }
 
     return;

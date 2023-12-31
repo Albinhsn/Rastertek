@@ -55,6 +55,28 @@ static void enableAttribPtr11() {
     glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
     glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
 }
+static bool renderApplicationPtr16(Application *application, float rotation) {
+    bool result;
+
+    TurnZBufferOff();
+    EnableAlphaBlending();
+    for (int i = 0; i < application->textLen; i++) {
+        result = SetShaderParameters14(*application->shader, application->openGL->worldMatrix,
+                                       application->camera->viewMatrix, application->openGL->orthoMatrix,
+                                       application->text[i].pixelColor);
+        if (!result) {
+            printf("Failed to set shader params\n");
+            return false;
+        }
+        SetTexture(application->font->texture);
+        RenderText(application->text[i]);
+    }
+
+    TurnZBufferOn();
+    DisableAlphaBlending();
+
+    return true;
+}
 static bool renderApplicationPtr15(Application *application, float rotation) { return true; }
 static bool renderApplicationPtr14(Application *application, float rotation) {
     TurnZBufferOff();
@@ -316,6 +338,7 @@ TutorialData *Tutorial5() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -350,6 +373,7 @@ TutorialData *Tutorial6() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -383,6 +407,7 @@ TutorialData *Tutorial7() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -416,6 +441,7 @@ TutorialData *Tutorial8() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -449,6 +475,7 @@ TutorialData *Tutorial10() {
 
     tutorial->wrap = true;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -482,6 +509,7 @@ TutorialData *Tutorial11() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -516,6 +544,7 @@ TutorialData *Tutorial9() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -543,6 +572,7 @@ TutorialData *Tutorial12() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -572,6 +602,7 @@ TutorialData *Tutorial13() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -603,6 +634,7 @@ TutorialData *Tutorial14() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
 
     return tutorial;
 }
@@ -624,6 +656,41 @@ TutorialData *Tutorial15() {
 
     tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
+
+    return tutorial;
+}
+TutorialData *Tutorial16() {
+
+    TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
+
+    tutorial->tutorial = FONT;
+
+    tutorial->textLen = 3;
+    tutorial->textStrings = (TutorialText *)malloc(sizeof(TutorialText) * tutorial->textLen);
+    tutorial->textStrings[0] = (TutorialText){"Mouse X: 0", {0.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 40};
+    tutorial->textStrings[1] = (TutorialText){"Mouse Y: 0", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 70};
+    tutorial->textStrings[2] = (TutorialText){"Mouse Button: No", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 100};
+
+    tutorial->vertexShaderName = "./shaders/font.vs";
+    tutorial->fragmentShaderName = "./shaders/font.ps";
+
+    tutorial->variablesLen = 2;
+    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
+    tutorial->variables[0] = "inputPosition";
+    tutorial->variables[1] = "inputTexCoord";
+
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraY = 0.0f;
+    tutorial->cameraZ = -10.0f;
+
+    tutorial->enableAttribPtr = &enableAttribPtr5;
+    tutorial->renderApplicationPtr = &renderApplicationPtr16;
+
+    tutorial->wrap = false;
+    tutorial->rotationSpeed = 0.0174532925f;
+
+    tutorial->mouse = true;
 
     return tutorial;
 }

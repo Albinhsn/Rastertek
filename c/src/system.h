@@ -13,10 +13,10 @@ struct System {
     GLXContext renderingContext;
 };
 
-bool InitializeSystem(System *system, TutorialData * tutorial);
+bool InitializeSystem(System *system, TutorialData *tutorial);
 bool InitializeSystem(System *system, int app);
 void ShutdownSystem(System *system);
-void Frame(System *system, TutorialData * tutorial);
+void Frame(System *system, TutorialData *tutorial);
 bool InitializeWindow(System *system, int &screenWidth, int &screenHeight);
 void ShutdownWindow();
 void ReadInput(System *system);

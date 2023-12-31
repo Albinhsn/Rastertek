@@ -13,7 +13,7 @@ $(TARGET): $(OBJS)
 ./obj/%.o: ./src/%.cpp
 	$(CC) $(CFLAGS) -l GL -l X11  -c $<  && mv *.o ./obj/
 clean:
-	rm -rf $(TARGET) *.o
+	rm -rf $(TARGET) ./obj/*.o
 conv:
 	$(CC) ./convert/convert.cpp -o ./convert_blender && ./convert_blender
 

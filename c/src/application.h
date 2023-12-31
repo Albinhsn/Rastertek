@@ -52,6 +52,9 @@ struct TutorialData {
 
     // Sprite
     const char *spriteFilename;
+
+    // Mouse
+    bool mouse;
 };
 
 struct Application {
@@ -69,6 +72,7 @@ struct Application {
     Text * fpsText;
     FPS * fps;
     int previousFPS;
+    bool mouse;
 };
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth, int screenHeight,
                            TutorialData *tutorial);

@@ -1,4 +1,5 @@
 
+
 #include "application.h"
 #include "bitmap.h"
 #include "fps.h"
@@ -206,6 +207,58 @@ bool UpdateFPS(Application *application) {
     return true;
 }
 
+static bool UpdateMouseStrings(Application *application, int mouseX, int mouseY, bool mousePressed) {
+    char tempString[16], finalString[32];
+    bool result;
+
+    // Convert the mouse X integer to string format.
+    sprintf(tempString, "%d", mouseX);
+
+    // Setup the mouse X string.
+    strcpy(finalString, "Mouse X: ");
+    strcat(finalString, tempString);
+
+    // Update the sentence vertex buffer with the new string information.
+    Text text = application->text[0];
+    result = UpdateText(*application->font, text, finalString, 10, 40, text.pixelColor[0], text.pixelColor[1],
+                        text.pixelColor[2]);
+    if (!result) {
+        return false;
+    }
+
+    // Convert the mouse Y integer to string format.
+    sprintf(tempString, "%d", mouseY);
+
+    // Setup the mouse Y string.
+    strcpy(finalString, "Mouse Y: ");
+    strcat(finalString, tempString);
+
+    // Update the sentence vertex buffer with the new string information.
+    text = application->text[1];
+    result = UpdateText(*application->font, text, finalString, 10, 70, text.pixelColor[0], text.pixelColor[1],
+                        text.pixelColor[2]);
+    if (!result) {
+        return false;
+    }
+
+    // Setup the mouse button string.
+    if (mousePressed) {
+        strcpy(finalString, "Mouse Button: Yes");
+    } else {
+        strcpy(finalString, "Mouse Button: No");
+    }
+
+    // Update the sentence vertex buffer with the new string information.
+    text = application->text[2];
+    result = UpdateText(*application->font, text, finalString, 10, 100, text.pixelColor[0], text.pixelColor[1],
+                        text.pixelColor[2]);
+    if (!result) {
+        return false;
+    }
+
+    return true;
+}
+
 bool Frame(Application *application, Input *input,
            bool (*renderApplicationPtr)(Application *application, float rotation), float rotationSpeed) {
     static float rotation = 360.0f;
@@ -221,6 +274,13 @@ bool Frame(Application *application, Input *input,
 
     if (!UpdateFPS(application)) {
         return false;
+    }
+
+
+    if (application->mouse) {
+        if (!UpdateMouseStrings(application, input->mouseX, input->mouseY, input->mousePressed)) {
+            return false;
+        }
     }
 
     BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
