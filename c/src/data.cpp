@@ -69,7 +69,49 @@ static void enableAttribPtr20() {
     glVertexAttribPointer(3, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (8 * sizeof(float)));
     glVertexAttribPointer(4, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (11 * sizeof(float)));
 }
+static bool renderApplicationPtr22(Application *application, float rotation) {
+
+    float rotateMatrix[16], translateMatrix[16], worldMatrix[16];
+    MatrixRotationY(rotateMatrix, rotation);
+    float diffuseLightColor[4] = {1.0f, 0.753f, 0.796f, 1.0f};
+    float lightDirection[3] = {0.0f, 0.0f, 1.0f};
+
+    MatrixTranslation(translateMatrix, 0.0f, 1.0f, 0.0f);
+    MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+    bool result = SetShaderParameters5(*application->entities[0].shader, worldMatrix, application->camera->viewMatrix,
+                                       application->openGL->projectionMatrix);
+    if (!result) {
+        return false;
+    }
+    RenderModel(application->entities[0].model);
+    printf("Rendered model 1\n");
+
+    MatrixTranslation(translateMatrix, -1.5f, -1.0f, 0.0f);
+    MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+
+    result = SetShaderParameters6(*application->entities[1].shader, worldMatrix, application->camera->viewMatrix,
+                                  application->openGL->projectionMatrix, lightDirection, diffuseLightColor);
+    if (!result) {
+        return false;
+    }
+    RenderModel(application->entities[1].model);
+    printf("Rendered model 2\n");
+
+    MatrixTranslation(translateMatrix, 1.5f, -1.0f, 0.0f);
+    MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+    result = SetShaderParameters20(*application->entities[2].shader, worldMatrix, application->camera->viewMatrix,
+                                   application->openGL->projectionMatrix, lightDirection, diffuseLightColor);
+    if (!result) {
+        return false;
+    }
+    RenderModel(application->entities[2].model);
+
+    return true;
+}
 static bool renderApplicationPtr21(Application *application, float rotation) {
+
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
 
     float worldMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
@@ -81,18 +123,20 @@ static bool renderApplicationPtr21(Application *application, float rotation) {
     float cameraPosition[3] = {cameraPos.x, cameraPos.x, cameraPos.z};
     float specularColor[4] = {1.0f, 0.753f, 0.796f, 1.0f};
 
-    bool result = SetShaderParameters21(*application->shader, worldMatrix, application->camera->viewMatrix,
+    bool result = SetShaderParameters21(shader, worldMatrix, application->camera->viewMatrix,
                                         application->openGL->projectionMatrix, lightDirection, diffuseLightColor,
                                         cameraPosition, specularColor, 32.0f);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 static bool renderApplicationPtr20(Application *application, float rotation) {
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
 
     float worldMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
@@ -101,61 +145,69 @@ static bool renderApplicationPtr20(Application *application, float rotation) {
     float diffuseLightColor[4] = {1.0f, 0.753f, 0.796f, 1.0f};
     float lightDirection[3] = {0.0f, 0.0f, 1.0f};
 
-    bool result = SetShaderParameters20(*application->shader, worldMatrix, application->camera->viewMatrix,
+    bool result = SetShaderParameters20(shader, worldMatrix, application->camera->viewMatrix,
                                         application->openGL->projectionMatrix, lightDirection, diffuseLightColor);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 static bool renderApplicationPtr19(Application *application, float rotation) {
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
 
-    bool result = SetShaderParameters19(*application->shader, application->openGL->worldMatrix,
-                                        application->camera->viewMatrix, application->openGL->projectionMatrix);
+    bool result = SetShaderParameters19(shader, application->openGL->worldMatrix, application->camera->viewMatrix,
+                                        application->openGL->projectionMatrix);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 static bool renderApplicationPtr18(Application *application, float rotation) {
 
-    bool result = SetShaderParameters17(*application->shader, application->openGL->worldMatrix,
-                                        application->camera->viewMatrix, application->openGL->projectionMatrix);
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
+
+    bool result = SetShaderParameters17(shader, application->openGL->worldMatrix, application->camera->viewMatrix,
+                                        application->openGL->projectionMatrix);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 static bool renderApplicationPtr17(Application *application, float rotation) {
 
-    bool result = SetShaderParameters17(*application->shader, application->openGL->worldMatrix,
-                                        application->camera->viewMatrix, application->openGL->projectionMatrix);
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
+
+    bool result = SetShaderParameters17(shader, application->openGL->worldMatrix, application->camera->viewMatrix,
+                                        application->openGL->projectionMatrix);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 static bool renderApplicationPtr16(Application *application, float rotation) {
     bool result;
+    Shader shader = *application->textShader;
 
     TurnZBufferOff();
     EnableAlphaBlending();
     for (int i = 0; i < application->textLen; i++) {
-        result = SetShaderParameters14(*application->shader, application->openGL->worldMatrix,
-                                       application->camera->viewMatrix, application->openGL->orthoMatrix,
-                                       application->text[i].pixelColor);
+        result = SetShaderParameters14(shader, application->openGL->worldMatrix, application->camera->viewMatrix,
+                                       application->openGL->orthoMatrix, application->text[i].pixelColor);
         if (!result) {
             printf("Failed to set shader params\n");
             return false;
@@ -171,12 +223,14 @@ static bool renderApplicationPtr16(Application *application, float rotation) {
 }
 static bool renderApplicationPtr15(Application *application, float rotation) { return true; }
 static bool renderApplicationPtr14(Application *application, float rotation) {
+
+    Shader shader = *application->textShader;
+
     TurnZBufferOff();
     EnableAlphaBlending();
     for (int i = 0; i < application->textLen; i++) {
-        bool result = SetShaderParameters14(*application->shader, application->openGL->worldMatrix,
-                                            application->camera->viewMatrix, application->openGL->orthoMatrix,
-                                            application->text[i].pixelColor);
+        bool result = SetShaderParameters14(shader, application->openGL->worldMatrix, application->camera->viewMatrix,
+                                            application->openGL->orthoMatrix, application->text[i].pixelColor);
         if (!result) {
             printf("Failed to set shader params\n");
             return false;
@@ -191,10 +245,12 @@ static bool renderApplicationPtr14(Application *application, float rotation) {
     return true;
 }
 static bool renderApplicationPtr13(Application *application, float rotation) {
+
+    Shader shader = *application->bitmapShader;
     TurnZBufferOff();
 
-    bool result = SetShaderParameters12(*application->shader, application->openGL->worldMatrix,
-                                        application->camera->viewMatrix, application->openGL->orthoMatrix);
+    bool result = SetShaderParameters12(shader, application->openGL->worldMatrix, application->camera->viewMatrix,
+                                        application->openGL->orthoMatrix);
     if (!result) {
         printf("Failed to set shader params\n");
         return false;
@@ -206,11 +262,15 @@ static bool renderApplicationPtr13(Application *application, float rotation) {
     return true;
 }
 static bool renderApplicationPtr12(Application *application, float rotation) {
+    Shader shader = *application->bitmapShader;
+
     TurnZBufferOff();
 
-    bool result = SetShaderParameters12(*application->shader, application->openGL->worldMatrix,
-                                        application->camera->viewMatrix, application->openGL->orthoMatrix);
+    printf("Setting shader params\n");
+    bool result = SetShaderParameters12(shader, application->openGL->worldMatrix, application->camera->viewMatrix,
+                                        application->openGL->orthoMatrix);
     if (!result) {
+        printf("Failed to set shader params\n");
         return false;
     }
     RenderBitmap(*application->bitmap);
@@ -220,6 +280,8 @@ static bool renderApplicationPtr12(Application *application, float rotation) {
     return true;
 }
 static bool renderApplicationPtr11(Application *application, float rotation) {
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
     // float diffuseColorArray[20] = {1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
     //                                1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.753f, 0.796f};
     float diffuseColorArray[4] = {1.0f, 0.753f, 0.796f, 1.0f};
@@ -228,18 +290,21 @@ static bool renderApplicationPtr11(Application *application, float rotation) {
     float lightPositionArray[3] = {0.0f, 1.0f, 0.0f};
     int numLights = 1;
     bool result =
-        SetShaderParameters11(*application->shader, application->openGL->worldMatrix, application->camera->viewMatrix,
+        SetShaderParameters11(shader, application->openGL->worldMatrix, application->camera->viewMatrix,
                               application->openGL->projectionMatrix, diffuseColorArray, lightPositionArray, numLights);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 
 static bool renderApplicationPtr10(Application *application, float rotation) {
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
+
     float worldMatrix[16], rotateMatrix[16], translateMatrix[16], scaleMatrix[16], srMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
 
@@ -255,14 +320,14 @@ static bool renderApplicationPtr10(Application *application, float rotation) {
     MatrixTranslation(translateMatrix, 2.5f, 0.0f, -2.0f);
     MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
 
-    bool result = SetShaderParameters10(*application->shader, worldMatrix, application->camera->viewMatrix,
+    bool result = SetShaderParameters10(shader, worldMatrix, application->camera->viewMatrix,
                                         application->openGL->projectionMatrix, lightDirection, diffuseLightColor,
                                         ambientLight, cameraPosition, specularColor, specularPower);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     MatrixScale(scaleMatrix, 0.5f, 0.5f, 0.5f);
     MatrixRotationY(rotateMatrix, rotation);
@@ -270,18 +335,21 @@ static bool renderApplicationPtr10(Application *application, float rotation) {
 
     MatrixMultiply(srMatrix, scaleMatrix, rotateMatrix);
     MatrixMultiply(worldMatrix, srMatrix, translateMatrix);
-    result = SetShaderParameters10(*application->shader, worldMatrix, application->camera->viewMatrix,
+    result = SetShaderParameters10(shader, worldMatrix, application->camera->viewMatrix,
                                    application->openGL->projectionMatrix, lightDirection, diffuseLightColor,
                                    ambientLight, cameraPosition, specularColor, specularPower);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 static bool renderApplicationPtr9(Application *application, float rotation) {
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
+
     float worldMatrix[16], rotateMatrix[16], translateMatrix[16], scaleMatrix[16], srMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
 
@@ -294,13 +362,13 @@ static bool renderApplicationPtr9(Application *application, float rotation) {
     MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
 
     bool result =
-        SetShaderParameters9(*application->shader, worldMatrix, application->camera->viewMatrix,
+        SetShaderParameters9(shader, worldMatrix, application->camera->viewMatrix,
                              application->openGL->projectionMatrix, lightDirection, diffuseColor, ambientLight);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     MatrixScale(scaleMatrix, 0.5f, 0.5f, 0.5f);
     MatrixRotationY(rotateMatrix, rotation);
@@ -308,16 +376,19 @@ static bool renderApplicationPtr9(Application *application, float rotation) {
 
     MatrixMultiply(srMatrix, scaleMatrix, rotateMatrix);
     MatrixMultiply(worldMatrix, srMatrix, translateMatrix);
-    result = SetShaderParameters9(*application->shader, worldMatrix, application->camera->viewMatrix,
+    result = SetShaderParameters9(shader, worldMatrix, application->camera->viewMatrix,
                                   application->openGL->projectionMatrix, lightDirection, diffuseColor, ambientLight);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
     return true;
 }
 static bool renderApplicationPtr8(Application *application, float rotation) {
+
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
 
     float worldMatrix[16], rotateMatrix[16], translateMatrix[16], scaleMatrix[16], srMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
@@ -331,13 +402,13 @@ static bool renderApplicationPtr8(Application *application, float rotation) {
     MatrixTranslation(translateMatrix, a, 0.0f, b);
     MatrixMultiply(worldMatrix, application->openGL->worldMatrix, translateMatrix);
 
-    bool result = SetShaderParameters6(*application->shader, worldMatrix, application->camera->viewMatrix,
+    bool result = SetShaderParameters6(shader, worldMatrix, application->camera->viewMatrix,
                                        application->openGL->projectionMatrix, lightDirection, diffuseColor);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     MatrixScale(scaleMatrix, 0.5f, 0.5f, 0.5f);
     // MatrixRotationY(rotateMatrix, rotation);
@@ -345,57 +416,68 @@ static bool renderApplicationPtr8(Application *application, float rotation) {
 
     // MatrixMultiply(srMatrix, scaleMatrix, rotateMatrix);
     MatrixMultiply(worldMatrix, scaleMatrix, translateMatrix);
-    result = SetShaderParameters6(*application->shader, worldMatrix, application->camera->viewMatrix,
+    result = SetShaderParameters6(shader, worldMatrix, application->camera->viewMatrix,
                                   application->openGL->projectionMatrix, lightDirection, diffuseColor);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 static bool renderApplicationPtr7(Application *application, float rotation) {
+
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
+
     float worldMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
     MatrixRotationY(worldMatrix, rotation);
     float diffuseColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     float lightDirection[3] = {1.0f, 0.0f, 0.0f};
-    bool result = SetShaderParameters6(*application->shader, worldMatrix, application->camera->viewMatrix,
+    bool result = SetShaderParameters6(shader, worldMatrix, application->camera->viewMatrix,
                                        application->openGL->projectionMatrix, lightDirection, diffuseColor);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 static bool renderApplicationPtr6(Application *application, float rotation) {
+
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
+
     float worldMatrix[16];
     Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
     MatrixRotationY(worldMatrix, rotation);
     float diffuseColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     float lightDirection[3] = {1.0f, 0.0f, 0.0f};
-    bool result = SetShaderParameters6(*application->shader, worldMatrix, application->camera->viewMatrix,
+    bool result = SetShaderParameters6(shader, worldMatrix, application->camera->viewMatrix,
                                        application->openGL->projectionMatrix, lightDirection, diffuseColor);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
 
 static bool renderApplicationPtr5(Application *application, float rotation) {
-    bool result = SetShaderParameters5(*application->shader, application->openGL->worldMatrix,
-                                       application->camera->viewMatrix, application->openGL->projectionMatrix);
+    Shader shader = *application->entities[0].shader;
+    Model model = application->entities[0].model;
+
+    bool result = SetShaderParameters5(shader, application->openGL->worldMatrix, application->camera->viewMatrix,
+                                       application->openGL->projectionMatrix);
     if (!result) {
         printf("ERROR: Failed to set shader params\n");
         return false;
     }
-    RenderModel(application->model);
+    RenderModel(model);
 
     return true;
 }
@@ -405,30 +487,35 @@ TutorialData *Tutorial5() {
 
     tutorial->tutorial = MODEL;
 
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/triangle.txt";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->textureLen = 1;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/blizzard01.tga";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/texture.vs";
+    shader->fragmentShaderName = "./shaders/texture.ps";
 
-    tutorial->vertexShaderName = "./shaders/texture.vs";
-    tutorial->fragmentShaderName = "./shaders/texture.ps";
+    shader->variablesLen = 2;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
 
-    tutorial->variablesLen = 2;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/triangle.txt";
+    entity->textureLen = 1;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/blizzard01.tga";
+    entity->enableAttribPtr = &enableAttribPtr5;
+    entity->wrap = false;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -5.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr5;
     tutorial->renderApplicationPtr = &renderApplicationPtr5;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -439,31 +526,36 @@ TutorialData *Tutorial6() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/cube.txt";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->textureLen = 1;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/blizzard01.tga";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/light3.vs";
+    shader->fragmentShaderName = "./shaders/light3.ps";
 
-    tutorial->vertexShaderName = "./shaders/light3.vs";
-    tutorial->fragmentShaderName = "./shaders/light3.ps";
+    shader->variablesLen = 3;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/cube.txt";
+    entity->textureLen = 1;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/blizzard01.tga";
+    entity->enableAttribPtr = &enableAttribPtr6;
+    entity->wrap = false;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -5.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr6;
     tutorial->renderApplicationPtr = &renderApplicationPtr6;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -473,31 +565,36 @@ TutorialData *Tutorial7() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/cube.txt";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->textureLen = 1;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/blizzard01.tga";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/light3.vs";
+    shader->fragmentShaderName = "./shaders/light3.ps";
 
-    tutorial->vertexShaderName = "./shaders/light3.vs";
-    tutorial->fragmentShaderName = "./shaders/light3.ps";
+    shader->variablesLen = 3;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/cube.txt";
+    entity->textureLen = 1;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/blizzard01.tga";
+    entity->enableAttribPtr = &enableAttribPtr6;
+    entity->wrap = false;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -5.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr7;
     tutorial->renderApplicationPtr = &renderApplicationPtr7;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -507,31 +604,36 @@ TutorialData *Tutorial8() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/cube.txt";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->textureLen = 1;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/ball01.tga";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/light3.vs";
+    shader->fragmentShaderName = "./shaders/light3.ps";
 
-    tutorial->vertexShaderName = "./shaders/light3.vs";
-    tutorial->fragmentShaderName = "./shaders/light3.ps";
+    shader->variablesLen = 3;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/cube.txt";
+    entity->textureLen = 1;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/ball01.tga";
+    entity->enableAttribPtr = &enableAttribPtr8;
+    entity->wrap = false;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -10.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr8;
     tutorial->renderApplicationPtr = &renderApplicationPtr8;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -541,31 +643,36 @@ TutorialData *Tutorial10() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/sphere.txt";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->textureLen = 1;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/stone01.tga";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/light2.vs";
+    shader->fragmentShaderName = "./shaders/light2.ps";
 
-    tutorial->vertexShaderName = "./shaders/light2.vs";
-    tutorial->fragmentShaderName = "./shaders/light2.ps";
+    shader->variablesLen = 3;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/sphere.txt";
+    entity->textureLen = 1;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/stone01.tga";
+    entity->enableAttribPtr = &enableAttribPtr10;
+    entity->wrap = true;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraY = 0.0f;
     tutorial->cameraZ = -10.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr10;
     tutorial->renderApplicationPtr = &renderApplicationPtr10;
 
-    tutorial->wrap = true;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -575,31 +682,36 @@ TutorialData *Tutorial11() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/plane.txt";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->textureLen = 1;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/stone01.tga";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/light4.vs";
+    shader->fragmentShaderName = "./shaders/light4.ps";
 
-    tutorial->vertexShaderName = "./shaders/light4.vs";
-    tutorial->fragmentShaderName = "./shaders/light4.ps";
+    shader->variablesLen = 3;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/plane.txt";
+    entity->textureLen = 1;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/stone01.tga";
+    entity->enableAttribPtr = &enableAttribPtr11;
+    entity->wrap = true;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraY = 2.0f;
     tutorial->cameraZ = -12.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr11;
     tutorial->renderApplicationPtr = &renderApplicationPtr11;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -609,32 +721,36 @@ TutorialData *Tutorial9() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
     tutorial->tutorial = MODEL;
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/cube.txt";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/light.vs";
+    shader->fragmentShaderName = "./shaders/light.ps";
 
-    tutorial->textureLen = 1;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/stone01.tga";
+    shader->variablesLen = 3;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
 
-    tutorial->vertexShaderName = "./shaders/light.vs";
-    tutorial->fragmentShaderName = "./shaders/light.ps";
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/cube.txt";
+    entity->textureLen = 1;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/stone01.tga";
+    entity->enableAttribPtr = &enableAttribPtr8;
+    entity->wrap = true;
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -10.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr8;
     tutorial->renderApplicationPtr = &renderApplicationPtr9;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -646,23 +762,23 @@ TutorialData *Tutorial12() {
     tutorial->tutorial = BITMAP;
 
     tutorial->bitmapFilename = "./data/blizzard01.tga";
-    tutorial->vertexShaderName = "./shaders/texture.vs";
-    tutorial->fragmentShaderName = "./shaders/texture.ps";
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/texture.vs";
+    shader->fragmentShaderName = "./shaders/texture.ps";
+
+    shader->variablesLen = 2;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    tutorial->bitmapShader = shader;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraY = 0.0f;
     tutorial->cameraZ = -10.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr5;
     tutorial->renderApplicationPtr = &renderApplicationPtr12;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -675,24 +791,22 @@ TutorialData *Tutorial13() {
     tutorial->tutorial = SPRITE;
 
     tutorial->spriteFilename = "./data/sprite_data_01.txt";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/texture.vs";
+    shader->fragmentShaderName = "./shaders/texture.ps";
 
-    tutorial->vertexShaderName = "./shaders/texture.vs";
-    tutorial->fragmentShaderName = "./shaders/texture.ps";
-
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    shader->variablesLen = 2;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    tutorial->bitmapShader = shader;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraY = 0.0f;
     tutorial->cameraZ = -10.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr5;
     tutorial->renderApplicationPtr = &renderApplicationPtr13;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -709,22 +823,22 @@ TutorialData *Tutorial14() {
     tutorial->textStrings[1] = (TutorialText){"Goodbye", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 100, 50};
     tutorial->textStrings[2] = (TutorialText){"Cya", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 100, 100};
 
-    tutorial->vertexShaderName = "./shaders/font.vs";
-    tutorial->fragmentShaderName = "./shaders/font.ps";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/font.vs";
+    shader->fragmentShaderName = "./shaders/font.ps";
 
-    tutorial->variablesLen = 2;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
+    shader->variablesLen = 2;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    tutorial->textShader = shader;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraY = 0.0f;
     tutorial->cameraZ = -5.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr5;
     tutorial->renderApplicationPtr = &renderApplicationPtr14;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -736,17 +850,22 @@ TutorialData *Tutorial15() {
 
     tutorial->tutorial = FONT;
 
-    tutorial->vertexShaderName = "./shaders/font.vs";
-    tutorial->fragmentShaderName = "./shaders/font.ps";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/font.vs";
+    shader->fragmentShaderName = "./shaders/font.ps";
+
+    shader->variablesLen = 2;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraY = 0.0f;
     tutorial->cameraZ = -5.0f;
+    tutorial->textShader = shader;
 
-    tutorial->enableAttribPtr = &enableAttribPtr5;
     tutorial->renderApplicationPtr = &renderApplicationPtr15;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -764,24 +883,22 @@ TutorialData *Tutorial16() {
     tutorial->textStrings[1] = (TutorialText){"Mouse Y: 0", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 70};
     tutorial->textStrings[2] = (TutorialText){"Mouse Button: No", {1.0f, 1.0f, 0.0f, 1.0f}, 32, 10, 100};
 
-    tutorial->vertexShaderName = "./shaders/font.vs";
-    tutorial->fragmentShaderName = "./shaders/font.ps";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/font.vs";
+    shader->fragmentShaderName = "./shaders/font.ps";
 
-    tutorial->variablesLen = 2;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
+    shader->variablesLen = 2;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraY = 0.0f;
     tutorial->cameraZ = -10.0f;
+    tutorial->textShader = shader;
 
-    tutorial->enableAttribPtr = &enableAttribPtr5;
     tutorial->renderApplicationPtr = &renderApplicationPtr16;
-
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
-
     tutorial->mouse = true;
 
     return tutorial;
@@ -789,34 +906,39 @@ TutorialData *Tutorial16() {
 TutorialData *Tutorial17() {
 
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
-
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/square.txt";
 
-    tutorial->textureLen = 2;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/stone01.tga";
-    tutorial->textures[1] = "./data/blizzard01.tga";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->vertexShaderName = "./shaders/multitexture.vs";
-    tutorial->fragmentShaderName = "./shaders/multitexture.ps";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/multitexture.vs";
+    shader->fragmentShaderName = "./shaders/multitexture.ps";
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    shader->variablesLen = 3;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
+
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/square.txt";
+    entity->textureLen = 2;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/stone01.tga";
+    entity->textures[1] = "./data/blizzard01.tga";
+    entity->enableAttribPtr = &enableAttribPtr7;
+    entity->wrap = false;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -5.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr7;
     tutorial->renderApplicationPtr = &renderApplicationPtr17;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -825,34 +947,39 @@ TutorialData *Tutorial17() {
 TutorialData *Tutorial18() {
 
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
-
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/square.txt";
 
-    tutorial->textureLen = 2;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/stone01.tga";
-    tutorial->textures[1] = "./data/light01.tga";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->vertexShaderName = "./shaders/lightmap.vs";
-    tutorial->fragmentShaderName = "./shaders/lightmap.ps";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/lightmap.vs";
+    shader->fragmentShaderName = "./shaders/lightmap.ps";
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    shader->variablesLen = 3;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
+
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/square.txt";
+    entity->textureLen = 2;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/stone01.tga";
+    entity->textures[1] = "./data/light01.tga";
+    entity->enableAttribPtr = &enableAttribPtr7;
+    entity->wrap = false;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -5.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr7;
     tutorial->renderApplicationPtr = &renderApplicationPtr18;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -861,35 +988,40 @@ TutorialData *Tutorial18() {
 TutorialData *Tutorial19() {
 
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
-
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/square.txt";
 
-    tutorial->textureLen = 3;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/stone01.tga";
-    tutorial->textures[1] = "./data/dirt01.tga";
-    tutorial->textures[2] = "./data/alpha01.tga";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->vertexShaderName = "./shaders/alphamap.vs";
-    tutorial->fragmentShaderName = "./shaders/alphamap.ps";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/alphamap.vs";
+    shader->fragmentShaderName = "./shaders/alphamap.ps";
 
-    tutorial->variablesLen = 3;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
+    shader->variablesLen = 3;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
+
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/square.txt";
+    entity->textureLen = 3;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/stone01.tga";
+    entity->textures[1] = "./data/dirt01.tga";
+    entity->textures[2] = "./data/alpha01.tga";
+    entity->enableAttribPtr = &enableAttribPtr7;
+    entity->wrap = false;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -5.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr7;
     tutorial->renderApplicationPtr = &renderApplicationPtr19;
 
-    tutorial->wrap = false;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -900,34 +1032,40 @@ TutorialData *Tutorial20() {
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
 
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/sphere.txt";
 
-    tutorial->textureLen = 2;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/stone01.tga";
-    tutorial->textures[1] = "./data/normal01.tga";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->vertexShaderName = "./shaders/normalmap.vs";
-    tutorial->fragmentShaderName = "./shaders/normalmap.ps";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/normalmap.vs";
+    shader->fragmentShaderName = "./shaders/normalmap.ps";
 
-    tutorial->variablesLen = 5;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
-    tutorial->variables[3] = "inputTangent";
-    tutorial->variables[4] = "inputBinormal";
+    shader->variablesLen = 5;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
+    shader->variables[3] = "inputTangent";
+    shader->variables[4] = "inputBinormal";
+
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity));
+    entity->shader = shader;
+    entity->model = "./data/sphere.txt";
+    entity->textureLen = 2;
+    entity->textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity->textures[0] = "./data/stone01.tga";
+    entity->textures[1] = "./data/normal01.tga";
+    entity->enableAttribPtr = &enableAttribPtr20;
+    entity->wrap = true;
+
+    tutorial->entities[0] = *entity;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -10.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr20;
     tutorial->renderApplicationPtr = &renderApplicationPtr20;
 
-    tutorial->wrap = true;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
@@ -936,44 +1074,130 @@ TutorialData *Tutorial20() {
 TutorialData *Tutorial21() {
 
     TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
-
     tutorial->tutorial = MODEL;
-    tutorial->modelLen = 1;
-    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
-    tutorial->models[0] = "./data/cube.txt";
 
-    tutorial->textureLen = 3;
-    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
-    tutorial->textures[0] = "./data/stone02.tga";
-    tutorial->textures[1] = "./data/normal02.tga";
-    tutorial->textures[2] = "./data/spec02.tga";
+    tutorial->entityLen = 1;
+    tutorial->entities = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
 
-    tutorial->vertexShaderName = "./shaders/specmap.vs";
-    tutorial->fragmentShaderName = "./shaders/specmap.ps";
+    TutorialShader *shader = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader->vertexShaderName = "./shaders/specmap.vs";
+    shader->fragmentShaderName = "./shaders/specmap.ps";
 
-    tutorial->variablesLen = 5;
-    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
-    tutorial->variables[0] = "inputPosition";
-    tutorial->variables[1] = "inputTexCoord";
-    tutorial->variables[2] = "inputNormal";
-    tutorial->variables[3] = "inputTangent";
-    tutorial->variables[4] = "inputBinormal";
+    shader->variablesLen = 5;
+    shader->variables = (const char **)malloc(sizeof(char *) * shader->variablesLen);
+    shader->variables[0] = "inputPosition";
+    shader->variables[1] = "inputTexCoord";
+    shader->variables[2] = "inputNormal";
+    shader->variables[3] = "inputTangent";
+    shader->variables[4] = "inputBinormal";
+
+    TutorialEntity *entity = tutorial->entities;
+    entity[0].shader = shader;
+    entity[0].model = "./data/cube.txt";
+    entity[0].textureLen = 3;
+    entity[0].textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity[0].textures[0] = "./data/stone02.tga";
+    entity[0].textures[1] = "./data/normal02.tga";
+    entity[0].textures[2] = "./data/spec02.tga";
+    entity[0].enableAttribPtr = &enableAttribPtr20;
+    entity[0].wrap = true;
 
     tutorial->cameraX = 0.0f;
     tutorial->cameraX = 0.0f;
     tutorial->cameraZ = -10.0f;
 
-    tutorial->enableAttribPtr = &enableAttribPtr20;
     tutorial->renderApplicationPtr = &renderApplicationPtr21;
 
-    tutorial->wrap = true;
+    tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
+
+    return tutorial;
+}
+TutorialData *Tutorial22() {
+
+    TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
+    tutorial->tutorial = MODEL;
+
+    tutorial->entityLen = 3;
+
+    TutorialShader *shader1 = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader1->vertexShaderName = "./shaders/texture.vs";
+    shader1->fragmentShaderName = "./shaders/texture.ps";
+
+    shader1->variablesLen = 5;
+    shader1->variables = (const char **)malloc(sizeof(char *) * shader1->variablesLen);
+    shader1->variables[0] = "inputPosition";
+    shader1->variables[1] = "inputTexCoord";
+
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
+    entity[0].shader = shader1;
+    entity[0].model = "./data/sphere.txt";
+    entity[0].textureLen = 1;
+    entity[0].textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity[0].textures[0] = "./data/stone01.tga";
+    entity[0].enableAttribPtr = &enableAttribPtr5;
+    entity[0].wrap = true;
+
+    TutorialShader *shader2 = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader2->vertexShaderName = "./shaders/light3.vs";
+    shader2->fragmentShaderName = "./shaders/light3.ps";
+
+    shader2->variablesLen = 3;
+    shader2->variables = (const char **)malloc(sizeof(char *) * shader2->variablesLen);
+    shader2->variables[0] = "inputPosition";
+    shader2->variables[1] = "inputTexCoord";
+    shader1->variables[2] = "inputNormal";
+
+    entity[1].shader = shader2;
+    entity[1].model = "./data/sphere.txt";
+    entity[1].textureLen = 1;
+    entity[1].textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity[1].textures[0] = "./data/stone01.tga";
+    entity[1].enableAttribPtr = &enableAttribPtr6;
+    entity[1].wrap = true;
+
+    TutorialShader *shader3 = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader3->vertexShaderName = "./shaders/normalmap.vs";
+    shader3->fragmentShaderName = "./shaders/normalmap.ps";
+
+    shader3->variablesLen = 5;
+    shader3->variables = (const char **)malloc(sizeof(char *) * shader3->variablesLen);
+    shader3->variables[0] = "inputPosition";
+    shader3->variables[1] = "inputTexCoord";
+    shader3->variables[2] = "inputNormal";
+    shader3->variables[3] = "inputTangent";
+    shader3->variables[4] = "inputBinormal";
+
+    entity[2].shader = shader3;
+    entity[2].model = "./data/sphere.txt";
+    entity[2].textureLen = 2;
+    entity[2].textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+    entity[2].textures[0] = "./data/stone01.tga";
+    entity[2].textures[1] = "./data/normal01.tga";
+    entity[2].enableAttribPtr = &enableAttribPtr20;
+    entity[2].wrap = true;
+
+    tutorial->entities = entity;
+
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraZ = -10.0f;
+
+    tutorial->renderApplicationPtr = &renderApplicationPtr22;
+
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 
     return tutorial;
 }
 void ShutdownTutorial(TutorialData *tutorial) {
-    free(tutorial->models);
-    free(tutorial->textures);
-    free(tutorial->variables);
+    for (int i = 0; i < tutorial->entityLen; i++) {
+        free(tutorial->entities[i].textures);
+        free(tutorial->entities[i].shader->variables);
+        free(tutorial->entities[i].shader);
+    }
+    free(tutorial->entities);
+    if (tutorial->textShader) {
+        free(tutorial->textShader);
+    }
 }

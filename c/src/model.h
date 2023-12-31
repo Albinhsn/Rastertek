@@ -25,16 +25,16 @@ struct Model {
     VertexTypeNTB *model;
 };
 
-bool InitializeModel(Model *model, const char **models, int modelLen, const char **textures, int textureLen, bool wrap,
+bool InitializeModel(Model &model, const char *modelStr, const char **textures, int textureLen, bool wrap,
                      void (*enableAttribPtr)(void), int attribLen);
-void ShutdownModel(Model *model);
-void RenderModel(Model *model);
+void ShutdownModel(Model &model);
+void RenderModel(Model &model);
 
-bool InitializeBuffers(Model *model, void (*enableAttribPtr)(void));
+bool InitializeBuffers(Model &model, void (*enableAttribPtr)(void));
 void ShutdownBuffers();
 void RenderBuffers();
 
-bool LoadTextures(Model *model, const char *textureFilenames, int textureLen, bool wrap);
+bool LoadTextures(Model &model, const char *textureFilenames, int textureLen, bool wrap);
 
 void CalculateModelVectors(Model & model);
 

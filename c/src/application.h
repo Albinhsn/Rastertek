@@ -4,6 +4,7 @@
 #include "bitmap.h"
 #include "camera.h"
 #include "font.h"
+#include "fps.h"
 #include "input.h"
 #include "model.h"
 #include "opengl.h"
@@ -11,7 +12,6 @@
 #include "sprite.h"
 #include "text.h"
 #include "timer.h"
-#include "fps.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -27,51 +27,75 @@ struct TutorialText {
     int fontSize;
     int posX, posY;
 };
+struct TutorialShader {
+    const char *vertexShaderName;
+    const char *fragmentShaderName;
+    const char **variables;
+    int variablesLen;
+};
+
+struct TutorialEntity {
+    TutorialShader *shader;
+    const char *model;
+    const char **textures;
+    int textureLen;
+    bool wrap;
+    void (*enableAttribPtr)();
+    bool (*renderEntityPtr)(Application *application, float rotation);
+};
 
 struct TutorialData {
     TutorialText *textStrings;
     int textLen;
     TutorialEnum tutorial;
-    // Model
-    const char **models;
-    int modelLen;
-    const char **textures;
-    int textureLen;
-    const char *vertexShaderName;
-    const char *fragmentShaderName;
-    const char **variables;
-    int variablesLen;
+
+    TutorialEntity *entities;
+    int entityLen;
+
     int cameraX, cameraY, cameraZ;
-    void (*enableAttribPtr)();
     bool (*renderApplicationPtr)(Application *application, float rotation);
     float rotationSpeed;
-    bool wrap;
 
     // Bitmap
     const char *bitmapFilename;
-
     // Sprite
     const char *spriteFilename;
-
     // Mouse
     bool mouse;
+    TutorialShader *textShader;
+    TutorialShader *bitmapShader;
+};
+
+struct Entity {
+    Shader *shader;
+    Model model;
 };
 
 struct Application {
-    Shader * fpsShader;
     OpenGL *openGL;
     Camera *camera;
-    Shader *shader;
-    Model *model;
+
+    // Models
+    Entity *entities;
+    int entityLen;
+
+    // Sprite and Bitmap
     Bitmap *bitmap;
     Sprite *sprite;
-    Timer *timer;
+    Shader *bitmapShader;
+
+    // Text
+    Shader *textShader;
     m_Font *font;
     int textLen;
     Text *text;
-    Text * fpsText;
-    FPS * fps;
+    // FPS
+    Timer *timer;
+    Shader *fpsShader;
+    Text *fpsText;
+    FPS *fps;
     int previousFPS;
+    // Mouse text
     bool mouse;
 };
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth, int screenHeight,

@@ -39,7 +39,6 @@ void ShutdownSystem(System *system) {
     if (system->application) {
         ShutdownApplication(system->application);
         free(system->application);
-        printf("Shutdown Application\n");
     }
     ShutdownWindow(system);
     printf("Shutdown Window\n");

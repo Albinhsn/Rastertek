@@ -36,10 +36,10 @@ static bool InitializeFpsString(Application *application, int screenWidth, int s
 
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth, int screenHeight,
                            TutorialData *tutorial) {
+    application->bitmap = 0;
     application->openGL = (OpenGL *)malloc(sizeof(OpenGL));
 
     InitializeOpenGL(application->openGL, display, window, screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH,
-
                      VSYNC_ENABLED);
 
     application->camera = (Camera *)malloc(sizeof(Camera));
@@ -55,18 +55,33 @@ bool InitializeApplication(Application *application, Display *display, Window wi
     if (!InitializeFpsString(application, screenWidth, screenHeight)) {
         return false;
     }
+    printf("INFO: Initialized FPS string\n");
 
     switch (tutorial->tutorial) {
     case MODEL: {
-        application->model = (Model *)malloc(sizeof(Model));
-
-        result =
-            InitializeModel(application->model, tutorial->models, tutorial->modelLen, tutorial->textures,
-                            tutorial->textureLen, tutorial->wrap, tutorial->enableAttribPtr, tutorial->variablesLen);
-        if (!result) {
-            printf("ERROR: Failed to initialize model\n");
-            return false;
+        Entity *entities = (Entity *)malloc(sizeof(Entity) * tutorial->entityLen);
+        TutorialEntity tutEntity;
+        for (int i = 0; i < tutorial->entityLen; i++) {
+            tutEntity = tutorial->entities[i];
+            result = InitializeModel(entities[i].model, tutEntity.model, tutEntity.textures, tutEntity.textureLen,
+                                     tutEntity.wrap, tutEntity.enableAttribPtr, tutEntity.shader->variablesLen);
+            if (!result) {
+                printf("ERROR: Failed to initialize model\n");
+                return false;
+            }
+            entities[i].shader = (Shader *)malloc(sizeof(Shader));
+            result = InitializeShader(*entities[i].shader, tutEntity.shader->vertexShaderName,
+                                      tutEntity.shader->fragmentShaderName, tutEntity.shader->variables,
+                                      tutEntity.shader->variablesLen);
+            if (!result) {
+                printf("ERROR: Failed to initialize texture shader\n");
+                return false;
+            }
         }
+        application->entities = entities;
+        application->entityLen = tutorial->entityLen;
+        printf("INFO: initialzied Model\n");
+
         break;
     }
     case SPRITE: {
@@ -77,14 +92,32 @@ bool InitializeApplication(Application *application, Display *display, Window wi
             printf("ERROR: Failed to initialize sprite\n");
             return false;
         }
+        application->bitmapShader = (Shader *)malloc(sizeof(Shader));
+        result = InitializeShader(*application->bitmapShader, tutorial->bitmapShader->vertexShaderName,
+                                  tutorial->bitmapShader->fragmentShaderName, tutorial->bitmapShader->variables,
+                                  tutorial->bitmapShader->variablesLen);
+        if (!result) {
+            printf("Failed to initialize bitmap shader\n");
+            return false;
+        }
+
         break;
     }
     case BITMAP: {
         Bitmap *bitmap = (Bitmap *)malloc(sizeof(Bitmap));
         result = InitializeBitmap(*bitmap, screenWidth, screenHeight, tutorial->bitmapFilename, 150, 150);
-        application->bitmap = bitmap;
         if (!result) {
             printf("ERROR: Failed to initialize bitmap\n");
+            return false;
+        }
+        printf("Initialized bitmap\n");
+        application->bitmap = bitmap;
+        application->bitmapShader = (Shader *)malloc(sizeof(Shader));
+        result = InitializeShader(*application->bitmapShader, tutorial->bitmapShader->vertexShaderName,
+                                  tutorial->bitmapShader->fragmentShaderName, tutorial->bitmapShader->variables,
+                                  tutorial->bitmapShader->variablesLen);
+        if (!result) {
+            printf("Failed to initialize bitmap shader\n");
             return false;
         }
         break;
@@ -105,6 +138,14 @@ bool InitializeApplication(Application *application, Display *display, Window wi
                 return false;
             }
         }
+        application->textShader = (Shader *)malloc(sizeof(Shader));
+        result = InitializeShader(*application->textShader, tutorial->textShader->vertexShaderName,
+                                  tutorial->textShader->fragmentShaderName, tutorial->textShader->variables,
+                                  tutorial->textShader->variablesLen);
+        if (!result) {
+            printf("ERROR: Failed to initialize texture shader\n");
+            return false;
+        }
 
         break;
     }
@@ -114,30 +155,21 @@ bool InitializeApplication(Application *application, Display *display, Window wi
     }
     }
 
-    application->shader = (Shader *)malloc(sizeof(Shader));
-    result = InitializeShader(*application->shader, tutorial->vertexShaderName, tutorial->fragmentShaderName,
-                              tutorial->variables, tutorial->variablesLen);
-    if (!result) {
-        printf("ERROR: Failed to initialize texture shader\n");
-        return false;
-    }
-
     return true;
 }
 
 void ShutdownApplication(Application *application) {
     printf("Shutting down application\n");
-    if (application->shader) {
-        free(application->shader);
+    for (int i = 0; i < application->entityLen; i++) {
+        ShutdownModel(application->entities[i].model);
+        free(application->entities[i].shader);
     }
-    if (application->bitmap) {
+    free(application->entities);
+    printf("Shutdown model\n");
+    if (application->bitmap != NULL) {
+        printf("%ld\n", (long)application->bitmap);
         ShutdownBitmap(application->bitmap);
         free(application->bitmap);
-    }
-    if (application->model) {
-        ShutdownModel(application->model);
-        free(application->model);
-        printf("Shut down model\n");
     }
     if (application->camera) {
         free(application->camera);
@@ -145,6 +177,7 @@ void ShutdownApplication(Application *application) {
     if (application->openGL) {
         free(application->openGL);
     }
+    printf("Shutdown application\n");
 }
 
 bool UpdateFPS(Application *application) {
@@ -277,17 +310,21 @@ bool Frame(Application *application, Input *input,
     if (!UpdateFPS(application)) {
         return false;
     }
+    printf("INFO: Updated fps\n");
 
     if (application->mouse) {
+        printf("INFO: Updating mouse string\n");
         if (!UpdateMouseStrings(application, input->mouseX, input->mouseY, input->mousePressed)) {
             return false;
         }
+        printf("INFO: Updated mouse string\n");
     }
 
     BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     if (!RenderFpsString(application)) {
         return false;
     }
+    printf("INFO: Rendered fps string\n");
 
     if (!renderApplicationPtr(application, rotation)) {
         return false;

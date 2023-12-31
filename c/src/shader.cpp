@@ -245,6 +245,7 @@ bool SetShaderParameters12(Shader shader, float *worldMatrix, float *viewMatrix,
 
     glUseProgram(shader.program);
     if (!MoveMatrix4fvToShader("worldMatrix", shader.program, tpWorldMatrix)) {
+        printf("Failed to set worldMatrix\n");
         return false;
     }
     if (!MoveMatrix4fvToShader("viewMatrix", shader.program, tpViewMatrix)) {
@@ -255,6 +256,7 @@ bool SetShaderParameters12(Shader shader, float *worldMatrix, float *viewMatrix,
     }
 
     if (!Move1iToShader("shaderTexture", shader.program, 0)) {
+        printf("Failed to set shaderTexture\n");
         return false;
     }
 
