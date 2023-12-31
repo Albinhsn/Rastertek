@@ -8,53 +8,53 @@ static void enableAttribPtr5() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (3 * sizeof(float)));
 }
 static void enableAttribPtr6() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (5 * sizeof(float)));
 }
 static void enableAttribPtr7() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (5 * sizeof(float)));
 }
 static void enableAttribPtr8() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (5 * sizeof(float)));
 }
 static void enableAttribPtr10() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (5 * sizeof(float)));
 }
 static void enableAttribPtr11() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (5 * sizeof(float)));
 }
 static void enableAttribPtr20() {
     glEnableVertexAttribArray(0);

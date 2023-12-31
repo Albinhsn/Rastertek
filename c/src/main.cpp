@@ -3,7 +3,7 @@
 #include "system.h"
 #include <cstdlib>
 
-#define APP 20
+#define APP 5
 
 int main() {
     System *system = (System *)malloc(sizeof(System));

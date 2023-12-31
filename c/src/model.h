@@ -7,11 +7,6 @@ struct VertexType {
     float x, y, z;
     float tu, tv;
 };
-struct VertexTypeN {
-    float x, y, z;
-    float tu, tv;
-    float nx, ny, nz;
-};
 struct VertexTypeNTB{
     float x, y, z;
     float tu, tv;
