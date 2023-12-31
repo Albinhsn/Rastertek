@@ -468,3 +468,67 @@ bool SetShaderParameters19(Shader shader, float *worldMatrix, float *viewMatrix,
 
     return true;
 }
+bool SetShaderParameters20(Shader shader, float *worldMatrix, float *viewMatrix, float *projectionMatrix,
+                           float *lightDirection, float *diffuseLightColor) {
+    float tpWorldMatrix[16], tpViewMatrix[16], tpProjectionMatrix[16];
+    int location;
+
+    // Transpose the matrices to prepare them for the shader.
+    MatrixTranspose(tpWorldMatrix, worldMatrix);
+    MatrixTranspose(tpViewMatrix, viewMatrix);
+    MatrixTranspose(tpProjectionMatrix, projectionMatrix);
+
+    // Install the shader program as part of the current rendering state.
+    glUseProgram(shader.program);
+
+    // Set the world matrix in the vertex shader.
+    location = glGetUniformLocation(shader.program, "worldMatrix");
+    if (location == -1) {
+        return false;
+    }
+    glUniformMatrix4fv(location, 1, false, tpWorldMatrix);
+
+    // Set the view matrix in the vertex shader.
+    location = glGetUniformLocation(shader.program, "viewMatrix");
+    if (location == -1) {
+        return false;
+    }
+    glUniformMatrix4fv(location, 1, false, tpViewMatrix);
+
+    // Set the projection matrix in the vertex shader.
+    location = glGetUniformLocation(shader.program, "projectionMatrix");
+    if (location == -1) {
+        return false;
+    }
+    glUniformMatrix4fv(location, 1, false, tpProjectionMatrix);
+
+    // Set the first texture in the pixel shader to use the data from the first texture unit.
+    location = glGetUniformLocation(shader.program, "shaderTexture1");
+    if (location == -1) {
+        return false;
+    }
+    glUniform1i(location, 0);
+
+    // Set the second texture in the pixel shader to use the data from the second texture unit.
+    location = glGetUniformLocation(shader.program, "shaderTexture2");
+    if (location == -1) {
+        return false;
+    }
+    glUniform1i(location, 1);
+
+    // Set the light direction in the pixel shader.
+    location = glGetUniformLocation(shader.program, "lightDirection");
+    if (location == -1) {
+        return false;
+    }
+    glUniform3fv(location, 1, lightDirection);
+
+    // Set the light color in the pixel shader.
+    location = glGetUniformLocation(shader.program, "diffuseLightColor");
+    if (location == -1) {
+        return false;
+    }
+    glUniform4fv(location, 1, diffuseLightColor);
+
+    return true;
+}

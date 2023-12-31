@@ -1,3 +1,4 @@
 clangd-format
 *.o
 client
+shader-error.txt

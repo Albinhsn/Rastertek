@@ -2,6 +2,7 @@
 #include "opengl.h"
 #include "sprite.h"
 #include "texture.h"
+#include "vector.h"
 
 static void enableAttribPtr5() {
     glEnableVertexAttribArray(0);
@@ -54,6 +55,50 @@ static void enableAttribPtr11() {
     glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeN), 0);
     glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (3 * sizeof(float)));
     glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeN), (unsigned char *)NULL + (5 * sizeof(float)));
+}
+static void enableAttribPtr20() {
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(4);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), 0);
+
+    // Specify the location and format of the texture coordinates portion of the
+    // vertex buffer.
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (3 * sizeof(float)));
+
+    // Specify the location and format of the normal vector portion of the vertex
+    // buffer.
+    glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (5 * sizeof(float)));
+
+    // Specify the location and format of the tangent vector portion of the vertex
+    // buffer.
+    glVertexAttribPointer(3, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (8 * sizeof(float)));
+
+    // Specify the location and format of the binormal vector portion of the
+    // vertex buffer.
+    glVertexAttribPointer(4, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (11 * sizeof(float)));
+}
+static bool renderApplicationPtr20(Application *application, float rotation) {
+
+    float worldMatrix[16];
+    Get4x4Matrix(worldMatrix, application->openGL->worldMatrix);
+    MatrixRotationY(worldMatrix, rotation);
+
+    float diffuseLightColor[4] = {1.0f, 0.753f, 0.796f, 1.0f};
+    float lightDirection[3] = {0.0f, 0.0f, 1.0f};
+
+    bool result = SetShaderParameters20(*application->shader, worldMatrix, application->camera->viewMatrix,
+                                        application->openGL->projectionMatrix, lightDirection, diffuseLightColor);
+    if (!result) {
+        printf("ERROR: Failed to set shader params\n");
+        return false;
+    }
+    RenderModel(application->model);
+
+    return true;
 }
 static bool renderApplicationPtr19(Application *application, float rotation) {
 
@@ -834,6 +879,44 @@ TutorialData *Tutorial19() {
     tutorial->renderApplicationPtr = &renderApplicationPtr19;
 
     tutorial->wrap = false;
+    tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
+
+    return tutorial;
+}
+TutorialData *Tutorial20() {
+
+    TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
+
+    tutorial->tutorial = MODEL;
+    tutorial->modelLen = 1;
+    tutorial->models = (const char **)malloc(sizeof(char *) * tutorial->modelLen);
+    tutorial->models[0] = "./data/sphere.txt";
+
+    tutorial->textureLen = 2;
+    tutorial->textures = (const char **)malloc(sizeof(char *) * tutorial->textureLen);
+    tutorial->textures[0] = "./data/stone01.tga";
+    tutorial->textures[1] = "./data/normal01.tga";
+
+    tutorial->vertexShaderName = "./shaders/normalmap.vs";
+    tutorial->fragmentShaderName = "./shaders/normalmap.ps";
+
+    tutorial->variablesLen = 5;
+    tutorial->variables = (const char **)malloc(sizeof(char *) * tutorial->variablesLen);
+    tutorial->variables[0] = "inputPosition";
+    tutorial->variables[1] = "inputTexCoord";
+    tutorial->variables[2] = "inputNormal";
+    tutorial->variables[3] = "inputTangent";
+    tutorial->variables[4] = "inputBinormal";
+
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraZ = -10.0f;
+
+    tutorial->enableAttribPtr = &enableAttribPtr20;
+    tutorial->renderApplicationPtr = &renderApplicationPtr20;
+
+    tutorial->wrap = true;
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;
 

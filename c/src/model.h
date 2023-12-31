@@ -12,6 +12,14 @@ struct VertexTypeN {
     float tu, tv;
     float nx, ny, nz;
 };
+struct VertexTypeNTB{
+    float x, y, z;
+    float tu, tv;
+    float nx, ny, nz;
+    float tx, ty, tz;
+    float bx, by, bz;
+
+};
 
 struct Model {
     int attribLen;
@@ -19,7 +27,7 @@ struct Model {
     unsigned int vertexArrayId, vertexBufferId, indexBufferId;
     Texture *texture;
     int textureLen;
-    VertexTypeN *model;
+    VertexTypeNTB *model;
 };
 
 bool InitializeModel(Model *model, const char **models, int modelLen, const char **textures, int textureLen, bool wrap,
@@ -32,5 +40,7 @@ void ShutdownBuffers();
 void RenderBuffers();
 
 bool LoadTextures(Model *model, const char *textureFilenames, int textureLen, bool wrap);
+
+void CalculateModelVectors(Model & model);
 
 #endif
