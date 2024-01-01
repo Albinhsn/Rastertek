@@ -1,4 +1,5 @@
 #include "data.h"
+#include "frustum.h"
 #include "opengl.h"
 #include "sprite.h"
 #include "texture.h"
@@ -68,6 +69,33 @@ static void enableAttribPtr20() {
     glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (5 * sizeof(float)));
     glVertexAttribPointer(3, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (8 * sizeof(float)));
     glVertexAttribPointer(4, 3, GL_FLOAT, false, sizeof(VertexTypeNTB), (unsigned char *)NULL + (11 * sizeof(float)));
+}
+static bool renderApplicationPtr23(Application *application, float rotation) {
+
+    float rotateMatrix[16], translateMatrix[16], worldMatrix[16];
+    MatrixRotationY(rotateMatrix, rotation);
+
+    ConstructFrustum(*application->frustum, SCREEN_DEPTH, application->camera->viewMatrix,
+                     application->openGL->projectionMatrix);
+
+    for (int i = 0; i < application->entityLen; i++) {
+        Entity entity = application->entities[i];
+        bool renderModel =
+            CheckCube(*application->frustum, entity.model.model->x, entity.model.model->y, entity.model.model->z, 1.0f);
+        if (renderModel) {
+            MatrixTranslation(translateMatrix, entity.model.model->x, entity.model.model->y, entity.model.model->z);
+            MatrixMultiply(worldMatrix, rotateMatrix, translateMatrix);
+            bool result = SetShaderParameters5(*application->entities[i].shader, worldMatrix,
+                                               application->camera->viewMatrix, application->openGL->projectionMatrix);
+            if (!result) {
+                return false;
+            }
+            RenderModel(application->entities[i].model);
+            application->renderCount++;
+        }
+    }
+
+    return true;
 }
 static bool renderApplicationPtr22(Application *application, float rotation) {
 
@@ -1184,6 +1212,47 @@ TutorialData *Tutorial22() {
     tutorial->cameraZ = -10.0f;
 
     tutorial->renderApplicationPtr = &renderApplicationPtr22;
+
+    tutorial->rotationSpeed = 0.0174532925f;
+    tutorial->mouse = false;
+
+    return tutorial;
+}
+TutorialData *Tutorial23() {
+
+    TutorialData *tutorial = (TutorialData *)malloc(sizeof(TutorialData));
+    tutorial->tutorial = MODEL;
+
+    tutorial->entityLen = 10;
+
+    TutorialShader *shader1 = (TutorialShader *)malloc(sizeof(TutorialShader));
+    shader1->vertexShaderName = "./shaders/texture.vs";
+    shader1->fragmentShaderName = "./shaders/texture.ps";
+
+    shader1->variablesLen = 2;
+    shader1->variables = (const char **)malloc(sizeof(char *) * shader1->variablesLen);
+    shader1->variables[0] = "inputPosition";
+    shader1->variables[1] = "inputTexCoord";
+
+    TutorialEntity *entity = (TutorialEntity *)malloc(sizeof(TutorialEntity) * tutorial->entityLen);
+    for (int i = 0; i < tutorial->entityLen; ++i) {
+        entity[i].shader = shader1;
+        entity[i].model = "./data/cube.txt";
+        entity[i].textureLen = 1;
+        entity[i].textures = (const char **)malloc(sizeof(char *) * entity->textureLen);
+        entity[i].textures[0] = "./data/stone01.tga";
+        entity[i].enableAttribPtr = &enableAttribPtr5;
+        entity[i].wrap = true;
+        entity[i].randomPos = true;
+    }
+
+    tutorial->entities = entity;
+
+    tutorial->cameraX = 0.0f;
+    tutorial->cameraY = 0.0f;
+    tutorial->cameraZ = -10.0f;
+
+    tutorial->renderApplicationPtr = &renderApplicationPtr23;
 
     tutorial->rotationSpeed = 0.0174532925f;
     tutorial->mouse = false;

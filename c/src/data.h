@@ -30,5 +30,6 @@ TutorialData *Tutorial19();
 TutorialData *Tutorial20();
 TutorialData *Tutorial21();
 TutorialData *Tutorial22();
+TutorialData *Tutorial23();
 
 #endif

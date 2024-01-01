@@ -21,7 +21,7 @@ void SetRotation(Camera *camera, float x, float y, float z) {
     camera->rotation.z = z;
 }
 
-void Render(Camera *camera) {
+void RenderCamera(Camera *camera) {
     Vector3 up, position, lookAt;
     float yaw, pitch, roll;
     float rotationMatrix[9];

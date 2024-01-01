@@ -5,8 +5,24 @@
 #include "fps.h"
 #include "model.h"
 #include "opengl.h"
+#include "vector.h"
 #include <cstdio>
 #include <string.h>
+static bool InitializeEntityString(Application *application, int screenWidth, int screenHeight) {
+    application->entityText = (Text *)malloc(sizeof(Text));
+
+    bool result = InitializeText(*application->entityText, screenWidth, screenHeight, 32, application->font,
+                                 "Entities: 0", 10, 50, 1.0f, 1.0f, 0.0f);
+    if (!result) {
+        printf("ERROR: Failed to initialize entity text\n");
+        return false;
+    }
+    const char *fontVertexShaderName = "./shaders/font.vs";
+    const char *fontFragmentShaderName = "./shaders/font.ps";
+    const char *fontVariables[2] = {"inputPosition", "inputTexCoord"};
+
+    return true;
+}
 
 static bool InitializeFpsString(Application *application, int screenWidth, int screenHeight) {
     application->fps = (FPS *)malloc(sizeof(FPS));
@@ -15,20 +31,9 @@ static bool InitializeFpsString(Application *application, int screenWidth, int s
     application->fpsText = (Text *)malloc(sizeof(Text));
 
     bool result = InitializeText(*application->fpsText, screenWidth, screenHeight, 32, application->font, "FPS: 0", 10,
-
                                  10, 1.0f, 1.0f, 0.0f);
     if (!result) {
         printf("ERROR: Failed to initialize fps text\n");
-        return false;
-    }
-    const char *fontVertexShaderName = "./shaders/font.vs";
-    const char *fontFragmentShaderName = "./shaders/font.ps";
-    const char *fontVariables[2] = {"inputPosition", "inputTexCoord"};
-
-    application->fpsShader = (Shader *)malloc(sizeof(Shader));
-    result = InitializeShader(*application->fpsShader, fontVertexShaderName, fontFragmentShaderName, fontVariables, 2);
-    if (!result) {
-        printf("ERROR: Failed to initialize texture shader\n");
         return false;
     }
     return true;
@@ -38,24 +43,45 @@ bool InitializeApplication(Application *application, Display *display, Window wi
                            TutorialData *tutorial) {
     application->bitmap = 0;
     application->openGL = (OpenGL *)malloc(sizeof(OpenGL));
-
     InitializeOpenGL(application->openGL, display, window, screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH,
                      VSYNC_ENABLED);
+
+    application->frustum = (Frustum *)malloc(sizeof(Frustum));
+    application->timer = (Timer *)malloc(sizeof(Timer));
+    InitializeTimer(*application->timer);
 
     application->camera = (Camera *)malloc(sizeof(Camera));
     SetPosition(application->camera, tutorial->cameraX, tutorial->cameraY, tutorial->cameraZ);
 
-    Render(application->camera);
+    RenderCamera(application->camera);
+    Get4x4Matrix(application->baseViewMatrix, application->camera->viewMatrix);
 
     m_Font *font = (m_Font *)malloc(sizeof(m_Font));
     bool result = InitializeFont(*font, 0);
     application->font = font;
     application->mouse = tutorial->mouse;
 
+    const char *fontVertexShaderName = "./shaders/font.vs";
+    const char *fontFragmentShaderName = "./shaders/font.ps";
+    const char *fontVariables[2] = {"inputPosition", "inputTexCoord"};
+
+    application->fontShader = (Shader *)malloc(sizeof(Shader));
+    result = InitializeShader(*application->fontShader, fontVertexShaderName, fontFragmentShaderName, fontVariables, 2);
+    if (!result) {
+        printf("ERROR: Failed to initialize texture shader\n");
+        return false;
+    }
+
     if (!InitializeFpsString(application, screenWidth, screenHeight)) {
         return false;
     }
     printf("INFO: Initialized FPS string\n");
+
+    application->position = (Position *)malloc(sizeof(Position));
+    InitializePosition(*application->position);
+    if (!InitializeEntityString(application, screenWidth, screenHeight)) {
+        return false;
+    }
 
     switch (tutorial->tutorial) {
     case MODEL: {
@@ -76,6 +102,11 @@ bool InitializeApplication(Application *application, Display *display, Window wi
             if (!result) {
                 printf("ERROR: Failed to initialize texture shader\n");
                 return false;
+            }
+            if (tutEntity.randomPos) {
+                entities[i].model.model->x = (((float)rand() - (float)rand()) / RAND_MAX) * 10.0f;
+                entities[i].model.model->y = (((float)rand() - (float)rand()) / RAND_MAX) * 10.0f;
+                entities[i].model.model->z = (((float)rand() - (float)rand()) / RAND_MAX) * 10.0f + 5.0f;
             }
         }
         application->entities = entities;
@@ -123,10 +154,6 @@ bool InitializeApplication(Application *application, Display *display, Window wi
         break;
     }
     case FONT: {
-        if (!result) {
-            printf("Failed to initiazle font\n");
-            return false;
-        }
         application->text = (Text *)malloc(sizeof(Text) * tutorial->textLen);
         application->textLen = tutorial->textLen;
         for (int i = 0; i < application->textLen; i++) {
@@ -293,10 +320,49 @@ static bool UpdateMouseStrings(Application *application, int mouseX, int mouseY,
 
     return true;
 }
+bool UpdateRenderCountString(Application *application) {
+    char tempString[16], finalString[32];
+    bool result;
+
+    // Convert the render count integer to string format.
+    sprintf(tempString, "%d", application->renderCount);
+
+    // Setup the render count string.
+    strcpy(finalString, "Render Count: ");
+    strcat(finalString, tempString);
+
+    // Update the sentence vertex buffer with the new string information.
+    result = UpdateText(*application->font, *application->entityText, finalString, 10, 40, 1.0f, 1.0f, 1.0f);
+    printf("INFO: Updated render count string to '%s' since %d\n", finalString, application->renderCount);
+    if (!result) {
+        return false;
+    }
+
+    return true;
+}
+
+bool RenderEntityString(Application *application) {
+    TurnZBufferOff();
+    EnableAlphaBlending();
+    bool result =
+        SetTextShaderParameters(*application->fontShader, application->openGL->worldMatrix, application->baseViewMatrix,
+                                application->openGL->orthoMatrix, application->entityText->pixelColor);
+    if (!result) {
+        printf("ERROR: Failed to set text shader params\n");
+        return false;
+    }
+    SetTexture(*application->font->texture);
+    RenderText(*application->entityText);
+
+    TurnZBufferOn();
+    DisableAlphaBlending();
+    return true;
+}
 
 bool Frame(Application *application, Input *input,
            bool (*renderApplicationPtr)(Application *application, float rotation), float rotationSpeed) {
     static float rotation = 360.0f;
+    application->renderCount = 0;
     bool result;
 
     if (IsEscapePressed(input) == true) {
@@ -320,6 +386,14 @@ bool Frame(Application *application, Input *input,
         printf("INFO: Updated mouse string\n");
     }
 
+    TimerFrame(*application->timer);
+    application->position->frameTime = application->timer->frameTime;
+    TurnLeft(*application->position, IsLeftArrowPressed(input));
+    TurnRight(*application->position, IsRightArrowPressed(input));
+
+    SetRotation(application->camera, 0.0f, application->position->rotationY, 0.0f);
+    RenderCamera(application->camera);
+
     BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
     if (!RenderFpsString(application)) {
         return false;
@@ -330,7 +404,18 @@ bool Frame(Application *application, Input *input,
         return false;
     }
 
+    printf("INFO: Rendered application\n");
+    result = UpdateRenderCountString(application);
+    if (!result) {
+        printf("ERROR: Failed to update render count string\n");
+        return false;
+    }
+
+    RenderEntityString(application);
+    printf("INFO: Rendered count string\n");
+
     EndScene(application->openGL->display, application->openGL->hwnd);
+    printf("Ended scene\n");
 
     return true;
 }
@@ -338,9 +423,9 @@ bool Frame(Application *application, Input *input,
 bool RenderFpsString(Application *application) {
     TurnZBufferOff();
     EnableAlphaBlending();
-    bool result = SetTextShaderParameters(*application->fpsShader, application->openGL->worldMatrix,
-                                          application->camera->viewMatrix, application->openGL->orthoMatrix,
-                                          application->fpsText->pixelColor);
+    bool result =
+        SetTextShaderParameters(*application->fontShader, application->openGL->worldMatrix, application->baseViewMatrix,
+                                application->openGL->orthoMatrix, application->fpsText->pixelColor);
     if (!result) {
         printf("ERROR: Failed to set text shader params\n");
         return false;

@@ -11,7 +11,7 @@ struct Camera {
 };
 void SetPosition(Camera *camera, float, float, float);
 void SetRotation(Camera *camera, float, float, float);
-void Render(Camera *camera);
+void RenderCamera(Camera *camera);
 void MatrixRotationYawPitchRoll(float *, float, float, float);
 void TransformCoord(Vector3 &, float *);
 void BuildViewMatrix(float *, Vector3, Vector3, Vector3);

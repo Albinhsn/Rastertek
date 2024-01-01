@@ -7,5 +7,8 @@ struct Timer{
   long startSeconds, startMilliseconds;
   int frameTime;
 };
+void InitializeTimer(Timer &timer);
+
+void TimerFrame(Timer & timer);
 
 #endif

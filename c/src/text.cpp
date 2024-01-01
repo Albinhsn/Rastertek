@@ -2,7 +2,7 @@
 #include "model.h"
 #include <string.h>
 
-bool UpdateText(m_Font &font, Text text, const char *text_seq, int positionX, int positionY, float red, float green,
+bool UpdateText(m_Font &font, Text &text, const char *text_seq, int positionX, int positionY, float red, float green,
                 float blue) {
     int numLetters;
     VertexType *vertices;

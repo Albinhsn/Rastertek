@@ -268,3 +268,12 @@ void Get4x4Matrix(float *dest, float *source) {
     dest[14] = source[14];
     dest[15] = source[15];
 }
+void DebugPrint4x4Matrix(float *matrix) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            printf("%lf ", matrix[i * 4 + j]);
+        }
+        printf("\n");
+    }
+    printf("----------\n");
+}

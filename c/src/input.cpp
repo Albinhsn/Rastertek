@@ -10,20 +10,38 @@ void InitializeInput(Input *input) {
 }
 
 void KeyDown(Input *input, int keySymbol) {
-    if (keySymbol == 65307) {
+    switch (keySymbol) {
+    case 65307: {
         input->keyboardState[KEY_ESCAPE] = true;
+        break;
+    }
+    case 65361: {
+        input->keyboardState[KEY_LEFT] = true;
+        break;
+    }
+    case 65363: {
+        input->keyboardState[KEY_RIGHT] = true;
+        break;
+    }
     }
 }
 void KeyUp(Input *input, int keySymbol) {
-    if (keySymbol == 65307) {
+    switch (keySymbol) {
+    case 65307: {
         input->keyboardState[KEY_ESCAPE] = false;
+        break;
     }
-}
-void MouseDown(Input *input){
-
-}
-void MouseUp(Input *input){
-
+    case 65361: {
+        input->keyboardState[KEY_LEFT] = false;
+        break;
+    }
+    case 65363: {
+        input->keyboardState[KEY_RIGHT] = false;
+        break;
+    }
+    }
 }
 
 bool IsEscapePressed(Input *input) { return input->keyboardState[KEY_ESCAPE]; }
+bool IsLeftArrowPressed(Input *input) { return input->keyboardState[KEY_LEFT]; }
+bool IsRightArrowPressed(Input *input) { return input->keyboardState[KEY_RIGHT]; }

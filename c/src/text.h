@@ -8,7 +8,7 @@ struct Text {
     uint vertexArrayId, vertexBufferId, indexBufferId;
     float pixelColor[4];
 };
-bool UpdateText(m_Font &font, Text text, const char *text_seq, int positionX, int positionY, float red, float green,
+bool UpdateText(m_Font &font, Text &text, const char *text_seq, int positionX, int positionY, float red, float green,
                 float blue);
 
     bool InitializeTextBuffers(Text & text, char *text_seq, m_Font *font, int positionX, int positionY, float red,

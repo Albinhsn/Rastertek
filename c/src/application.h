@@ -5,9 +5,11 @@
 #include "camera.h"
 #include "font.h"
 #include "fps.h"
+#include "frustum.h"
 #include "input.h"
 #include "model.h"
 #include "opengl.h"
+#include "position.h"
 #include "shader.h"
 #include "sprite.h"
 #include "text.h"
@@ -36,6 +38,7 @@ struct TutorialShader {
 
 struct TutorialEntity {
     TutorialShader *shader;
+    bool randomPos;
     const char *model;
     const char **textures;
     int textureLen;
@@ -74,6 +77,7 @@ struct Entity {
 struct Application {
     OpenGL *openGL;
     Camera *camera;
+    float baseViewMatrix[16];
 
     // Models
     Entity *entities;
@@ -90,13 +94,18 @@ struct Application {
     int textLen;
     Text *text;
     // FPS
-    Timer *timer;
-    Shader *fpsShader;
+    Shader *fontShader;
     Text *fpsText;
     FPS *fps;
     int previousFPS;
     // Mouse text
     bool mouse;
+    // Frustum
+    Frustum *frustum;
+    Position *position;
+    Timer *timer;
+    Text *entityText;
+    uint renderCount;
 };
 bool InitializeApplication(Application *application, Display *display, Window window, int screenWidth, int screenHeight,
                            TutorialData *tutorial);
